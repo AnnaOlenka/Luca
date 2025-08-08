@@ -1,0 +1,34 @@
+[
+  {
+    "id": 1,
+    "email": "admin@luca.com",
+    "password": "admin123",
+    "name": "María González",
+    "role": "admin",
+    "avatar": "/avatars/maria.jpg",
+    "lastLogin": "2024-01-15T10:30:00Z",
+    "preferences": {
+      "theme": "light",
+      "language": "es",
+      "notifications": true,
+      "tourCompleted": false,
+      "tourSkipped": false
+    }
+  },
+  {
+    "id": 2,
+    "email": "contador@luca.com", 
+    "password": "contador123",
+    "name": "Carlos Ruiz",
+    "role": "contador",
+    "avatar": "/avatars/carlos.jpg",
+    "lastLogin": "2024-01-15T09:15:00Z",
+    "preferences": {
+      "theme": "light",
+      "language": "es", 
+      "notifications": true,
+      "tourCompleted": true,
+      "tourSkipped": false
+    }
+  }
+]

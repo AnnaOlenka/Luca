@@ -1,0 +1,65 @@
+{
+  "dashboard": {
+    "totalCompanies": 15,
+    "activeCompanies": 12,
+    "highRiskCompanies": 3,
+    "pendingObligations": 8,
+    "overdueObligations": 2,
+    "totalRevenue": 125000.50,
+    "monthlyGrowth": 12.5,
+    "efficiency": 87.3,
+    "clientSatisfaction": 94.2
+  },
+  "kpiCards": [
+    {
+      "id": "companies",
+      "title": "Empresas Activas",
+      "value": 12,
+      "total": 15,
+      "percentage": 80,
+      "trend": "up",
+      "change": "+2",
+      "critical": false,
+      "icon": "building"
+    },
+    {
+      "id": "obligations",
+      "title": "Obligaciones Pendientes", 
+      "value": 8,
+      "total": 10,
+      "percentage": 80,
+      "trend": "stable",
+      "change": "0",
+      "critical": false,
+      "icon": "calendar"
+    },
+    {
+      "id": "overdue",
+      "title": "Vencimientos Críticos",
+      "value": 2,
+      "total": 8,
+      "percentage": 25,
+      "trend": "down",
+      "change": "-1",
+      "critical": true,
+      "icon": "alert-triangle"
+    },
+    {
+      "id": "efficiency",
+      "title": "Eficiencia del Equipo",
+      "value": 87.3,
+      "total": 100,
+      "percentage": 87.3,
+      "trend": "up",
+      "change": "+3.2%",
+      "critical": false,
+      "icon": "trending-up"
+    }
+  ],
+  "monthlyData": [
+    { "month": "Ene", "revenue": 98000, "obligations": 45, "efficiency": 82 },
+    { "month": "Feb", "revenue": 105000, "obligations": 52, "efficiency": 85 },
+    { "month": "Mar", "revenue": 112000, "obligations": 48, "efficiency": 87 },
+    { "month": "Abr", "revenue": 125000, "obligations": 55, "efficiency": 87 }
+  ]
+}

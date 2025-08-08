@@ -1,0 +1,274 @@
+ONBOARDING MODAL - USER FLOW COMPLETO
+======================================
+
+```mermaid
+graph TB
+    %% INICIO DEL FLUJO
+    Start([Usuario hace click en botón]) --> CheckModal{Modal OnboardingModal abierto?}
+    
+    CheckModal -->|Sí| LoadState[useOnboarding.getInitialState]
+    CheckModal -->|No| End([Fin])
+    
+    %% INICIALIZACIÓN DEL ESTADO
+    LoadState --> CheckLocalStorage{localStorage 'luca-tour-shown' existe?}
+    CheckLocalStorage -->|Sí| SetHasShownTour[hasShownTour = true]
+    CheckLocalStorage -->|No| SetHasNotShownTour[hasShownTour = false]
+    
+    SetHasShownTour --> InitialState[Estado inicial con hasShownTour: true]
+    SetHasNotShownTour --> InitialState2[Estado inicial con hasShownTour: false]
+    
+    %% RENDERIZADO DEL MODAL
+    InitialState --> RenderModal[OnboardingModal se renderiza]
+    InitialState2 --> RenderModal
+    
+    %% LÓGICA DEL TOUR (useEffect)
+    RenderModal --> TourCheck{Condiciones del tour:<br/>isOpen && !tourSkipped &&<br/>!hasShownTour && validCompanyCount === 0<br/>!showTourFloating}
+    
+    TourCheck -->|Todas cumplen| InitializeTour[actions.initializeTour()]
+    TourCheck -->|No cumple| ShowModal[Mostrar modal sin tour]
+    
+    %% INICIALIZACIÓN DEL TOUR
+    InitializeTour --> SaveTourFlag[localStorage.setItem('luca-tour-shown', 'true')]
+    SaveTourFlag --> CreateFirstCompany[Crear primera empresa si no existe]
+    CreateFirstCompany --> SetTourState[tourState: showTourFloating: true, tourStep: 1, hasShownTour: true]
+    SetTourState --> ShowTourStep1[TourFloating renderiza Step 1]
+    
+    %% TOUR STEP 1
+    ShowTourStep1 --> TourStep1{Usuario en TourFloating Step 1}
+    TourStep1 -->|Click Continuar| HandleTourContinue[handleTourContinue()]
+    TourStep1 -->|Click Omitir| HandleTourSkip[handleTourSkip()]
+    TourStep1 -->|Click Cerrar X| HandleTourClose[handleTourClose()]
+    
+    %% CONTINUAR TOUR
+    HandleTourContinue --> SetStep2[tourStep: 2, userClickedContinue: true]
+    SetStep2 --> FocusRUC[setTimeout: buscar input RUC y hacer focus]
+    FocusRUC --> ShowTourStep2[TourFloating renderiza Step 2]
+    
+    %% OMITIR O CERRAR TOUR
+    HandleTourSkip --> SaveSkipFlag[localStorage.setItem('luca-tour-shown', 'true')]
+    HandleTourClose --> SaveCloseFlag[localStorage.setItem('luca-tour-shown', 'true')]
+    SaveSkipFlag --> HideTour[showTourFloating: false, tourSkipped: true]
+    SaveCloseFlag --> HideTour
+    HideTour --> ShowModal
+    
+    %% MODAL SIN TOUR O DESPUÉS DE OMITIR
+    ShowModal --> CheckCompanies{state.companies.length === 0?}
+    CheckCompanies -->|Sí| ShowEmptyState[Renderizar estado vacío:<br/>Sin empresas para mostrar]
+    CheckCompanies -->|No| ShowCompaniesList[Renderizar lista de empresas<br/>CompanyAccordionItem por cada empresa]
+    
+    %% AGREGAR NUEVA EMPRESA
+    ShowEmptyState --> AddCompanyBtn[Usuario hace click en 'Agregar Nueva Empresa']
+    ShowCompaniesList --> AddCompanyBtn2[Usuario hace click en 'Agregar Nueva Empresa']
+    AddCompanyBtn --> AddNewCompany[actions.addNewCompany()]
+    AddCompanyBtn2 --> AddNewCompany
+    
+    AddNewCompany --> CreateCompany[Crear nueva CompanyData con ID único]
+    CreateCompany --> CollapseOthers[Colapsar todas las empresas existentes]
+    CollapseOthers --> AddToList[Agregar nueva empresa a la lista]
+    AddToList --> CheckScroll{Lista >= 6 empresas?}
+    CheckScroll -->|Sí| AutoScroll[setTimeout: scroll suave al final]
+    CheckScroll -->|No| RenderCompanyItem[CompanyAccordionItem se renderiza expandido]
+    AutoScroll --> RenderCompanyItem
+    
+    %% TOUR STEP 2 + VALIDACIÓN
+    ShowTourStep2 --> UserInputRUC[Usuario comienza a escribir en campo RUC]
+    RenderCompanyItem --> UserInputRUC2[Usuario escribe en campo RUC]
+    
+    %% VALIDACIÓN RUC EN TIEMPO REAL
+    UserInputRUC --> HandleFieldChange[handleFieldChange('ruc', value)]
+    UserInputRUC2 --> HandleFieldChange
+    HandleFieldChange --> ValidateRucRealTime[validateRucRealTime(value)]
+    
+    ValidateRucRealTime --> CheckRucLength{value.length}
+    CheckRucLength -->|0| SetRucNull[realTimeValidation.ruc = null]
+    CheckRucLength -->|< 11 && !digits only| SetRucError[realTimeValidation.ruc = 'Error message']
+    CheckRucLength -->|< 11 && digits only| SetRucIncomplete[realTimeValidation.ruc = 'El RUC debe tener 11 dígitos']
+    CheckRucLength -->|== 11| ClearRucError[realTimeValidation.ruc = null]
+    
+    ClearRucError --> TriggerRucValidation[setTimeout: onValidate('ruc', value), 100ms]
+    TriggerRucValidation --> ValidateCompanyRuc[validateCompany('ruc')]
+    
+    %% VALIDACIÓN RUC EN SERVIDOR
+    ValidateCompanyRuc --> SetValidating[validationState.ruc = 'validating', status = 'validando']
+    SetValidating --> DelayValidation[setTimeout 1500ms]
+    DelayValidation --> CheckRucInData{validateRuc: buscar en validCredentials.json}
+    
+    CheckRucInData -->|No encontrado| SetInvalid[validationState.ruc = 'invalid', status = 'no_valido']
+    CheckRucInData -->|Duplicado| SetDuplicate[validationState.ruc = 'duplicate', status = 'no_valido']
+    CheckRucInData -->|Inactivo| SetInactive[validationState.ruc = 'inactive', businessName actualizado]
+    CheckRucInData -->|Válido| SetValid[validationState.ruc = 'valid', businessName actualizado]
+    
+    %% DESPUÉS DE VALIDACIÓN RUC
+    SetInvalid --> UpdateState[Actualizar estado con validationState]
+    SetDuplicate --> UpdateState
+    SetInactive --> CheckCredentialsExist{solUser && solPassword existen?}
+    SetValid --> CheckCredentialsExist
+    
+    CheckCredentialsExist -->|Sí| AutoValidateCredentials[validateCredentials automáticamente]
+    CheckCredentialsExist -->|No| UpdateState
+    
+    %% VALIDACIÓN DE CREDENCIALES
+    AutoValidateCredentials --> CheckCredsInData{Buscar en validCredentials.json}
+    CheckCredsInData -->|Válidas| SetCredsValid[validationState.credentials = 'valid']
+    CheckCredsInData -->|Inválidas| SetCredsInvalid[validationState.credentials = 'invalid']
+    
+    %% USUARIO INGRESA CREDENCIALES MANUALMENTE
+    UpdateState --> UserInputCredentials[Usuario escribe en Usuario SOL/Contraseña]
+    UserInputCredentials --> HandleCredsChange[handleFieldChange('solUser'/'solPassword')]
+    
+    HandleCredsChange --> CheckFieldEmpty{Campo vacío?}
+    CheckFieldEmpty -->|Sí| ClearCredValidation[onValidate('clearCredentials')]
+    CheckFieldEmpty -->|No| CheckRucValid{validationState.ruc === 'valid'?}
+    
+    CheckRucValid -->|No| NoValidation[No validar credenciales]
+    CheckRucValid -->|Sí| CheckBothFields{solUser && solPassword completos?}
+    CheckBothFields -->|No| NoValidation
+    CheckBothFields -->|Sí| ValidateCredentials[setTimeout: onValidate('credentials'), 100ms]
+    
+    ValidateCredentials --> SetCredsValidating[validationState.credentials = 'validating']
+    SetCredsValidating --> DelayCredsValidation[setTimeout 1500ms]
+    DelayCredsValidation --> CheckCredsInData
+    
+    %% DETERMINACIÓN DE ESTADO FINAL
+    SetCredsValid --> DetermineStatus[Determinar estado final de empresa]
+    SetCredsInvalid --> DetermineStatus
+    NoValidation --> DetermineStatus
+    
+    DetermineStatus --> CheckFinalStatus{Lógica de priorización}
+    CheckFinalStatus -->|RUC errors o < 11 dígitos| SetStatusInvalid[status = 'no_valido']
+    CheckFinalStatus -->|Credenciales incorrectas| SetStatusInvalid
+    CheckFinalStatus -->|RUC válido + credenciales válidas| SetStatusVerified[status = 'verificada', isValid = true, expanded = false]
+    CheckFinalStatus -->|Campos vacíos sin errores| SetStatusIncomplete[status = 'incompleto']
+    
+    %% CONTEO DE EMPRESAS VERIFICADAS
+    SetStatusVerified --> RecalculateCount[newValidCount = empresas.filter(c => c.isValid).length]
+    SetStatusInvalid --> RecalculateCount
+    SetStatusIncomplete --> RecalculateCount
+    
+    %% LÓGICA DEL TOUR STEP 3
+    RecalculateCount --> CheckTourStep3{newValidCount >= 1 &&<br/>showTourFloating &&<br/>tourStep === 2?}
+    CheckTourStep3 -->|Sí| AdvanceToStep3[tourStep = 3, log 'Tour: Advancing to step 3']
+    CheckTourStep3 -->|No| UpdateUI[Actualizar UI con nuevo estado]
+    
+    AdvanceToStep3 --> ShowTourStep3[TourFloating renderiza Step 3: '¡Excelente trabajo!']
+    ShowTourStep3 --> AutoCloseTimer[useEffect: setTimeout 5000ms para cerrar tour]
+    AutoCloseTimer --> AutoCloseTour[onClose() - handleTourClose]
+    AutoCloseTour --> SaveCloseFlag
+    
+    %% ACCIONES DEL USUARIO EN LA EMPRESA
+    UpdateUI --> UserActions{Acciones disponibles}
+    UserActions -->|Click accordion header| ExpandCollapse[expandCompany: toggle expanded state]
+    UserActions -->|Click eliminar empresa| DeleteCompany[deleteCompany: filtrar empresa del array]
+    UserActions -->|Modificar campos| HandleFieldChange
+    
+    %% ACCIONES DEL MODAL
+    UpdateUI --> ModalActions{Acciones del modal}
+    ModalActions -->|Click 'Ir a la Bandeja'| HandleBandejaClick[onNavigateToBandeja()]
+    ModalActions -->|Click X cerrar modal| HandleModalClose[Confirmar guardar borrador?]
+    ModalActions -->|Click fuera modal| HandleModalClose
+    
+    HandleModalClose --> ConfirmSave{state.companies.length > 0?}
+    ConfirmSave -->|Sí| AskSaveDraft[window.confirm: '¿Deseas guardar como borrador?']
+    ConfirmSave -->|No| CloseModal[onClose()]
+    
+    AskSaveDraft -->|Sí| SaveDraft[actions.saveDraft: guardar en localStorage]
+    AskSaveDraft -->|No| CloseModal
+    SaveDraft --> CloseModal
+    
+    CloseModal --> ClearTimers[actions.clearAllTimers()]
+    ClearTimers --> End
+    
+    HandleBandejaClick --> CloseModal
+    
+    %% ESTILOS Y VALIDACIONES VISUALES
+    UpdateUI --> RenderValidation[Renderizar indicadores visuales]
+    RenderValidation --> ShowBorders[Colores de borde según validationState]
+    ShowBorders --> ShowIcons[Iconos de validación: CheckCircle, XCircle, Clock]
+    ShowIcons --> ShowMessages[Mensajes de validación debajo de inputs]
+    ShowMessages --> ShowStatus[Badge de estado: Verificada, No válido, Incompleto, Validando]
+    ShowStatus --> ShowBusinessName[Mostrar razón social si RUC válido]
+    ShowBusinessName --> ShowSunatInfo[Mostrar estado y condición SUNAT]
+    
+    %% PLACEHOLDERS DINÁMICOS
+    ShowSunatInfo --> UpdatePlaceholders[Actualizar placeholders de inputs]
+    UpdatePlaceholders --> CheckInputEmpty{Input vacío?}
+    CheckInputEmpty -->|Sí| ShowHelpPlaceholder[Placeholder: 'Ingresa tu usuario/contraseña']
+    CheckInputEmpty -->|No| ShowNormalPlaceholder[Placeholder: 'Usuario SOL/Contraseña SOL']
+    
+    ShowHelpPlaceholder --> UserActions
+    ShowNormalPlaceholder --> UserActions
+    
+    %% COMPONENTES INVOLUCRADOS
+    classDef component fill:#e1f5fe
+    classDef action fill:#f3e5f5
+    classDef validation fill:#e8f5e8
+    classDef storage fill:#fff3e0
+    classDef tour fill:#fce4ec
+    
+    class OnboardingModal,CompanyAccordionItem,TourFloating,useOnboarding component
+    class HandleFieldChange,AddNewCompany,ValidateCompany,HandleTourContinue action
+    class ValidateRucRealTime,CheckRucInData,CheckCredsInData,DetermineStatus validation
+    class SaveTourFlag,SaveDraft,CheckLocalStorage storage
+    class InitializeTour,ShowTourStep1,ShowTourStep2,ShowTourStep3 tour
+```
+
+COMPONENTES PRINCIPALES Y SUS RESPONSABILIDADES:
+===============================================
+
+## 1. OnboardingModal.tsx
+- **Renderizado**: Modal principal, header, footer, estado vacío
+- **Lógica del Tour**: useEffect para inicializar tour en primera apertura
+- **Gestión de Estado**: Consume useOnboarding hook
+- **Interacciones**: Cerrar modal, navegar a bandeja, agregar empresa
+- **Props**: isOpen, onClose, onNavigateToBandeja
+
+## 2. CompanyAccordionItem.tsx
+- **Renderizado**: Acordeón individual de empresa, inputs, validaciones visuales
+- **Validación en Tiempo Real**: validateRucRealTime, validateSolUserRealTime, validateSolPasswordRealTime
+- **Gestión de Focus**: Auto-focus en RUC, scroll suave
+- **Estados Visuales**: Colores de borde, iconos, mensajes, badges de estado
+- **Props**: company, onUpdate, onValidate, onDelete, onExpand
+- **Estado Local**: realTimeValidation para mensajes inmediatos
+
+## 3. TourFloating.tsx
+- **Renderizado**: Ventana flotante del tour con contenido dinámico por step
+- **Gestión de Steps**: Diferentes contenidos y botones por paso
+- **Auto-close**: Timer automático de 5 segundos en step 3
+- **Props**: isVisible, step, onSkip, onContinue, onClose
+- **Estado Local**: autoCloseTimer para gestionar cierre automático
+
+## 4. useOnboarding.ts (Hook Principal)
+- **Estado Global**: Gestiona companies, validCompanyCount, tourState
+- **Persistencia**: localStorage para tour-shown y draft
+- **Validaciones**: validateRuc, validateCredentials contra JSON
+- **Acciones**: addNewCompany, updateCompanyField, validateCompany
+- **Tour Logic**: initializeTour, handleTourContinue, handleTourSkip, handleTourClose
+- **Timers**: Gestión de setTimeout para validaciones y tour
+
+## 5. validCredentials.json
+- **Data Source**: RUCs válidos con businessName, status, sunatStatus
+- **Credenciales**: Combinaciones válidas de solUser/solPassword
+- **Validación**: Fuente de verdad para validateRuc y validateCredentials
+
+FLUJOS CRÍTICOS:
+================
+
+### A) INICIALIZACIÓN DEL TOUR
+1. Modal abre → useEffect verifica condiciones
+2. Si es primera vez → initializeTour()
+3. Guarda flag en localStorage → Crea empresa → Muestra Step 1
+
+### B) VALIDACIÓN EN CASCADA
+1. Input RUC → Validación tiempo real → Validación servidor
+2. RUC válido + credenciales → Auto-validación credenciales
+3. Estado final → Actualización conteo → Lógica tour Step 3
+
+### C) PERSISTENCIA DE ESTADO
+1. Tour mostrado → localStorage 'luca-tour-shown'
+2. Draft empresas → localStorage 'luca-onboarding-draft'
+3. Recarga página → Estado se restaura desde localStorage
+
+### D) PRIORIZACIÓN DE ERRORES
+1. Errores RUC > Campos vacíos → status = 'no_valido'
+2. Solo campos vacíos → status = 'incompleto'
+3. Todo válido → status = 'verificada' + isValid = true

@@ -1,0 +1,175 @@
+::1 - - [06/Aug/2025 11:10:57] "HEAD / HTTP/1.1" 200 -
+::1 - - [06/Aug/2025 11:11:30] "GET / HTTP/1.1" 200 -
+::1 - - [06/Aug/2025 11:11:30] "GET /static/js/main.dd14a577.js HTTP/1.1" 200 -
+::1 - - [06/Aug/2025 11:11:30] "GET /static/css/main.7cbcd14c.css HTTP/1.1" 200 -
+::1 - - [06/Aug/2025 11:11:30] "GET /manifest.json HTTP/1.1" 200 -
+::1 - - [06/Aug/2025 11:11:30] "GET /favicon.ico HTTP/1.1" 200 -
+::1 - - [06/Aug/2025 11:11:30] "GET /logo192.png HTTP/1.1" 200 -
+::1 - - [06/Aug/2025 11:14:02] "GET / HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 11:14:02] "GET /static/css/main.7cbcd14c.css HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 11:14:02] "GET /static/js/main.dd14a577.js HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 11:14:02] "GET /favicon.ico HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 11:14:02] "GET /manifest.json HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 11:14:02] "GET /logo192.png HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 11:14:19] "GET / HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 11:17:53] "GET / HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 11:17:53] "GET /static/js/main.dd14a577.js HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 11:17:53] "GET /static/css/main.7cbcd14c.css HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 11:17:53] "GET /favicon.ico HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 11:17:53] "GET /manifest.json HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 11:17:53] "GET /logo192.png HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 11:25:35] "GET / HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 11:25:35] "GET /static/css/main.7cbcd14c.css HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 11:25:35] "GET /static/js/main.dd14a577.js HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 11:25:35] "GET /manifest.json HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 11:25:35] "GET /logo192.png HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 11:49:40] "GET / HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 11:49:40] "GET /static/js/main.dd14a577.js HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 11:49:40] "GET /static/css/main.7cbcd14c.css HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 11:49:40] "GET /manifest.json HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 11:49:40] "GET /logo192.png HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 11:51:42] "GET / HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 11:51:42] "GET /favicon.ico HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 11:52:45] "GET / HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 12:04:44] "GET / HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 12:04:44] "GET /static/css/main.7cbcd14c.css HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 12:04:44] "GET /static/js/main.dd14a577.js HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 12:04:44] "GET /favicon.ico HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 12:04:44] "GET /manifest.json HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 12:04:44] "GET /logo192.png HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 12:07:10] "GET / HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 12:12:39] "GET /static/css/main.7cbcd14c.css HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 12:12:39] "GET /static/js/main.dd14a577.js HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 12:12:39] "GET /manifest.json HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 12:12:39] "GET /logo192.png HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 12:12:48] "GET / HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 12:12:49] "GET /favicon.ico HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 12:13:53] "GET / HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 12:16:15] "GET / HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 12:58:04] "GET / HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 12:58:04] "GET /static/js/main.dd14a577.js HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 12:58:04] "GET /static/css/main.7cbcd14c.css HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 12:58:04] "GET /favicon.ico HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 12:58:04] "GET /manifest.json HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 12:58:04] "GET /logo192.png HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 12:58:18] "GET / HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 12:59:03] "GET / HTTP/1.1" 200 -
+::1 - - [06/Aug/2025 12:59:03] "GET /static/js/main.dd14a577.js HTTP/1.1" 200 -
+::1 - - [06/Aug/2025 12:59:03] "GET /static/css/main.7cbcd14c.css HTTP/1.1" 200 -
+::1 - - [06/Aug/2025 12:59:04] "GET /favicon.ico HTTP/1.1" 200 -
+::1 - - [06/Aug/2025 15:19:45] "GET / HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 15:19:45] "GET /static/css/main.7cbcd14c.css HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 15:19:45] "GET /static/js/main.dd14a577.js HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 15:19:45] "GET /manifest.json HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 15:19:45] "GET /logo192.png HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 15:21:45] "GET / HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 15:21:45] "GET /static/js/main.dd14a577.js HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 15:21:45] "GET /static/css/main.7cbcd14c.css HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 15:21:46] "GET /favicon.ico HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 15:24:41] "GET / HTTP/1.1" 200 -
+::1 - - [06/Aug/2025 15:27:50] "GET / HTTP/1.1" 200 -
+::1 - - [06/Aug/2025 15:27:50] "GET /static/js/main.78271ae1.js HTTP/1.1" 200 -
+::1 - - [06/Aug/2025 15:32:16] "GET / HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 15:32:16] "GET /static/js/main.78271ae1.js HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 15:47:37] "GET / HTTP/1.1" 200 -
+::1 - - [06/Aug/2025 15:47:38] "GET / HTTP/1.1" 200 -
+::1 - - [06/Aug/2025 15:47:38] "GET /static/js/main.78a97ab7.js HTTP/1.1" 200 -
+::1 - - [06/Aug/2025 15:47:38] "GET /static/css/main.7cbcd14c.css HTTP/1.1" 200 -
+::1 - - [06/Aug/2025 15:47:38] "GET /favicon.ico HTTP/1.1" 200 -
+::1 - - [06/Aug/2025 15:49:31] "GET / HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 15:49:31] "GET /static/css/main.7cbcd14c.css HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 15:49:31] "GET /static/js/main.78a97ab7.js HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 15:49:31] "GET /favicon.ico HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 15:49:32] "GET / HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 16:22:26] "GET / HTTP/1.1" 200 -
+::1 - - [06/Aug/2025 16:22:26] "GET /static/css/main.7cbcd14c.css HTTP/1.1" 200 -
+::1 - - [06/Aug/2025 16:22:26] "GET /static/js/main.466c8874.js HTTP/1.1" 200 -
+::1 - - [06/Aug/2025 16:22:26] "GET /favicon.ico HTTP/1.1" 200 -
+::1 - - [06/Aug/2025 16:29:48] "GET / HTTP/1.1" 200 -
+::1 - - [06/Aug/2025 16:29:48] "GET /static/js/main.6375d567.js HTTP/1.1" 200 -
+----------------------------------------
+Exception occurred during processing of request from ('::1', 53351, 0, 0)
+::1 - - [06/Aug/2025 16:29:48] "GET /static/css/main.7cbcd14c.css HTTP/1.1" 200 -
+----------------------------------------
+Exception occurred during processing of request from ('::1', 53352, 0, 0)
+Traceback (most recent call last):
+  File "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/socketserver.py", line 683, in process_request_thread
+    self.finish_request(request, client_address)
+  File "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/socketserver.py", line 360, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+  File "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/http/server.py", line 660, in __init__
+    super().__init__(*args, **kwargs)
+  File "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/socketserver.py", line 747, in __init__
+    self.handle()
+  File "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/http/server.py", line 434, in handle
+    self.handle_one_request()
+  File "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/http/server.py", line 422, in handle_one_request
+    method()
+  File "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/http/server.py", line 667, in do_GET
+    self.copyfile(f, self.wfile)
+  File "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/http/server.py", line 867, in copyfile
+    shutil.copyfileobj(source, outputfile)
+  File "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/shutil.py", line 208, in copyfileobj
+    fdst_write(buf)
+  File "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/socketserver.py", line 826, in write
+    self._sock.sendall(b)
+BrokenPipeError: [Errno 32] Broken pipe
+----------------------------------------
+Traceback (most recent call last):
+  File "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/socketserver.py", line 683, in process_request_thread
+    self.finish_request(request, client_address)
+  File "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/socketserver.py", line 360, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+  File "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/http/server.py", line 660, in __init__
+    super().__init__(*args, **kwargs)
+  File "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/socketserver.py", line 747, in __init__
+    self.handle()
+  File "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/http/server.py", line 434, in handle
+    self.handle_one_request()
+  File "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/http/server.py", line 422, in handle_one_request
+    method()
+  File "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/http/server.py", line 667, in do_GET
+    self.copyfile(f, self.wfile)
+  File "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/http/server.py", line 867, in copyfile
+    shutil.copyfileobj(source, outputfile)
+  File "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/shutil.py", line 208, in copyfileobj
+    fdst_write(buf)
+  File "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/socketserver.py", line 826, in write
+    self._sock.sendall(b)
+BrokenPipeError: [Errno 32] Broken pipe
+----------------------------------------
+::1 - - [06/Aug/2025 16:29:49] "GET /static/css/main.7cbcd14c.css HTTP/1.1" 200 -
+::1 - - [06/Aug/2025 16:29:49] "GET /static/js/main.6375d567.js HTTP/1.1" 200 -
+::1 - - [06/Aug/2025 16:29:49] "GET /favicon.ico HTTP/1.1" 200 -
+::1 - - [06/Aug/2025 18:13:05] "GET / HTTP/1.1" 200 -
+::1 - - [06/Aug/2025 18:13:05] "GET /static/js/main.af5c44c0.js HTTP/1.1" 200 -
+::1 - - [06/Aug/2025 18:13:05] "GET /static/css/main.7cbcd14c.css HTTP/1.1" 200 -
+::1 - - [06/Aug/2025 18:13:06] "GET /favicon.ico HTTP/1.1" 200 -
+::1 - - [06/Aug/2025 18:13:16] "GET / HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 18:13:16] "GET /static/css/main.7cbcd14c.css HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 18:13:16] "GET /static/js/main.af5c44c0.js HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 18:13:16] "GET /favicon.ico HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 18:13:27] "GET / HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 18:13:27] "GET /static/css/main.7cbcd14c.css HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 18:13:27] "GET /static/js/main.af5c44c0.js HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 18:13:27] "GET /favicon.ico HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 18:13:47] "GET / HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 18:13:47] "GET /static/js/main.af5c44c0.js HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 18:13:47] "GET /static/css/main.7cbcd14c.css HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 18:13:47] "GET /favicon.ico HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 18:14:04] "GET / HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 18:14:04] "GET /static/css/main.7cbcd14c.css HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 18:14:04] "GET /static/js/main.af5c44c0.js HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 18:14:04] "GET /favicon.ico HTTP/1.1" 304 -
+::1 - - [06/Aug/2025 18:15:43] "GET / HTTP/1.1" 200 -
+::1 - - [06/Aug/2025 18:15:43] "GET /static/css/main.7cbcd14c.css HTTP/1.1" 200 -
+::1 - - [06/Aug/2025 18:15:43] "GET /static/js/main.0d5f6506.js HTTP/1.1" 200 -
+::1 - - [06/Aug/2025 18:15:44] "GET /favicon.ico HTTP/1.1" 200 -
+::1 - - [06/Aug/2025 18:23:20] "GET / HTTP/1.1" 200 -
+::1 - - [06/Aug/2025 18:23:20] "GET /static/js/main.c6793107.js HTTP/1.1" 200 -
+::1 - - [06/Aug/2025 18:23:20] "GET /static/css/main.7cbcd14c.css HTTP/1.1" 200 -
+::1 - - [06/Aug/2025 18:23:20] "GET /favicon.ico HTTP/1.1" 200 -
+::1 - - [06/Aug/2025 18:28:22] "GET / HTTP/1.1" 200 -
+::1 - - [06/Aug/2025 18:28:22] "GET /static/css/main.7cbcd14c.css HTTP/1.1" 200 -
+::1 - - [06/Aug/2025 18:28:22] "GET /static/js/main.3e234fe7.js HTTP/1.1" 200 -
+::1 - - [06/Aug/2025 18:28:22] "GET /favicon.ico HTTP/1.1" 200 -

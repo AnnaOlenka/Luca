@@ -1,0 +1,58 @@
+{
+  "empresas": [
+    {
+      "id": "1",
+      "nombre": "Inversiones ACME S.A.C.",
+      "ruc": "20123456789",
+      "estado": "Activo",
+      "condicion": "Habido",
+      "completitud": 75,
+      "logo": null
+    },
+    {
+      "id": "2", 
+      "nombre": "Comercial Beta EIRL",
+      "ruc": "20987654321",
+      "estado": "Activo",
+      "condicion": "Habido",
+      "completitud": 50,
+      "logo": null
+    },
+    {
+      "id": "3",
+      "nombre": "Servicios Gamma S.R.L.",
+      "ruc": "20456789123",
+      "estado": "Baja Provisional por Oficio",
+      "condicion": "No habido",
+      "completitud": 25,
+      "logo": null
+    },
+    {
+      "id": "4",
+      "nombre": "Constructora Delta S.A.",
+      "ruc": "20111222333",
+      "estado": "Activo",
+      "condicion": "Habido",
+      "completitud": 100,
+      "logo": null
+    },
+    {
+      "id": "5",
+      "nombre": "Tecnología Épsilon EIRL",
+      "ruc": "20555666777",
+      "estado": "Activo",
+      "condicion": "Por verificar",
+      "completitud": 75,
+      "logo": null
+    },
+    {
+      "id": "6",
+      "nombre": "Consultoría Zeta S.R.L.",
+      "ruc": "20888999000",
+      "estado": "Baja Provisional por Oficio",
+      "condicion": "No hallado se mudo de domicilio",
+      "completitud": 25,
+      "logo": null
+    }
+  ]
+}

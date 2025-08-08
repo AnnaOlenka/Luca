@@ -1,0 +1,77 @@
+[
+  {
+    "id": 1,
+    "ruc": "20123456789",
+    "businessName": "Inversiones ACME S.A.C.",
+    "solUser": "20123456789ACME01",
+    "solPassword": "password123",
+    "status": "valid",
+    "isValid": true,
+    "riskLevel": "low",
+    "taxRegime": "General",
+    "createdAt": "2024-01-10T14:30:00Z",
+    "lastValidation": "2024-01-15T08:00:00Z",
+    "obligations": [
+      {
+        "type": "IGV",
+        "dueDate": "2024-01-18",
+        "status": "pending",
+        "amount": 1500.50
+      },
+      {
+        "type": "Renta 3ra",
+        "dueDate": "2024-01-29",
+        "status": "pending", 
+        "amount": 2800.75
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "ruc": "20987654321",
+    "businessName": "Comercial Beta EIRL",
+    "solUser": "20987654321BETA01",
+    "solPassword": "beta2024",
+    "status": "valid",
+    "isValid": true,
+    "riskLevel": "medium",
+    "taxRegime": "MYPE",
+    "createdAt": "2024-01-12T16:45:00Z",
+    "lastValidation": "2024-01-15T08:15:00Z",
+    "obligations": [
+      {
+        "type": "IGV",
+        "dueDate": "2024-01-18",
+        "status": "overdue",
+        "amount": 850.30
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "ruc": "20456789123",
+    "businessName": "Servicios Gamma S.R.L.",
+    "solUser": "20456789123GAMMA",
+    "solPassword": "gamma789",
+    "status": "inactive",
+    "isValid": false,
+    "riskLevel": "high",
+    "taxRegime": "General",
+    "createdAt": "2024-01-08T11:20:00Z",
+    "lastValidation": "2024-01-15T08:30:00Z",
+    "obligations": [
+      {
+        "type": "IGV",
+        "dueDate": "2024-01-16",
+        "status": "overdue",
+        "amount": 3200.80
+      },
+      {
+        "type": "Renta 3ra",
+        "dueDate": "2024-01-20",
+        "status": "critical",
+        "amount": 5500.00
+      }
+    ]
+  }
+]

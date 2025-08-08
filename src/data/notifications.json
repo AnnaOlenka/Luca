@@ -1,0 +1,60 @@
+[
+  {
+    "id": 1,
+    "type": "critical",
+    "title": "Vencimiento Crítico",
+    "message": "IGV de Servicios Gamma S.R.L. venció hace 2 días",
+    "timestamp": "2024-01-16T10:30:00Z",
+    "read": false,
+    "urgent": true,
+    "companyId": 3,
+    "actionRequired": true,
+    "module": "preliquidaciones"
+  },
+  {
+    "id": 2,
+    "type": "warning",
+    "title": "Próximo Vencimiento",
+    "message": "IGV de 3 empresas vence en 2 días",
+    "timestamp": "2024-01-16T09:15:00Z",
+    "read": false,
+    "urgent": false,
+    "actionRequired": true,
+    "module": "preliquidaciones"
+  },
+  {
+    "id": 3,
+    "type": "info",
+    "title": "Preliquidación Completada",
+    "message": "Renta 3ra de Inversiones ACME procesada correctamente",
+    "timestamp": "2024-01-15T16:45:00Z",
+    "read": true,
+    "urgent": false,
+    "companyId": 1,
+    "actionRequired": false,
+    "module": "preliquidaciones"
+  },
+  {
+    "id": 4,
+    "type": "success",
+    "title": "Nuevo Cliente Agregado",
+    "message": "Comercial Beta EIRL conectado exitosamente",
+    "timestamp": "2024-01-15T14:20:00Z",
+    "read": true,
+    "urgent": false,
+    "companyId": 2,
+    "actionRequired": false,
+    "module": "clientes"
+  },
+  {
+    "id": 5,
+    "type": "ai",
+    "title": "Recomendación IA",
+    "message": "Se detectaron patrones de riesgo en 2 empresas",
+    "timestamp": "2024-01-15T08:00:00Z",
+    "read": false,
+    "urgent": false,
+    "actionRequired": true,
+    "module": "dashboard-ia"
+  }
+]

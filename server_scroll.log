@@ -1,0 +1,7 @@
+::1 - - [06/Aug/2025 11:03:14] "HEAD / HTTP/1.1" 200 -
+::1 - - [06/Aug/2025 11:03:40] "GET / HTTP/1.1" 200 -
+::1 - - [06/Aug/2025 11:03:40] "GET /static/js/main.f0af532f.js HTTP/1.1" 200 -
+::1 - - [06/Aug/2025 11:03:40] "GET /static/css/main.7cbcd14c.css HTTP/1.1" 200 -
+::1 - - [06/Aug/2025 11:03:40] "GET /manifest.json HTTP/1.1" 200 -
+::1 - - [06/Aug/2025 11:03:40] "GET /favicon.ico HTTP/1.1" 200 -
+::1 - - [06/Aug/2025 11:03:40] "GET /logo192.png HTTP/1.1" 200 -

@@ -1,0 +1,59 @@
+[
+  {
+    "id": 1,
+    "name": "María González",
+    "role": "Contador Principal",
+    "email": "maria@luca.com",
+    "avatar": "/avatars/maria.jpg",
+    "status": "online",
+    "workload": 85,
+    "efficiency": 92,
+    "companiesAssigned": 8,
+    "tasksCompleted": 15,
+    "tasksPending": 3,
+    "lastActivity": "2024-01-16T10:30:00Z",
+    "performance": {
+      "thisMonth": 92,
+      "lastMonth": 89,
+      "trend": "up"
+    }
+  },
+  {
+    "id": 2,
+    "name": "Carlos Ruiz",
+    "role": "Contador Junior",
+    "email": "carlos@luca.com",
+    "avatar": "/avatars/carlos.jpg", 
+    "status": "busy",
+    "workload": 70,
+    "efficiency": 78,
+    "companiesAssigned": 5,
+    "tasksCompleted": 8,
+    "tasksPending": 5,
+    "lastActivity": "2024-01-16T09:45:00Z",
+    "performance": {
+      "thisMonth": 78,
+      "lastMonth": 82,
+      "trend": "down"
+    }
+  },
+  {
+    "id": 3,
+    "name": "Ana Torres",
+    "role": "Asistente Contable",
+    "email": "ana@luca.com",
+    "avatar": "/avatars/ana.jpg",
+    "status": "offline",
+    "workload": 45,
+    "efficiency": 88,
+    "companiesAssigned": 3,
+    "tasksCompleted": 12,
+    "tasksPending": 2,
+    "lastActivity": "2024-01-15T18:30:00Z",
+    "performance": {
+      "thisMonth": 88,
+      "lastMonth": 85,
+      "trend": "up"
+    }
+  }
+]
