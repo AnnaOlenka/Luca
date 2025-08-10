@@ -688,8 +688,7 @@ const getCompletitudColor = (completitud: number) => {
             </div>
           </div>
         </div>
-
-        {/* Add Company Button/Form */}
+{/* Add Company Button/Form */}
         <div className="max-w-4xl mx-auto">
           {!showAddForm ? (
             <div className="mb-6 w-full">
@@ -705,7 +704,30 @@ const getCompletitudColor = (completitud: number) => {
             <div className="flex justify-center">
               <div className="bg-white border-2 border-blue-200 rounded-lg p-6 mb-6 w-full max-w-2xl">
                 <div className="flex items-center justify-center mb-6 relative">
-                  <h3 className="text-lg font-semibold text-gray-900">Agrega nueva empresa</h3>
+                  <div className="flex items-center space-x-3">
+                    <h3 className="text-lg font-semibold text-gray-900">Agrega nueva empresa</h3>
+                    
+                    {/* Estado badge */}
+                    {validationState.ruc === 'validating' || validationState.credentials === 'validating' ? (
+                      <span className="text-xs text-blue-600 font-medium bg-blue-50 px-2 py-1 rounded-full flex items-center space-x-1">
+                        <div className="w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                        <span>Validando...</span>
+                      </span>
+                    ) : (validationState.ruc === 'invalid' || validationState.ruc === 'duplicate' || validationState.credentials === 'invalid') ? (
+                      <span className="text-xs text-red-600 font-medium bg-red-50 px-2 py-1 rounded-full">
+                        No válido
+                      </span>
+                    ) : (!newCompanyForm.ruc.trim() || !newCompanyForm.usuarioSol.trim() || !newCompanyForm.claveSol.trim()) ? (
+                      <span className="text-xs text-yellow-600 font-medium bg-yellow-50 px-2 py-1 rounded-full">
+                        Incompleto
+                      </span>
+                    ) : (validationState.ruc === 'valid' || validationState.ruc === 'inactive') && validationState.credentials === 'valid' ? (
+                      <span className="text-xs text-green-600 font-medium bg-green-50 px-2 py-1 rounded-full">
+                        {validationState.ruc === 'inactive' ? 'Verificada (Inactiva)' : 'Verificada'}
+                      </span>
+                    ) : null}
+                  </div>
+                  
                   <button
                     onClick={handleCancelAddForm}
                     className="absolute right-0 text-gray-400 hover:text-gray-600"
