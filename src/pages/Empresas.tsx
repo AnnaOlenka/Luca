@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import DashboardLayout from '../components/Layout/DashboardLayout';
 import RucModal from '../components/Modals/RucModal';
 import ImportCsvModal from '../components/Modals/ImportCsvModal';
@@ -17,7 +17,16 @@ import {
   MoreVertical,
   Calendar,
   ArrowUp,
-  ArrowDown
+  ArrowDown,
+  User,
+  Mail,
+  Settings,
+  UserMinus,
+  Clock,
+  AlertTriangle,
+  ExternalLink,
+  Bell,
+  CheckCircle
 } from 'lucide-react';
 import empresasData from '../data/empresasData.json';
 import validCredentialsData from '../data/validCredentials.json';
@@ -40,6 +49,9 @@ interface Empresa {
     iniciales: string;
     cargo: string;
     estado: 'activo' | 'pendiente' | 'inactivo';
+    email?: string;        // Nuevo campo
+    telefono?: string;     // Nuevo campo
+    avatar?: string;       // Nuevo campo
   }>;
   tendencia?: {
     porcentaje: number;
@@ -58,12 +70,237 @@ interface Empresa {
   };
 }
 
-const PersonasAsignadas: React.FC<{ personas?: Empresa['personas'] }> = ({ personas = [] }) => {
-  const [showTooltip, setShowTooltip] = useState<number | null>(null);
-  const visiblePersonas = personas.slice(0, 2); // Mostrar solo 2 personas
-  const extraCount = personas.length > 2 ? personas.length - 2 : 0;
+// Popover para persona individual
+const PersonaPopover: React.FC<{
+  isOpen: boolean;
+  onClose: () => void;
+  persona: any | null;
+  position: { top: number; left: number };
+}> = ({ isOpen, onClose, persona, position }) => {
+  const popoverRef = useRef<HTMLDivElement>(null);
 
-  
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (popoverRef.current && !popoverRef.current.contains(event.target as Node)) {
+        onClose();
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      // Bloquear scroll del body de manera más robusta
+      const scrollBarWidth = window.innerWidth - document.documentElement.clientWidth;
+      document.body.style.overflow = 'hidden';
+      document.body.style.paddingRight = `${scrollBarWidth}px`;
+      
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleKeyDown);
+      
+      // Prevenir scroll con rueda del mouse
+      const preventScroll = (e: WheelEvent) => e.preventDefault();
+      document.addEventListener('wheel', preventScroll, { passive: false });
+      
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+        document.removeEventListener('keydown', handleKeyDown);
+        document.removeEventListener('wheel', preventScroll);
+      };
+    } else {
+      // Restaurar scroll del body
+      document.body.style.overflow = '';
+      document.body.style.paddingRight = '';
+    }
+
+    return () => {
+      // Cleanup al desmontar
+      document.body.style.overflow = '';
+      document.body.style.paddingRight = '';
+    };
+  }, [isOpen, onClose]);
+
+  if (!isOpen || !persona) return null;
+
+  const getEstadoColor = (estado: string) => {
+    switch (estado) {
+      case 'activo': return 'border-green-500 bg-green-100 text-green-700';
+      case 'pendiente': return 'border-yellow-500 bg-yellow-100 text-yellow-700';
+      case 'inactivo': return 'border-gray-500 bg-gray-100 text-gray-700';
+      default: return 'border-gray-300 bg-gray-100 text-gray-700';
+    }
+  };
+
+  return (
+    <div
+      ref={popoverRef}
+      className="fixed z-50 bg-white rounded-lg shadow-xl border border-gray-200 w-64"
+      style={{
+        top: position.top,
+        left: position.left,
+      }}
+    >
+{/* Header compacto con avatar e info al lado */}
+<div className="px-4 py-4 border-b border-gray-200">
+  <div className="flex items-start justify-between">
+    {/* Contenido principal */}
+    <div className="flex items-center space-x-3 flex-1">
+      {/* Avatar */}
+      <div className={`w-12 h-12 rounded-full border-2 ${getEstadoColor(persona.estado)} flex items-center justify-center flex-shrink-0`}>
+        {persona.avatar ? (
+          <img src={persona.avatar} alt={persona.nombre} className="w-full h-full rounded-full object-cover" />
+        ) : (
+          <span className="text-sm font-bold">
+            {persona.iniciales}
+          </span>
+        )}
+      </div>
+      
+      {/* Info al lado */}
+      <div className="flex-1 min-w-0">
+        <h3 className="text-sm font-semibold text-gray-900 truncate">
+          {persona.nombre}
+        </h3>
+        
+        {/* Cargo y estado en la misma línea */}
+        <div className="flex items-center justify-between mt-1 gap-4">
+          <p className="text-xs text-gray-600 truncate">
+            {persona.cargo}
+          </p>
+          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+            persona.estado === 'activo' ? 'bg-green-100 text-green-800' :
+            persona.estado === 'pendiente' ? 'bg-yellow-100 text-yellow-800' :
+            'bg-gray-100 text-gray-800'
+          }`}>
+            {persona.estado.charAt(0).toUpperCase() + persona.estado.slice(1)}
+          </span>
+        </div>
+        
+        {/* Email abajo */}
+        {persona.email && (
+          <div className="flex items-center space-x-1 text-xs text-gray-500 mt-2">
+            <Mail className="w-3 h-3" />
+            <span className="truncate">{persona.email}</span>
+          </div>
+        )}
+      </div>
+    </div>
+    
+    {/* Botón cerrar más pequeño */}
+    <button
+      onClick={onClose}
+      className="  border-0 outline-none text-gray-400 hover:text-gray-600 hover:bg-gray-100  p-0.5 transition-colors ml-2 flex-shrink-0"
+    >
+      <X className="w-3 h-3" />
+    </button>
+  </div>
+</div>
+
+      {/* Acciones - Solo las 3 principales */}
+      {/* Acciones */}
+<div className="p-2">
+  <div className="space-y-1">
+    <button
+      onClick={() => {
+        alert(`Ver perfil completo de ${persona.nombre}`);
+        onClose();
+      }}
+      className=" border-0 outline-none w-full flex items-center space-x-3 px-3 py-2 text-xs text-gray-700 hover:bg-gray-50 transition-colors"
+    >
+      <User className="w-4 h-4 text-gray-400" />
+      <span>Ver perfil completo</span>
+    </button>
+    
+    <button
+      onClick={() => {
+        alert(`Configurar permisos de ${persona.nombre}`);
+        onClose();
+      }}
+      className=" border-0 outline-none w-full flex items-center space-x-3 px-3 py-2 text-xs text-gray-700 hover:bg-gray-50 transition-colors"
+    >
+      <Settings className="w-4 h-4 text-gray-400" />
+      <span>Configurar permisos</span>
+    </button>
+    
+    <button
+      onClick={() => {
+        alert(`Quitar a ${persona.nombre}`);
+        onClose();
+      }}
+      className="border-0 outline-none w-full flex items-center space-x-3 px-3 py-2 text-xs text-red-600 hover:bg-red-50  transition-colors"
+    >
+      <UserMinus className="w-4 h-4" />
+      <span>Quitar asignado</span>
+    </button>
+  </div>
+</div>
+    </div>
+  );
+};
+
+// Popover para lista completa
+const ListaPersonasPopover: React.FC<{
+  isOpen: boolean;
+  onClose: () => void;
+  personas: any[];
+  position: { top: number; left: number };
+}> = ({ isOpen, onClose, personas, position }) => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const popoverRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (popoverRef.current && !popoverRef.current.contains(event.target as Node)) {
+        onClose();
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      // Bloquear scroll del body de manera más robusta
+      const scrollBarWidth = window.innerWidth - document.documentElement.clientWidth;
+      document.body.style.overflow = 'hidden';
+      document.body.style.paddingRight = `${scrollBarWidth}px`;
+      
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleKeyDown);
+      
+      // Prevenir scroll con rueda del mouse
+      const preventScroll = (e: WheelEvent) => e.preventDefault();
+      document.addEventListener('wheel', preventScroll, { passive: false });
+      
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+        document.removeEventListener('keydown', handleKeyDown);
+        document.removeEventListener('wheel', preventScroll);
+      };
+    } else {
+      // Restaurar scroll del body
+      document.body.style.overflow = '';
+      document.body.style.paddingRight = '';
+    }
+
+    return () => {
+      // Cleanup al desmontar
+      document.body.style.overflow = '';
+      document.body.style.paddingRight = '';
+    };
+  }, [isOpen, onClose]);
+
+  // Filtrar personas
+  const filteredPersonas = personas.filter(persona => 
+    persona.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    persona.cargo.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   const getEstadoColor = (estado: string) => {
     switch (estado) {
       case 'activo': return 'border-green-500 bg-green-100';
@@ -73,44 +310,232 @@ const PersonasAsignadas: React.FC<{ personas?: Empresa['personas'] }> = ({ perso
     }
   };
 
+  if (!isOpen) return null;
+
   return (
-    <div className="flex items-center justify-center space-x-2">
-      {visiblePersonas.map((persona, index) => (
-        <div 
-          key={persona.id}
-          className="relative"
-          onMouseEnter={() => setShowTooltip(index)}
-          onMouseLeave={() => setShowTooltip(null)}
-        >
-          <div className={`w-12 h-12 rounded-full border-2 ${getEstadoColor(persona.estado)} flex items-center justify-center cursor-pointer transition-transform hover:scale-110`}>
-            <span className="text-sm font-semibold text-gray-700">
-              {persona.iniciales}
-            </span>
-          </div>
+    <div
+      ref={popoverRef}
+      className="fixed z-50 bg-white rounded-lg shadow-xl border border-gray-200 w-72"
+      style={{
+        top: position.top,
+        left: position.left,
+        maxHeight: '300px',
+      }}
+    >{/* Header compacto */}
+<div className="px-4 py-3 border-b border-gray-200 bg-gray-50 rounded-t-lg">
+  <div className="flex items-center justify-between">
+    {/* Contenido principal */}
+    <div className="flex-1">
+      <h3 className="text-sm font-semibold text-gray-900">
+        Miembros del tablero
+      </h3>
+      <p className="text-xs text-gray-500 mt-0.5">
+        {personas.length} miembros total
+      </p>
+    </div>
+    
+    {/* Botón cerrar con su propio espacio */}
+    <button
+      onClick={onClose}
+      className="text-gray-400 hover:text-gray-600 hover:bg-white rounded-full p-1 transition-colors shadow-sm ml-2 flex-shrink-0"
+    >
+      <X className="w-3 h-3" />
+    </button>
+  </div>
+</div>
+
+{/* Búsqueda compacta */}
+<div className="px-4 py-1 border-b border-gray-200">
+  <div className="relative">
+    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+    <input
+      type="text"
+      placeholder="Buscar miembros"
+      value={searchTerm}
+      onChange={(e) => setSearchTerm(e.target.value)}
+      className="w-full h-4 pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+    />
+  </div>
+</div>
+
+      {/* Lista compacta de personas */}
+      <div className="px-3 py-2 max-h-48 overflow-y-auto">
+        <div className="mb-2">
+          <h4 className="text-xs font-medium text-gray-700 mb-2">
+            Miembros del Espacio de trabajo
+          </h4>
           
-          {showTooltip === index && (
-            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap z-20">
-              <div>{persona.nombre}</div>
-              <div className="text-gray-300">{persona.cargo}</div>
+          {filteredPersonas.length === 0 ? (
+            <div className="text-center py-3">
+              <p className="text-gray-500 text-xs">
+                {searchTerm ? 'No se encontraron miembros' : 'No hay miembros asignados'}
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-1.5">
+              {filteredPersonas.map((persona) => (
+                <div key={persona.id} className="flex items-center justify-between py-1">
+                  <div className="flex items-center space-x-2 flex-1 min-w-0">
+                    {/* Avatar más pequeño */}
+                    <div className={`w-7 h-7 rounded-full border-2 ${getEstadoColor(persona.estado)} flex items-center justify-center flex-shrink-0`}>
+                      {persona.avatar ? (
+                        <img src={persona.avatar} alt={persona.nombre} className="w-full h-full rounded-full object-cover" />
+                      ) : (
+                        <span className="text-xs font-semibold text-gray-700">
+                          {persona.iniciales}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Información compacta */}
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-medium text-gray-900 truncate">
+                        {persona.nombre}
+                      </p>
+                      <p className="text-xs text-gray-500 truncate">
+                        {persona.cargo}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Botón quitar */}
+                  <button
+                    onClick={() => {
+                      alert(`Quitar a ${persona.nombre}`);
+                      onClose();
+                    }}
+                    className="p-0.5 text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors ml-2"
+                    title="Quitar asignado"
+                  >
+                    <UserMinus className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
             </div>
           )}
         </div>
-      ))}
-      
-      {extraCount > 0 && (
-        <div className="w-12 h-12 rounded-full border-2 border-blue-500 bg-blue-100 flex items-center justify-center cursor-pointer">
-          <span className="text-sm font-semibold text-blue-700">
-            +{extraCount}
-          </span>
-        </div>
-      )}
+      </div>
+
+      {/* Footer compacto */}
+      <div className="px-3 py-1.5 border-t border-gray-200 bg-gray-50 rounded-b-lg">
+        <p className="text-xs text-gray-500 text-center">
+          {personas.length} miembros
+        </p>
+      </div>
     </div>
   );
 };
+const PersonasAsignadas: React.FC<{ 
+  personas?: Empresa['personas'];
+  empresaNombre?: string;
+}> = ({ personas = [], empresaNombre = "Empresa" }) => {
+  const [showTooltip, setShowTooltip] = useState<number | null>(null);
+  const [selectedPersona, setSelectedPersona] = useState<any | null>(null);
+  const [isPersonaPopoverOpen, setIsPersonaPopoverOpen] = useState(false);
+  const [isListaPopoverOpen, setIsListaPopoverOpen] = useState(false);
+  const [popoverPosition, setPopoverPosition] = useState({ top: 0, left: 0 });
+  
+  const visiblePersonas = personas.slice(0, 2);
+  const extraCount = personas.length > 2 ? personas.length - 2 : 0;
+      
+  const getEstadoColor = (estado: string) => {
+    switch (estado) {
+      case 'activo': return 'border-green-500 bg-green-100';
+      case 'pendiente': return 'border-yellow-500 bg-yellow-100';
+      case 'inactivo': return 'border-gray-500 bg-gray-100';
+      default: return 'border-gray-300 bg-gray-100';
+    }
+  };
 
-const MiniChart: React.FC<{ 
-  label: string; 
-  porcentaje: number; 
+  const calculatePopoverPosition = (element: HTMLElement) => {
+    const rect = element.getBoundingClientRect();
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+    
+    return {
+      top: rect.bottom + scrollTop + 8, // 8px gap
+      left: rect.left + scrollLeft - 100, // Centrar aproximadamente
+    };
+  };
+
+  const handlePersonaClick = (persona: any, event: React.MouseEvent<HTMLDivElement>) => {
+    const position = calculatePopoverPosition(event.currentTarget);
+    setPopoverPosition(position);
+    setSelectedPersona(persona);
+    setIsPersonaPopoverOpen(true);
+    setShowTooltip(null); // Ocultar tooltip
+  };
+
+  const handleExtraClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    const position = calculatePopoverPosition(event.currentTarget);
+    setPopoverPosition(position);
+    setIsListaPopoverOpen(true);
+  };
+
+  return (
+    <>
+      <div className="flex items-center justify-center space-x-1">
+        {visiblePersonas.map((persona, index) => (
+          <div 
+            key={persona.id}
+            className="relative"
+            onMouseEnter={() => !isPersonaPopoverOpen && setShowTooltip(index)}
+            onMouseLeave={() => setShowTooltip(null)}
+          >
+            <div 
+              className={`w-14 h-14 rounded-full border-2 ${getEstadoColor(persona.estado)} flex items-center justify-center cursor-pointer transition-transform hover:scale-110`}
+              onClick={(e) => handlePersonaClick(persona, e)}
+            >
+              <span className="text-xs font-semibold text-gray-700">
+                {persona.iniciales}
+              </span>
+            </div>
+                      
+            {showTooltip === index && (
+              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs whitespace-nowrap z-20">
+                <div>{persona.nombre}</div>
+                <div className="text-gray-300">{persona.cargo}</div>
+              </div>
+            )}
+          </div>
+        ))}
+              
+        {extraCount > 0 && (
+          <div 
+            className="w-14 h-14 rounded-full border-2 border-blue-500 bg-blue-100 flex items-center justify-center cursor-pointer transition-transform hover:scale-110"
+            onClick={handleExtraClick}
+          >
+            <span className="text-xs font-semibold text-blue-700">
+              +{extraCount}
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* Popover individual */}
+      <PersonaPopover
+        isOpen={isPersonaPopoverOpen}
+        onClose={() => {
+          setIsPersonaPopoverOpen(false);
+          setSelectedPersona(null);
+        }}
+        persona={selectedPersona}
+        position={popoverPosition}
+      />
+
+      {/* Popover lista completa */}
+      <ListaPersonasPopover
+        isOpen={isListaPopoverOpen}
+        onClose={() => setIsListaPopoverOpen(false)}
+        personas={personas}
+        position={popoverPosition}
+      />
+    </>
+  );
+};
+const MiniChart: React.FC<{
+  label: string;
+  porcentaje: number;
   direccion: 'up' | 'down';
   datos: number[];
   color: string;
@@ -123,11 +548,24 @@ const MiniChart: React.FC<{
   const range = max - min || 1;
   
   const points = datos.map((value, index) => {
-    const x = (index * 32) / (datos.length - 1);
-    const y = 12 - ((value - min) / range) * 10;
+    const x = (index * 48) / (datos.length - 1);
+    const y = 20 - ((value - min) / range) * 16;
     return `${x},${y}`;
   }).join(' ');
 
+  // Para el área, necesitamos agregar puntos en la base
+  const areaPoints = `${points} 48,20 0,20`;
+  
+  // Determinar el color base
+  const getColor = () => {
+    if (color.includes('green-600')) return "#10b981";
+    if (color.includes('red-600')) return "#ef4444"; 
+    if (color.includes('blue-600')) return "#2563eb";
+    return "#9333ea";
+  };
+  
+  const baseColor = getColor();
+  
   return (
     <div className="text-center">
       {/* TÍTULO ARRIBA */}
@@ -135,29 +573,39 @@ const MiniChart: React.FC<{
       
       {/* GRÁFICO EN EL MEDIO */}
       <div className="flex justify-center mb-1">
-        <svg width="32" height="12" className="flex-shrink-0">
+        <svg width="48" height="20" className="flex-shrink-0">
+          {/* Área sombreada */}
+          <polygon
+            points={areaPoints}
+            fill={baseColor}
+            fillOpacity="0.2"
+          />
+          
+          {/* Línea principal */}
           <polyline
             points={points}
             fill="none"
-            stroke={color.includes('green-600') ? "#10b981" : color.includes('red-600') ? "#ef4444" : color.includes('blue-600') ? "#2563eb" : "#9333ea"}
+            stroke={baseColor}
             strokeWidth="1"
           />
+          
+          {/* Puntos */}
           {datos.map((value, index) => {
-            const x = (index * 32) / (datos.length - 1);
-            const y = 12 - ((value - min) / range) * 10;
+            const x = (index * 48) / (datos.length - 1);
+            const y = 20 - ((value - min) / range) * 16;
             return (
               <circle
                 key={index}
                 cx={x}
                 cy={y}
-                r="0.5"
-                fill={color.includes('green-600') ? "#10b981" : color.includes('red-600') ? "#ef4444" : color.includes('blue-600') ? "#2563eb" : "#9333ea"}
+                r="0.8"
+                fill={baseColor}
               />
             );
           })}
         </svg>
       </div>
-
+      
       {/* PORCENTAJE Y FLECHA ABAJO */}
       <div className="flex items-center justify-center space-x-1">
         <span className={`font-bold text-xs ${color}`}>
@@ -172,6 +620,7 @@ const MiniChart: React.FC<{
     </div>
   );
 };
+
 const SemaforoTributario: React.FC<{ semaforo?: Empresa['semaforoTributario'] }> = ({ semaforo }) => {
   if (!semaforo) return <div className="text-xs text-gray-400">Sin datos</div>;
 
@@ -198,7 +647,231 @@ const SemaforoTributario: React.FC<{ semaforo?: Empresa['semaforoTributario'] }>
   );
 };
 
+// Popover para próxima obligación
+const ProximaObligacionPopover: React.FC<{
+  isOpen: boolean;
+  onClose: () => void;
+  obligacion: Empresa['proximaObligacion'] | null;
+  position: { top: number; left: number };
+}> = ({ isOpen, onClose, obligacion, position }) => {
+  const popoverRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (popoverRef.current && !popoverRef.current.contains(event.target as Node)) {
+        onClose();
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      // Bloquear scroll del body de manera robusta
+      const scrollBarWidth = window.innerWidth - document.documentElement.clientWidth;
+      document.body.style.overflow = 'hidden';
+      document.body.style.paddingRight = `${scrollBarWidth}px`;
+      
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleKeyDown);
+      
+      // Prevenir scroll con rueda del mouse
+      const preventScroll = (e: WheelEvent) => e.preventDefault();
+      document.addEventListener('wheel', preventScroll, { passive: false });
+      
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+        document.removeEventListener('keydown', handleKeyDown);
+        document.removeEventListener('wheel', preventScroll);
+      };
+    } else {
+      // Restaurar scroll del body
+      document.body.style.overflow = '';
+      document.body.style.paddingRight = '';
+    }
+
+    return () => {
+      // Cleanup al desmontar
+      document.body.style.overflow = '';
+      document.body.style.paddingRight = '';
+    };
+  }, [isOpen, onClose]);
+
+  if (!isOpen || !obligacion) return null;
+
+  const { tipo, mes, diasRestantes, vencido } = obligacion;
+
+  const getStyles = () => {
+    if (vencido) return {
+      bg: 'bg-red-50',
+      border: 'border-red-200',
+      text: 'text-red-700',
+      icon: 'text-red-600',
+      iconBg: 'bg-red-100'
+    };
+    if (diasRestantes <= 7) return {
+      bg: 'bg-yellow-50',
+      border: 'border-yellow-200',
+      text: 'text-yellow-700',
+      icon: 'text-yellow-600',
+      iconBg: 'bg-yellow-100'
+    };
+    return {
+      bg: 'bg-blue-50',
+      border: 'border-blue-200',
+      text: 'text-blue-700',
+      icon: 'text-blue-600',
+      iconBg: 'bg-blue-100'
+    };
+  };
+
+  const styles = getStyles();
+
+  const getTexto = () => {
+    if (vencido) return `Vencido hace ${Math.abs(diasRestantes)} días`;
+    return `Faltan ${diasRestantes} días`;
+  };
+
+  const getFechaVencimiento = () => {
+    const hoy = new Date();
+    const fechaVencimiento = new Date(hoy);
+    fechaVencimiento.setDate(hoy.getDate() + diasRestantes);
+    return fechaVencimiento.toLocaleDateString('es-ES', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
+  const getPrioridad = () => {
+    if (vencido) return { texto: 'URGENTE', color: 'text-red-600', bg: 'bg-red-100' };
+    if (diasRestantes <= 3) return { texto: 'ALTA', color: 'text-red-600', bg: 'bg-red-100' };
+    if (diasRestantes <= 7) return { texto: 'MEDIA', color: 'text-yellow-600', bg: 'bg-yellow-100' };
+    return { texto: 'NORMAL', color: 'text-blue-600', bg: 'bg-blue-100' };
+  };
+
+  const prioridad = getPrioridad();
+
+  return (
+    <div
+      ref={popoverRef}
+      className="fixed z-50 bg-white rounded-lg shadow-xl border border-gray-200 w-80"
+      style={{
+        top: position.top,
+        left: position.left,
+      }}
+    >
+      {/* Header */}
+      <div className={`px-4 py-4 border-b border-gray-200 ${styles.bg} rounded-t-lg`}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className={`w-10 h-10 rounded-full ${styles.iconBg} flex items-center justify-center`}>
+              {vencido ? (
+                <AlertTriangle className={`w-5 h-5 ${styles.icon}`} />
+              ) : (
+                <Calendar className={`w-5 h-5 ${styles.icon}`} />
+              )}
+            </div>
+            <div>
+              <h3 className={`text-sm font-semibold ${styles.text}`}>
+                {tipo} - {mes} 2024
+              </h3>
+              <div className="flex items-center space-x-2 mt-1">
+                <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${prioridad.bg} ${prioridad.color}`}>
+                  {prioridad.texto}
+                </span>
+                <span className={`text-xs ${styles.text}`}>
+                  {getTexto()}
+                </span>
+              </div>
+            </div>
+          </div>
+          
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 hover:bg-white rounded-full p-1 transition-colors ml-2 flex-shrink-0"
+          >
+            <X className="w-3 h-3" />
+          </button>
+        </div>
+      </div>
+
+      {/* Detalles */}
+      <div className="p-4">
+        <div className="space-y-3">
+          {/* Fecha exacta con campanita */}
+          <div className="flex items-start justify-between">
+            <div className="flex items-start space-x-3">
+              <Clock className="w-4 h-4 text-gray-400 mt-0.5" />
+              <div>
+                <p className="text-sm font-medium text-gray-900">Fecha de vencimiento</p>
+                <p className="text-xs text-gray-600 capitalize">{getFechaVencimiento()}</p>
+              </div>
+            </div>
+            
+            {/* Campanita de recordatorio */}
+            <div className="flex-shrink-0" title={diasRestantes <= 7 && !vencido ? 'Recordatorio activo' : 'Recordatorio inactivo'}>
+              {diasRestantes <= 7 && !vencido ? (
+                <Bell className="w-4 h-4 text-blue-600 fill-current" />
+              ) : (
+                <Bell className="w-4 h-4 text-gray-400" />
+              )}
+            </div>
+          </div>
+
+          {/* Descripción */}
+          <div className="flex items-start space-x-3">
+            <Calendar className="w-4 h-4 text-gray-400 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-gray-900">Descripción</p>
+              <p className="text-xs text-gray-600">
+                Declaración y pago de {tipo.toLowerCase()} correspondiente al período {mes.toLowerCase()}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Acciones en una fila */}
+      <div className="px-4 py-3 border-t border-gray-200 bg-gray-50 rounded-b-lg">
+        <div className="flex space-x-2">
+          <button
+            onClick={() => {
+              alert(`Abrir calendario para ${tipo} ${mes}`);
+              onClose();
+            }}
+            className="flex-1 flex items-center justify-center space-x-2 px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors border-0"
+          >
+            <Calendar className="w-4 h-4" />
+            <span>Calendario</span>
+            <ExternalLink className="w-3 h-3" />
+          </button>
+          
+          {!vencido && (
+            <button
+              onClick={() => {
+                alert(`Marcar como completado: ${tipo} ${mes}`);
+                onClose();
+              }}
+              className="flex-1 flex items-center justify-center space-x-2 px-3 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 transition-colors border-0"
+            >
+              <CheckCircle className="w-4 h-4" />
+              <span>Completar</span>
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
 const ProximaObligacion: React.FC<{ obligacion?: Empresa['proximaObligacion'] }> = ({ obligacion }) => {
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const [popoverPosition, setPopoverPosition] = useState({ top: 0, left: 0 });
+
   if (!obligacion) return <div className="text-xs text-gray-400">Sin datos</div>;
 
   const { tipo, mes, diasRestantes, vencido } = obligacion;
@@ -231,19 +904,47 @@ const ProximaObligacion: React.FC<{ obligacion?: Empresa['proximaObligacion'] }>
     return `Faltan ${diasRestantes} días`;
   };
 
+  const calculatePopoverPosition = (element: HTMLElement) => {
+    const rect = element.getBoundingClientRect();
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+    
+    return {
+      top: rect.bottom + scrollTop + 8,
+      left: rect.left + scrollLeft - 150,
+    };
+  };
+
+  const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    const position = calculatePopoverPosition(event.currentTarget);
+    setPopoverPosition(position);
+    setIsPopoverOpen(true);
+  };
+
   return (
-    <div className={`flex items-center space-x-1 px-2 py-1 rounded-md ${styles.bg} ${styles.border} border`}>
-      <Calendar className={`w-3 h-3 ${styles.icon} flex-shrink-0`} />
-      <div className="text-xs overflow-hidden">
-        <div className={`font-medium ${styles.text} truncate`}>{tipo} {mes}</div>
-        <div className={`text-xs ${styles.text} truncate`}>
-          {getTexto()}
+    <>
+      <div 
+        className={`flex items-center space-x-1 px-2 py-1 rounded-md ${styles.bg} ${styles.border} border cursor-pointer hover:opacity-80 transition-opacity`}
+        onClick={handleClick}
+      >
+        <Calendar className={`w-3 h-3 ${styles.icon} flex-shrink-0`} />
+        <div className="text-xs overflow-hidden">
+          <div className={`font-medium ${styles.text} truncate`}>{tipo} {mes}</div>
+          <div className={`text-xs ${styles.text} truncate`}>
+            {getTexto()}
+          </div>
         </div>
       </div>
-    </div>
+
+      <ProximaObligacionPopover
+        isOpen={isPopoverOpen}
+        onClose={() => setIsPopoverOpen(false)}
+        obligacion={obligacion}
+        position={popoverPosition}
+      />
+    </>
   );
 };
-
 const Empresas: React.FC<EmpresasProps> = ({ onNavigate }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterEstado, setFilterEstado] = useState('');
@@ -952,7 +1653,7 @@ const getCompletitudColor = (completitud: number) => {
               className="flex-shrink-0 flex items-center space-x-2 overflow-hidden"
             >
               {/* Logo */}
-              <div className="w-8 h-8 bg-blue-500 rounded flex items-center justify-center flex-shrink-0">
+              <div className="w-8 h-8 bg-blue-500 flex items-center justify-center flex-shrink-0">
                 <Building2 className="w-4 h-4 text-white" />
               </div>
 
@@ -1038,12 +1739,13 @@ const getCompletitudColor = (completitud: number) => {
 
             {/* 2️⃣ Personas Asignadas */}
             <div
-              style={{ width: '100px', minWidth: '100px', maxWidth: '0px' }}
+              style={{ width: '140px', minWidth: '140px', maxWidth: '140px' }}
               className="flex-shrink-0 overflow-hidden"
             >
                {/* TÍTULO */}
               <div className="text-xs text-gray-500 font-medium mb-1 text-center">Asignados</div>
-              <PersonasAsignadas personas={empresa.personas} />
+              <PersonasAsignadas personas={empresa.personas}
+              empresaNombre={empresa.nombre} />
             </div>
 
             {/* 3️⃣ Ingresos */}
