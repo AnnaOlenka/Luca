@@ -209,28 +209,32 @@ const EditCompanyModal: React.FC<EditCompanyModalProps> = ({ empresa, isOpen, on
                           <label className="block text-xs font-medium text-gray-700">Nombre</label>
                           <input
                             type="text"
-                            value="Luis Alberto Mendoza Torres"
-                            className="w-full px-2 py-1 border border-gray-300 rounded text-xs bg-gray-50"
-                            readOnly
+                            value={formData.contadorNombre || 'Luis Alberto Mendoza Torres'}
+                            onChange={(e) => handleInputChange('contadorNombre', e.target.value)}
+                            className="w-full px-2 py-1 border border-gray-300 rounded text-xs focus:ring-1 focus:ring-blue-500"
+                            placeholder="Nombre del contador"
                           />
                         </div>
                         <div className="grid grid-cols-2 gap-1">
                           <div>
-                            <label className="block text-xs font-medium text-gray-700">CIP</label>
+                            <label className="block text-xs font-medium text-gray-700">DNI</label>
                             <input
                               type="text"
-                              value="CIP12345"
-                              className="w-full px-2 py-1 border border-gray-300 rounded text-xs bg-gray-50"
-                              readOnly
+                              value={formData.contadorDni || '12345678'}
+                              onChange={(e) => handleInputChange('contadorDni', e.target.value)}
+                              className="w-full px-2 py-1 border border-gray-300 rounded text-xs focus:ring-1 focus:ring-blue-500"
+                              placeholder="DNI del contador"
+                              maxLength={8}
                             />
                           </div>
                           <div>
                             <label className="block text-xs font-medium text-gray-700">Email</label>
                             <input
                               type="email"
-                              value="contador@empresa.com"
-                              className="w-full px-2 py-1 border border-gray-300 rounded text-xs bg-gray-50"
-                              readOnly
+                              value={formData.contadorEmail || 'contador@empresa.com'}
+                              onChange={(e) => handleInputChange('contadorEmail', e.target.value)}
+                              className="w-full px-2 py-1 border border-gray-300 rounded text-xs focus:ring-1 focus:ring-blue-500"
+                              placeholder="email@contador.com"
                             />
                           </div>
                         </div>

@@ -327,10 +327,10 @@ const ListaPersonasPopover: React.FC<{
     {/* Contenido principal */}
     <div className="flex-1">
       <h3 className="text-sm font-semibold text-gray-900">
-        Miembros del tablero
+        Usuarios asignados
       </h3>
       <p className="text-xs text-gray-500 mt-0.5">
-        {personas.length} miembros total
+        {personas.length} asignados total
       </p>
     </div>
     
@@ -362,7 +362,7 @@ const ListaPersonasPopover: React.FC<{
       <div className="px-3 py-2 max-h-48 overflow-y-auto">
         <div className="mb-2">
           <h4 className="text-xs font-medium text-gray-700 mb-2">
-            Miembros del Espacio de trabajo
+            Asignados de la empresa
           </h4>
           
           {filteredPersonas.length === 0 ? (
@@ -377,11 +377,11 @@ const ListaPersonasPopover: React.FC<{
                 <div key={persona.id} className="flex items-center justify-between py-1">
                   <div className="flex items-center space-x-2 flex-1 min-w-0">
                     {/* Avatar más pequeño */}
-                    <div className={`w-7 h-7 rounded-full border-2 ${getEstadoColor(persona.estado)} flex items-center justify-center flex-shrink-0`}>
+                    <div className={`w-10 h-10 rounded-full border-2 ${getEstadoColor(persona.estado)} flex items-center justify-center flex-shrink-0`}>
                       {persona.avatar ? (
                         <img src={persona.avatar} alt={persona.nombre} className="w-full h-full rounded-full object-cover" />
                       ) : (
-                        <span className="text-xs font-semibold text-gray-700">
+                        <span className="text-sm font-semibold text-gray-700">
                           {persona.iniciales}
                         </span>
                       )}
@@ -428,12 +428,57 @@ const ListaPersonasPopover: React.FC<{
 const PersonasAsignadas: React.FC<{ 
   personas?: Empresa['personas'];
   empresaNombre?: string;
-}> = ({ personas = [], empresaNombre = "Empresa" }) => {
+  empresaId?: string;
+}> = ({ personas = [], empresaNombre = "Empresa", empresaId }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
   const [showTooltip, setShowTooltip] = useState<number | null>(null);
   const [selectedPersona, setSelectedPersona] = useState<any | null>(null);
   const [isPersonaPopoverOpen, setIsPersonaPopoverOpen] = useState(false);
   const [isListaPopoverOpen, setIsListaPopoverOpen] = useState(false);
   const [popoverPosition, setPopoverPosition] = useState({ top: 0, left: 0 });
+  const clickedElementRef = useRef<HTMLElement | null>(null);
+
+  // Efecto para recalcular posición cuando cambie el layout o haya scroll
+  useEffect(() => {
+    const recalculatePosition = () => {
+      if (clickedElementRef.current && (isPersonaPopoverOpen || isListaPopoverOpen)) {
+        const newPosition = calculatePopoverPosition(clickedElementRef.current);
+        setPopoverPosition(newPosition);
+      }
+    };
+
+    // Listener para cambios en el layout
+    const resizeObserver = new ResizeObserver(recalculatePosition);
+    if (document.body) {
+      resizeObserver.observe(document.body);
+    }
+
+    // Listener para scroll con throttling
+    let scrollTimeout: NodeJS.Timeout;
+    const handleScroll = () => {
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(recalculatePosition, 16); // ~60fps
+    };
+
+    // Agregar listeners
+    window.addEventListener('scroll', handleScroll, true); // true para capturar en fase de captura
+    document.addEventListener('scroll', handleScroll, true);
+
+    // Cleanup
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener('scroll', handleScroll, true);
+      document.removeEventListener('scroll', handleScroll, true);
+      clearTimeout(scrollTimeout);
+    };
+  }, [isPersonaPopoverOpen, isListaPopoverOpen]);
+
+  // Limpiar referencia cuando se cierren todos los popovers
+  useEffect(() => {
+    if (!isPersonaPopoverOpen && !isListaPopoverOpen) {
+      clickedElementRef.current = null;
+    }
+  }, [isPersonaPopoverOpen, isListaPopoverOpen]);
   
   const visiblePersonas = personas.slice(0, 2);
   const extraCount = personas.length > 2 ? personas.length - 2 : 0;
@@ -448,17 +493,44 @@ const PersonasAsignadas: React.FC<{
   };
 
   const calculatePopoverPosition = (element: HTMLElement) => {
+    // Validar que el elemento existe y está en el DOM
+    if (!element || !element.getBoundingClientRect) {
+      return { top: 0, left: 0 };
+    }
+    
     const rect = element.getBoundingClientRect();
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
     const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
     
+    // Verificar si hay suficiente espacio a la derecha para el popover
+    const viewportWidth = window.innerWidth;
+    const popoverWidth = 280; // Ancho estimado del popover
+    const spaceToRight = viewportWidth - rect.right;
+    
+    let leftPosition = rect.left + scrollLeft - 50;
+    
+    // Si no hay suficiente espacio a la derecha, ajustar hacia la izquierda
+    if (spaceToRight < popoverWidth) {
+      leftPosition = rect.right + scrollLeft - popoverWidth + 10;
+    }
+    
+    // Asegurar que no se salga del borde izquierdo
+    leftPosition = Math.max(10, leftPosition);
+    
     return {
-      top: rect.bottom + scrollTop + 8, // 8px gap
-      left: rect.left + scrollLeft - 100, // Centrar aproximadamente
+      top: rect.bottom + scrollTop + 8, // 8px gap debajo del círculo
+      left: leftPosition,
     };
   };
 
   const handlePersonaClick = (persona: any, event: React.MouseEvent<HTMLDivElement>) => {
+    // Cerrar otros popovers primero
+    setIsListaPopoverOpen(false);
+    
+    // Guardar referencia del nuevo elemento clickeado
+    clickedElementRef.current = event.currentTarget;
+    
+    // Calcular posición inmediatamente
     const position = calculatePopoverPosition(event.currentTarget);
     setPopoverPosition(position);
     setSelectedPersona(persona);
@@ -467,6 +539,14 @@ const PersonasAsignadas: React.FC<{
   };
 
   const handleExtraClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    // Cerrar otros popovers primero
+    setIsPersonaPopoverOpen(false);
+    setSelectedPersona(null);
+    
+    // Guardar referencia del nuevo elemento clickeado
+    clickedElementRef.current = event.currentTarget;
+    
+    // Calcular posición inmediatamente
     const position = calculatePopoverPosition(event.currentTarget);
     setPopoverPosition(position);
     setIsListaPopoverOpen(true);
@@ -483,10 +563,10 @@ const PersonasAsignadas: React.FC<{
             onMouseLeave={() => setShowTooltip(null)}
           >
             <div 
-              className={`w-14 h-14 rounded-full border-2 ${getEstadoColor(persona.estado)} flex items-center justify-center cursor-pointer transition-transform hover:scale-110`}
+              className={`w-10 h-10 rounded-full border-2 ${getEstadoColor(persona.estado)} flex items-center justify-center cursor-pointer transition-transform hover:scale-110`}
               onClick={(e) => handlePersonaClick(persona, e)}
             >
-              <span className="text-xs font-semibold text-gray-700">
+              <span className="text-sm font-semibold text-gray-700">
                 {persona.iniciales}
               </span>
             </div>
@@ -502,10 +582,10 @@ const PersonasAsignadas: React.FC<{
               
         {extraCount > 0 && (
           <div 
-            className="w-14 h-14 rounded-full border-2 border-blue-500 bg-blue-100 flex items-center justify-center cursor-pointer transition-transform hover:scale-110"
+            className="w-10 h-10 rounded-full border-2 border-blue-500 bg-blue-100 flex items-center justify-center cursor-pointer transition-transform hover:scale-110"
             onClick={handleExtraClick}
           >
-            <span className="text-xs font-semibold text-blue-700">
+            <span className="text-sm font-semibold text-blue-700">
               +{extraCount}
             </span>
           </div>
@@ -868,9 +948,55 @@ const ProximaObligacionPopover: React.FC<{
     </div>
   );
 };
-const ProximaObligacion: React.FC<{ obligacion?: Empresa['proximaObligacion'] }> = ({ obligacion }) => {
+const ProximaObligacion: React.FC<{ 
+  obligacion?: Empresa['proximaObligacion'];
+  empresaId?: string;
+}> = ({ obligacion, empresaId }) => {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [popoverPosition, setPopoverPosition] = useState({ top: 0, left: 0 });
+  const clickedElementRef = useRef<HTMLElement | null>(null);
+
+  // Efecto para recalcular posición cuando cambie el layout o haya scroll
+  useEffect(() => {
+    const recalculatePosition = () => {
+      if (clickedElementRef.current && isPopoverOpen) {
+        const newPosition = calculatePopoverPosition(clickedElementRef.current);
+        setPopoverPosition(newPosition);
+      }
+    };
+
+    // Listener para cambios en el layout
+    const resizeObserver = new ResizeObserver(recalculatePosition);
+    if (document.body) {
+      resizeObserver.observe(document.body);
+    }
+
+    // Listener para scroll con throttling
+    let scrollTimeout: NodeJS.Timeout;
+    const handleScroll = () => {
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(recalculatePosition, 16); // ~60fps
+    };
+
+    // Agregar listeners
+    window.addEventListener('scroll', handleScroll, true); // true para capturar en fase de captura
+    document.addEventListener('scroll', handleScroll, true);
+
+    // Cleanup
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener('scroll', handleScroll, true);
+      document.removeEventListener('scroll', handleScroll, true);
+      clearTimeout(scrollTimeout);
+    };
+  }, [isPopoverOpen]);
+
+  // Limpiar referencia cuando se cierre el popover
+  useEffect(() => {
+    if (!isPopoverOpen) {
+      clickedElementRef.current = null;
+    }
+  }, [isPopoverOpen]);
 
   if (!obligacion) return <div className="text-xs text-gray-400">Sin datos</div>;
 
@@ -905,17 +1031,41 @@ const ProximaObligacion: React.FC<{ obligacion?: Empresa['proximaObligacion'] }>
   };
 
   const calculatePopoverPosition = (element: HTMLElement) => {
+    // Validar que el elemento existe y está en el DOM
+    if (!element || !element.getBoundingClientRect) {
+      return { top: 0, left: 0 };
+    }
+    
     const rect = element.getBoundingClientRect();
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
     const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
     
+    // Verificar si hay suficiente espacio a la derecha para el popover
+    const viewportWidth = window.innerWidth;
+    const popoverWidth = 320; // Ancho estimado del popover de obligación
+    const spaceToRight = viewportWidth - rect.right;
+    
+    let leftPosition = rect.left + scrollLeft - 150;
+    
+    // Si no hay suficiente espacio a la derecha, ajustar hacia la izquierda
+    if (spaceToRight < popoverWidth) {
+      leftPosition = rect.right + scrollLeft - popoverWidth + 10;
+    }
+    
+    // Asegurar que no se salga del borde izquierdo
+    leftPosition = Math.max(10, leftPosition);
+    
     return {
       top: rect.bottom + scrollTop + 8,
-      left: rect.left + scrollLeft - 150,
+      left: leftPosition,
     };
   };
 
   const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    // Guardar referencia del nuevo elemento clickeado (limpiar referencia anterior)
+    clickedElementRef.current = event.currentTarget;
+    
+    // Calcular posición inmediatamente
     const position = calculatePopoverPosition(event.currentTarget);
     setPopoverPosition(position);
     setIsPopoverOpen(true);
@@ -1015,20 +1165,24 @@ const getCompletitudColor = (completitud: number) => {
   });
 
   const getEstadoColor = (estado: string) => {
-    switch (estado.toLowerCase()) {
+    const estadoLower = estado.toLowerCase().trim();
+    switch (estadoLower) {
       case 'activo':
         return 'bg-green-100 text-green-800 border-green-200';
       case 'baja provisional por oficio':
         return 'bg-red-100 text-red-800 border-red-200';
       case 'suspendido temporalmente':
         return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'no activo':
+        return 'bg-red-100 text-red-800 border-red-200';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
 
   const getCondicionColor = (condicion: string) => {
-    switch (condicion.toLowerCase()) {
+    const condicionLower = condicion.toLowerCase().trim();
+    switch (condicionLower) {
       case 'habido':
         return 'bg-blue-100 text-blue-800 border-blue-200';
       case 'no habido':
@@ -1036,6 +1190,7 @@ const getCompletitudColor = (completitud: number) => {
       case 'por verificar':
         return 'bg-yellow-100 text-yellow-800 border-yellow-200';
       case 'no hallado se mudo de domicilio':
+      case 'no hallado se mudó de domicilio':
         return 'bg-red-100 text-red-800 border-red-200';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
@@ -1649,7 +1804,7 @@ const getCompletitudColor = (completitud: number) => {
 
             {/* 1️⃣ Columna Empresa */}
             <div
-              style={{ width: '230px', minWidth: '230px', maxWidth: '230px' }}
+              style={{ width: '270px', minWidth: '270px', maxWidth: '270px' }}
               className="flex-shrink-0 flex items-center space-x-2 overflow-hidden"
             >
               {/* Logo */}
@@ -1659,7 +1814,7 @@ const getCompletitudColor = (completitud: number) => {
 
               {/* Card interna */}
               <div
-                style={{ width: '168px', minWidth: '168px', maxWidth: '168px' }}
+                style={{ width: '200px', minWidth: '200px', maxWidth: '220px' }}
                 className="overflow-hidden"
               >
                 {/* Progress bar */}
@@ -1667,7 +1822,7 @@ const getCompletitudColor = (completitud: number) => {
               <div className="flex items-center mb-2">
                 <div
                   className="flex-1 bg-gray-200 rounded-full h-1.5 mr-2"
-                  style={{ maxWidth: '130px' }}
+                  style={{ maxWidth: '140px' }}
                 >
                   
                   <div
@@ -1694,7 +1849,7 @@ const getCompletitudColor = (completitud: number) => {
                 </p>
 
                 {/* Estados con flex-wrap mejorado */}
-                <div className="flex flex-wrap justify-between">
+                <div className="flex flex-wrap justify-between gap-2">
                   <span
                     className={`text-xs rounded border font-medium text-center ${getEstadoColor(empresa.estado)}`}
                     style={{
@@ -1744,8 +1899,11 @@ const getCompletitudColor = (completitud: number) => {
             >
                {/* TÍTULO */}
               <div className="text-xs text-gray-500 font-medium mb-1 text-center">Asignados</div>
-              <PersonasAsignadas personas={empresa.personas}
-              empresaNombre={empresa.nombre} />
+              <PersonasAsignadas 
+                personas={empresa.personas}
+                empresaNombre={empresa.nombre} 
+                empresaId={empresa.id} 
+              />
             </div>
 
             {/* 3️⃣ Ingresos */}
@@ -1800,7 +1958,10 @@ const getCompletitudColor = (completitud: number) => {
 
             {/* 8️⃣ Próximo Vencimiento */}
             <div style={{ width: '150px' }} className="flex-shrink-0 overflow-hidden">
-              <ProximaObligacion obligacion={empresa.proximaObligacion} />
+              <ProximaObligacion 
+                obligacion={empresa.proximaObligacion} 
+                empresaId={empresa.id} 
+              />
             </div>
 
             {/* 9️⃣ Menu de acciones */}
@@ -1819,7 +1980,7 @@ const getCompletitudColor = (completitud: number) => {
                       className="fixed inset-0 z-30"
                       onClick={() => setOpenDropdownId(null)}
                     />
-                    <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-xl z-40">
+                    <div className="absolute right-0 top-full mt-1 w-58 bg-white border border-gray-200 rounded-lg shadow-xl z-40">
                       <button
                         onClick={() =>
                           handleAction('permisos', empresa.id, empresa.nombre)

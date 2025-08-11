@@ -379,7 +379,7 @@ const ImportCsvModal: React.FC<ImportCsvModalProps> = ({ isOpen, onClose, onImpo
       <div className="fixed inset-0 bg-black bg-opacity-50" onClick={!isProcessing ? handleClose : undefined} />
 
       <div className="flex min-h-screen items-center justify-center p-4">
-        <div className="relative bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+        <div className="relative bg-white rounded-lg shadow-xl w-full max-w-4xl h-[600px] flex flex-col">
           {/* Header */}
           <div className="bg-blue-600 text-white p-6 rounded-t-lg sticky top-0 z-10">
             <div className="flex items-center justify-between">
@@ -400,14 +400,13 @@ const ImportCsvModal: React.FC<ImportCsvModalProps> = ({ isOpen, onClose, onImpo
             </div>
           </div>
 
-          {/* Content */}
-          <div className="p-6">
+          {/* Content - Scrolleable */}
+          <div className="p-6 flex-1 overflow-y-auto" style={{maxHeight: 'calc(600px - 140px)'}}>
             {step === 'upload' && (
               <>
                 <div className="mb-6 p-4 bg-gray-50 rounded-lg">
                   <h3 className="text-lg font-semibold mb-2 flex items-center">
-                    <span className="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-3">1</span>
-                    Descarga la plantilla CSV
+                     1. Descarga la plantilla CSV
                   </h3>
                   <p className="text-sm text-gray-600 mb-4 text-left ">
                     El archivo debe contener las columnas: <strong>RUC, Usuario, Clave SOL</strong>
@@ -422,8 +421,7 @@ const ImportCsvModal: React.FC<ImportCsvModalProps> = ({ isOpen, onClose, onImpo
                 </div>
                 <div className='mb-6 p-4 bg-gray-50 rounded-lg'>
                   <h3 className="text-lg font-semibold mb-2 flex items-center">
-                    <span className="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-3">2</span>
-                    Sube tu archivo CSV
+                    2. Sube tu archivo CSV
                   </h3>
                   <div
                     className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors  ${
@@ -468,21 +466,20 @@ const ImportCsvModal: React.FC<ImportCsvModalProps> = ({ isOpen, onClose, onImpo
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-semibold flex items-center">
-                    <span className="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-3">3</span>
-                    Empresas a importar ({importedCompanies.length})
+                    3. Empresas a importar ({importedCompanies.length})
                   </h3>
                   <div className="text-sm text-gray-500">
                     Se verificarán las credenciales con SUNAT antes de importar
                   </div>
                 </div>
 
-                <div className="max-h-60 overflow-y-auto border rounded-lg mb-4">
+                <div className="max-h-32 overflow-y-auto border rounded-lg mb-4">
                   <table className="w-full text-sm">
                     <thead className="bg-gray-50 sticky top-0">
                       <tr>
-                        <th className="p-3 text-left">RUC</th>
-                        <th className="p-3 text-left">Usuario SOL</th>
-                        <th className="p-3 text-left">Clave SOL</th>
+                        <th className="p-3 text-center">RUC</th>
+                        <th className="p-3 text-center">Usuario SOL</th>
+                        <th className="p-3 text-center">Clave SOL</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -497,7 +494,7 @@ const ImportCsvModal: React.FC<ImportCsvModalProps> = ({ isOpen, onClose, onImpo
                   </table>
                 </div>
 
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                   <div className="flex items-start">
                     <AlertTriangle className="w-5 h-5 text-yellow-600 mr-2 mt-0.5" />
                     <div className="text-sm">
@@ -510,24 +507,12 @@ const ImportCsvModal: React.FC<ImportCsvModalProps> = ({ isOpen, onClose, onImpo
                     </div>
                   </div>
                 </div>
-
-                <div className="flex justify-end">
-                  <button
-                    onClick={() => handleConnectCompanies(importedCompanies)}
-                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
-                    disabled={isProcessing}
-                  >
-                    <Shield className="w-4 h-4" />
-                    <span>Verificar y Conectar Empresas</span>
-                  </button>
-                </div>
               </div>
             )}
 
             {step === 'connecting' && (
               <div>
                 <h3 className="text-lg font-semibold mb-4 flex items-center">
-                  <span className="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-3">4</span>
                   Verificando credenciales con SUNAT...
                 </h3>
 
@@ -648,38 +633,37 @@ const ImportCsvModal: React.FC<ImportCsvModalProps> = ({ isOpen, onClose, onImpo
             {step === 'results' && (
               <div>
                 <h3 className="text-lg font-semibold mb-6 flex items-center">
-                  <span className="bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-3">✓</span>
                   Resultados de la Verificación
                 </h3>
 
-                {/* Resumen en 3 columnas */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                    <div className="flex items-center">
-                      <CheckCircle className="w-8 h-8 text-green-600 mr-3" />
-                      <div>
-                        <div className="text-2xl font-bold text-green-800">{validCompanies.length}</div>
-                        <div className="text-sm text-green-700">Empresas Válidas</div>
+                {/* Resumen en 3 columnas - siempre horizontal para ahorrar espacio */}
+                <div className="grid grid-cols-3 mb-6 gap-x-12">
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                    <div className="flex items-center justify-center">
+                      <CheckCircle className="w-6 h-6 text-green-600 mr-2" />
+                      <div className="text-center">
+                        <div className="text-xl font-bold text-green-800">{validCompanies.length}</div>
+                        <div className="text-xs text-green-700">Válidas</div>
                       </div>
                     </div>
                   </div>
 
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                    <div className="flex items-center">
-                      <AlertCircle className="w-8 h-8 text-red-600 mr-3" />
-                      <div>
-                        <div className="text-2xl font-bold text-red-800">{errorCompanies.length}</div>
-                        <div className="text-sm text-red-700">Con Errores</div>
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                    <div className="flex items-center justify-center">
+                      <AlertCircle className="w-6 h-6 text-red-600 mr-2" />
+                      <div className="text-center">
+                        <div className="text-xl font-bold text-red-800">{errorCompanies.length}</div>
+                        <div className="text-xs text-red-700">Con Errores</div>
                       </div>
                     </div>
                   </div>
 
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <div className="flex items-center">
-                      <FileCheck className="w-8 h-8 text-blue-600 mr-3" />
-                      <div>
-                        <div className="text-2xl font-bold text-blue-800">{totalCount}</div>
-                        <div className="text-sm text-blue-700">Total Procesadas</div>
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                    <div className="flex items-center justify-center">
+                      <FileCheck className="w-6 h-6 text-blue-600 mr-2" />
+                      <div className="text-center">
+                        <div className="text-xl font-bold text-blue-800">{totalCount}</div>
+                        <div className="text-xs text-blue-700">Total</div>
                       </div>
                     </div>
                   </div>
@@ -695,9 +679,9 @@ const ImportCsvModal: React.FC<ImportCsvModalProps> = ({ isOpen, onClose, onImpo
                       <table className="w-full text-sm">
                         <thead className="bg-gray-50 sticky top-0">
                           <tr>
-                            <th className="p-3 text-left">RUC</th>
-                            <th className="p-3 text-left">Razón Social</th>
-                            <th className="p-3 text-left">Estado</th>
+                            <th className="p-3 text-center">RUC</th>
+                            <th className="p-3 text-center">Razón Social</th>
+                            <th className="p-3 text-center">Estado</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -728,9 +712,9 @@ const ImportCsvModal: React.FC<ImportCsvModalProps> = ({ isOpen, onClose, onImpo
                       <table className="w-full text-sm">
                         <thead className="bg-gray-50 sticky top-0">
                           <tr>
-                            <th className="p-3 text-left">RUC</th>
-                            <th className="p-3 text-left">Usuario</th>
-                            <th className="p-3 text-left">Error</th>
+                            <th className="p-3 text-center">RUC</th>
+                            <th className="p-3 text-center">Usuario</th>
+                            <th className="p-3 text-center">Error</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -747,31 +731,51 @@ const ImportCsvModal: React.FC<ImportCsvModalProps> = ({ isOpen, onClose, onImpo
                   </>
                 )}
 
-                <div className="flex justify-end space-x-3 mt-4">
-                  {errorCompanies.length > 0 && (
-                    <button
-                      onClick={retryFailedVerifications}
-                      className="px-6 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                      disabled={isProcessing}
-                    >
-                      <RefreshCw className="w-4 h-4" />
-                      <span>{isProcessing ? 'Reintentando...' : `Reintentar Errores (${errorCompanies.length})`}</span>
-                    </button>
-                  )}
-                  {validCompanies.length > 0 && (
-                    <button
-                      onClick={handleImportValidCompanies}
-                      className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                      disabled={isProcessing}
-                    >
-                      <Save className="w-4 h-4" />
-                      <span>Importar Solo Empresas Válidas ({validCompanies.length})</span>
-                    </button>
-                  )}
-                </div>
               </div>
             )}
           </div>
+
+          {/* Footer - Fixed at bottom */}
+          {step === 'preview' && (
+            <div className="border-t border-gray-200 p-4 bg-gray-50 rounded-b-lg">
+              <div className="flex justify-end">
+                <button
+                  onClick={() => handleConnectCompanies(importedCompanies)}
+                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
+                >
+                  <Shield className="w-4 h-4" />
+                  <span>Verificar y Conectar Empresas</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {step === 'results' && (
+            <div className="border-t border-gray-200 p-4 bg-gray-50 rounded-b-lg">
+              <div className="flex justify-end space-x-3">
+                {errorCompanies.length > 0 && (
+                  <button
+                    onClick={retryFailedVerifications}
+                    className="px-6 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={isProcessing}
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                    <span>{isProcessing ? 'Reintentando...' : `Reintentar Errores (${errorCompanies.length})`}</span>
+                  </button>
+                )}
+                {validCompanies.length > 0 && (
+                  <button
+                    onClick={handleImportValidCompanies}
+                    className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={isProcessing}
+                  >
+                    <Save className="w-4 h-4" />
+                    <span>Importar Empresas Válidas ({validCompanies.length})</span>
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
