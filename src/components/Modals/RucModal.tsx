@@ -164,7 +164,7 @@ const RucModal: React.FC<RucModalProps> = ({ isOpen, onClose, empresa }) => {
             </section>
 
             {/* Obligaciones */}
-            <section className=' md:col-span-2 bg-gray-50 p-4 rounded'>
+            <section className=' bg-gray-50 p-4 rounded'>
               <h3 className="font-semibold mb-2 flex items-center gap-2">
                 <FileCheck className="w-5 h-5 text-blue-600" />
                 Obligaciones
@@ -175,7 +175,7 @@ const RucModal: React.FC<RucModalProps> = ({ isOpen, onClose, empresa }) => {
             </section>
 
             {/* Emisión Electrónica */}
-            <section className="md:col-span-2 bg-gray-50 p-4 rounded ">
+            <section className=" bg-gray-50 p-4 rounded ">
               <h3 className="font-semibold mb-2 flex items-center gap-2">
                 <FileText className="w-5 h-5 text-blue-600" />
                 Emisión Electrónica

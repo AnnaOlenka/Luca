@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import DashboardLayout from '../components/Layout/DashboardLayout';
 import RucModal from '../components/Modals/RucModal';
 import ImportCsvModal from '../components/Modals/ImportCsvModal';
@@ -17,7 +17,16 @@ import {
   MoreVertical,
   Calendar,
   ArrowUp,
-  ArrowDown
+  ArrowDown,
+  User,
+  Mail,
+  Settings,
+  UserMinus,
+  Clock,
+  AlertTriangle,
+  ExternalLink,
+  Bell,
+  CheckCircle
 } from 'lucide-react';
 import empresasData from '../data/empresasData.json';
 import validCredentialsData from '../data/validCredentials.json';
@@ -40,6 +49,9 @@ interface Empresa {
     iniciales: string;
     cargo: string;
     estado: 'activo' | 'pendiente' | 'inactivo';
+    email?: string;        // Nuevo campo
+    telefono?: string;     // Nuevo campo
+    avatar?: string;       // Nuevo campo
   }>;
   tendencia?: {
     porcentaje: number;
@@ -58,10 +70,236 @@ interface Empresa {
   };
 }
 
-const PersonasAsignadas: React.FC<{ personas?: Empresa['personas'] }> = ({ personas = [] }) => {
-  const [showTooltip, setShowTooltip] = useState<number | null>(null);
-  const visiblePersonas = personas.slice(0, 3);
-  const extraCount = personas.length > 3 ? personas.length - 3 : 0;
+// Popover para persona individual
+const PersonaPopover: React.FC<{
+  isOpen: boolean;
+  onClose: () => void;
+  persona: any | null;
+  position: { top: number; left: number };
+}> = ({ isOpen, onClose, persona, position }) => {
+  const popoverRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (popoverRef.current && !popoverRef.current.contains(event.target as Node)) {
+        onClose();
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      // Bloquear scroll del body de manera más robusta
+      const scrollBarWidth = window.innerWidth - document.documentElement.clientWidth;
+      document.body.style.overflow = 'hidden';
+      document.body.style.paddingRight = `${scrollBarWidth}px`;
+      
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleKeyDown);
+      
+      // Prevenir scroll con rueda del mouse
+      const preventScroll = (e: WheelEvent) => e.preventDefault();
+      document.addEventListener('wheel', preventScroll, { passive: false });
+      
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+        document.removeEventListener('keydown', handleKeyDown);
+        document.removeEventListener('wheel', preventScroll);
+      };
+    } else {
+      // Restaurar scroll del body
+      document.body.style.overflow = '';
+      document.body.style.paddingRight = '';
+    }
+
+    return () => {
+      // Cleanup al desmontar
+      document.body.style.overflow = '';
+      document.body.style.paddingRight = '';
+    };
+  }, [isOpen, onClose]);
+
+  if (!isOpen || !persona) return null;
+
+  const getEstadoColor = (estado: string) => {
+    switch (estado) {
+      case 'activo': return 'border-green-500 bg-green-100 text-green-700';
+      case 'pendiente': return 'border-yellow-500 bg-yellow-100 text-yellow-700';
+      case 'inactivo': return 'border-gray-500 bg-gray-100 text-gray-700';
+      default: return 'border-gray-300 bg-gray-100 text-gray-700';
+    }
+  };
+
+  return (
+    <div
+      ref={popoverRef}
+      className="fixed z-50 bg-white rounded-lg shadow-xl border border-gray-200 w-64"
+      style={{
+        top: position.top,
+        left: position.left,
+      }}
+    >
+{/* Header compacto con avatar e info al lado */}
+<div className="px-4 py-4 border-b border-gray-200">
+  <div className="flex items-start justify-between">
+    {/* Contenido principal */}
+    <div className="flex items-center space-x-3 flex-1">
+      {/* Avatar */}
+      <div className={`w-12 h-12 rounded-full border-2 ${getEstadoColor(persona.estado)} flex items-center justify-center flex-shrink-0`}>
+        {persona.avatar ? (
+          <img src={persona.avatar} alt={persona.nombre} className="w-full h-full rounded-full object-cover" />
+        ) : (
+          <span className="text-sm font-bold">
+            {persona.iniciales}
+          </span>
+        )}
+      </div>
+      
+      {/* Info al lado */}
+      <div className="flex-1 min-w-0">
+        <h3 className="text-sm font-semibold text-gray-900 truncate">
+          {persona.nombre}
+        </h3>
+        
+        {/* Cargo y estado en la misma línea */}
+        <div className="flex items-center justify-between mt-1 gap-4">
+          <p className="text-xs text-gray-600 truncate">
+            {persona.cargo}
+          </p>
+          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+            persona.estado === 'activo' ? 'bg-green-100 text-green-800' :
+            persona.estado === 'pendiente' ? 'bg-yellow-100 text-yellow-800' :
+            'bg-gray-100 text-gray-800'
+          }`}>
+            {persona.estado.charAt(0).toUpperCase() + persona.estado.slice(1)}
+          </span>
+        </div>
+        
+        {/* Email abajo */}
+        {persona.email && (
+          <div className="flex items-center space-x-1 text-xs text-gray-500 mt-2">
+            <Mail className="w-3 h-3" />
+            <span className="truncate">{persona.email}</span>
+          </div>
+        )}
+      </div>
+    </div>
+    
+    {/* Botón cerrar más pequeño */}
+    <button
+      onClick={onClose}
+      className="  border-0 outline-none text-gray-400 hover:text-gray-600 hover:bg-gray-100  p-0.5 transition-colors ml-2 flex-shrink-0"
+    >
+      <X className="w-3 h-3" />
+    </button>
+  </div>
+</div>
+
+      {/* Acciones - Solo las 3 principales */}
+      {/* Acciones */}
+<div className="p-2">
+  <div className="space-y-1">
+    <button
+      onClick={() => {
+        alert(`Ver perfil completo de ${persona.nombre}`);
+        onClose();
+      }}
+      className=" border-0 outline-none w-full flex items-center space-x-3 px-3 py-2 text-xs text-gray-700 hover:bg-gray-50 transition-colors"
+    >
+      <User className="w-4 h-4 text-gray-400" />
+      <span>Ver perfil completo</span>
+    </button>
+    
+    <button
+      onClick={() => {
+        alert(`Configurar permisos de ${persona.nombre}`);
+        onClose();
+      }}
+      className=" border-0 outline-none w-full flex items-center space-x-3 px-3 py-2 text-xs text-gray-700 hover:bg-gray-50 transition-colors"
+    >
+      <Settings className="w-4 h-4 text-gray-400" />
+      <span>Configurar permisos</span>
+    </button>
+    
+    <button
+      onClick={() => {
+        alert(`Quitar a ${persona.nombre}`);
+        onClose();
+      }}
+      className="border-0 outline-none w-full flex items-center space-x-3 px-3 py-2 text-xs text-red-600 hover:bg-red-50  transition-colors"
+    >
+      <UserMinus className="w-4 h-4" />
+      <span>Quitar asignado</span>
+    </button>
+  </div>
+</div>
+    </div>
+  );
+};
+
+// Popover para lista completa
+const ListaPersonasPopover: React.FC<{
+  isOpen: boolean;
+  onClose: () => void;
+  personas: any[];
+  position: { top: number; left: number };
+}> = ({ isOpen, onClose, personas, position }) => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const popoverRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (popoverRef.current && !popoverRef.current.contains(event.target as Node)) {
+        onClose();
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      // Bloquear scroll del body de manera más robusta
+      const scrollBarWidth = window.innerWidth - document.documentElement.clientWidth;
+      document.body.style.overflow = 'hidden';
+      document.body.style.paddingRight = `${scrollBarWidth}px`;
+      
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleKeyDown);
+      
+      // Prevenir scroll con rueda del mouse
+      const preventScroll = (e: WheelEvent) => e.preventDefault();
+      document.addEventListener('wheel', preventScroll, { passive: false });
+      
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+        document.removeEventListener('keydown', handleKeyDown);
+        document.removeEventListener('wheel', preventScroll);
+      };
+    } else {
+      // Restaurar scroll del body
+      document.body.style.overflow = '';
+      document.body.style.paddingRight = '';
+    }
+
+    return () => {
+      // Cleanup al desmontar
+      document.body.style.overflow = '';
+      document.body.style.paddingRight = '';
+    };
+  }, [isOpen, onClose]);
+
+  // Filtrar personas
+  const filteredPersonas = personas.filter(persona => 
+    persona.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    persona.cargo.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const getEstadoColor = (estado: string) => {
     switch (estado) {
@@ -72,93 +310,312 @@ const PersonasAsignadas: React.FC<{ personas?: Empresa['personas'] }> = ({ perso
     }
   };
 
+  if (!isOpen) return null;
+
   return (
-    <div className="flex items-center space-x-1">
-      {visiblePersonas.map((persona, index) => (
-        <div 
-          key={persona.id}
-          className="relative"
-          onMouseEnter={() => setShowTooltip(index)}
-          onMouseLeave={() => setShowTooltip(null)}
-        >
-          <div className={`w-8 h-8 rounded-full border-2 ${getEstadoColor(persona.estado)} flex items-center justify-center cursor-pointer transition-transform hover:scale-110`}>
-            <span className="text-xs font-semibold text-gray-700">
-              {persona.iniciales}
-            </span>
-          </div>
+    <div
+      ref={popoverRef}
+      className="fixed z-50 bg-white rounded-lg shadow-xl border border-gray-200 w-72"
+      style={{
+        top: position.top,
+        left: position.left,
+        maxHeight: '300px',
+      }}
+    >{/* Header compacto */}
+<div className="px-4 py-3 border-b border-gray-200 bg-gray-50 rounded-t-lg">
+  <div className="flex items-center justify-between">
+    {/* Contenido principal */}
+    <div className="flex-1">
+      <h3 className="text-sm font-semibold text-gray-900">
+        Miembros del tablero
+      </h3>
+      <p className="text-xs text-gray-500 mt-0.5">
+        {personas.length} miembros total
+      </p>
+    </div>
+    
+    {/* Botón cerrar con su propio espacio */}
+    <button
+      onClick={onClose}
+      className="text-gray-400 hover:text-gray-600 hover:bg-white rounded-full p-1 transition-colors shadow-sm ml-2 flex-shrink-0"
+    >
+      <X className="w-3 h-3" />
+    </button>
+  </div>
+</div>
+
+{/* Búsqueda compacta */}
+<div className="px-4 py-1 border-b border-gray-200">
+  <div className="relative">
+    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+    <input
+      type="text"
+      placeholder="Buscar miembros"
+      value={searchTerm}
+      onChange={(e) => setSearchTerm(e.target.value)}
+      className="w-full h-4 pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+    />
+  </div>
+</div>
+
+      {/* Lista compacta de personas */}
+      <div className="px-3 py-2 max-h-48 overflow-y-auto">
+        <div className="mb-2">
+          <h4 className="text-xs font-medium text-gray-700 mb-2">
+            Miembros del Espacio de trabajo
+          </h4>
           
-          {showTooltip === index && (
-            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap z-10">
-              <div>{persona.nombre}</div>
-              <div className="text-gray-300">{persona.cargo}</div>
+          {filteredPersonas.length === 0 ? (
+            <div className="text-center py-3">
+              <p className="text-gray-500 text-xs">
+                {searchTerm ? 'No se encontraron miembros' : 'No hay miembros asignados'}
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-1.5">
+              {filteredPersonas.map((persona) => (
+                <div key={persona.id} className="flex items-center justify-between py-1">
+                  <div className="flex items-center space-x-2 flex-1 min-w-0">
+                    {/* Avatar más pequeño */}
+                    <div className={`w-7 h-7 rounded-full border-2 ${getEstadoColor(persona.estado)} flex items-center justify-center flex-shrink-0`}>
+                      {persona.avatar ? (
+                        <img src={persona.avatar} alt={persona.nombre} className="w-full h-full rounded-full object-cover" />
+                      ) : (
+                        <span className="text-xs font-semibold text-gray-700">
+                          {persona.iniciales}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Información compacta */}
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-medium text-gray-900 truncate">
+                        {persona.nombre}
+                      </p>
+                      <p className="text-xs text-gray-500 truncate">
+                        {persona.cargo}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Botón quitar */}
+                  <button
+                    onClick={() => {
+                      alert(`Quitar a ${persona.nombre}`);
+                      onClose();
+                    }}
+                    className="p-0.5 text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors ml-2"
+                    title="Quitar asignado"
+                  >
+                    <UserMinus className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
             </div>
           )}
         </div>
-      ))}
-      
-      {extraCount > 0 && (
-        <div className="w-8 h-8 rounded-full border-2 border-blue-500 bg-blue-100 flex items-center justify-center cursor-pointer">
-          <span className="text-xs font-semibold text-blue-700">
-            +{extraCount}
-          </span>
-        </div>
-      )}
+      </div>
+
+      {/* Footer compacto */}
+      <div className="px-3 py-1.5 border-t border-gray-200 bg-gray-50 rounded-b-lg">
+        <p className="text-xs text-gray-500 text-center">
+          {personas.length} miembros
+        </p>
+      </div>
     </div>
   );
 };
+const PersonasAsignadas: React.FC<{ 
+  personas?: Empresa['personas'];
+  empresaNombre?: string;
+}> = ({ personas = [], empresaNombre = "Empresa" }) => {
+  const [showTooltip, setShowTooltip] = useState<number | null>(null);
+  const [selectedPersona, setSelectedPersona] = useState<any | null>(null);
+  const [isPersonaPopoverOpen, setIsPersonaPopoverOpen] = useState(false);
+  const [isListaPopoverOpen, setIsListaPopoverOpen] = useState(false);
+  const [popoverPosition, setPopoverPosition] = useState({ top: 0, left: 0 });
+  
+  const visiblePersonas = personas.slice(0, 2);
+  const extraCount = personas.length > 2 ? personas.length - 2 : 0;
+      
+  const getEstadoColor = (estado: string) => {
+    switch (estado) {
+      case 'activo': return 'border-green-500 bg-green-100';
+      case 'pendiente': return 'border-yellow-500 bg-yellow-100';
+      case 'inactivo': return 'border-gray-500 bg-gray-100';
+      default: return 'border-gray-300 bg-gray-100';
+    }
+  };
 
-const TendenciaIngresos: React.FC<{ tendencia?: Empresa['tendencia'] }> = ({ tendencia }) => {
-  if (!tendencia) return <div className="text-xs text-gray-400">Sin datos</div>;
+  const calculatePopoverPosition = (element: HTMLElement) => {
+    const rect = element.getBoundingClientRect();
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+    
+    return {
+      top: rect.bottom + scrollTop + 8, // 8px gap
+      left: rect.left + scrollLeft - 100, // Centrar aproximadamente
+    };
+  };
 
-  const { porcentaje, direccion, datos } = tendencia;
-  const isPositive = direccion === 'up';
+  const handlePersonaClick = (persona: any, event: React.MouseEvent<HTMLDivElement>) => {
+    const position = calculatePopoverPosition(event.currentTarget);
+    setPopoverPosition(position);
+    setSelectedPersona(persona);
+    setIsPersonaPopoverOpen(true);
+    setShowTooltip(null); // Ocultar tooltip
+  };
+
+  const handleExtraClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    const position = calculatePopoverPosition(event.currentTarget);
+    setPopoverPosition(position);
+    setIsListaPopoverOpen(true);
+  };
+
+  return (
+    <>
+      <div className="flex items-center justify-center space-x-1">
+        {visiblePersonas.map((persona, index) => (
+          <div 
+            key={persona.id}
+            className="relative"
+            onMouseEnter={() => !isPersonaPopoverOpen && setShowTooltip(index)}
+            onMouseLeave={() => setShowTooltip(null)}
+          >
+            <div 
+              className={`w-14 h-14 rounded-full border-2 ${getEstadoColor(persona.estado)} flex items-center justify-center cursor-pointer transition-transform hover:scale-110`}
+              onClick={(e) => handlePersonaClick(persona, e)}
+            >
+              <span className="text-xs font-semibold text-gray-700">
+                {persona.iniciales}
+              </span>
+            </div>
+                      
+            {showTooltip === index && (
+              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs whitespace-nowrap z-20">
+                <div>{persona.nombre}</div>
+                <div className="text-gray-300">{persona.cargo}</div>
+              </div>
+            )}
+          </div>
+        ))}
+              
+        {extraCount > 0 && (
+          <div 
+            className="w-14 h-14 rounded-full border-2 border-blue-500 bg-blue-100 flex items-center justify-center cursor-pointer transition-transform hover:scale-110"
+            onClick={handleExtraClick}
+          >
+            <span className="text-xs font-semibold text-blue-700">
+              +{extraCount}
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* Popover individual */}
+      <PersonaPopover
+        isOpen={isPersonaPopoverOpen}
+        onClose={() => {
+          setIsPersonaPopoverOpen(false);
+          setSelectedPersona(null);
+        }}
+        persona={selectedPersona}
+        position={popoverPosition}
+      />
+
+      {/* Popover lista completa */}
+      <ListaPersonasPopover
+        isOpen={isListaPopoverOpen}
+        onClose={() => setIsListaPopoverOpen(false)}
+        personas={personas}
+        position={popoverPosition}
+      />
+    </>
+  );
+};
+const MiniChart: React.FC<{
+  label: string;
+  porcentaje: number;
+  direccion: 'up' | 'down';
+  datos: number[];
+  color: string;
+  isInverted?: boolean;
+}> = ({ label, porcentaje, direccion, datos, color, isInverted = false }) => {
+  const isPositive = isInverted ? direccion === 'down' : direccion === 'up';
   
   const max = Math.max(...datos);
   const min = Math.min(...datos);
   const range = max - min || 1;
   
   const points = datos.map((value, index) => {
-    const x = (index * 40) / (datos.length - 1);
-    const y = 20 - ((value - min) / range) * 15;
+    const x = (index * 48) / (datos.length - 1);
+    const y = 20 - ((value - min) / range) * 16;
     return `${x},${y}`;
   }).join(' ');
 
+  // Para el área, necesitamos agregar puntos en la base
+  const areaPoints = `${points} 48,20 0,20`;
+  
+  // Determinar el color base
+  const getColor = () => {
+    if (color.includes('green-600')) return "#10b981";
+    if (color.includes('red-600')) return "#ef4444"; 
+    if (color.includes('blue-600')) return "#2563eb";
+    return "#9333ea";
+  };
+  
+  const baseColor = getColor();
+  
   return (
-    <div className="flex flex-col items-center space-y-1">
-      <div className="text-xs text-gray-500 font-medium text-center leading-tight">Ingresos</div>
-      <div className="flex items-center space-x-2">
-        <div className="flex items-center space-x-1">
-          {isPositive ? (
-            <ArrowUp className="w-4 h-4 text-green-600" />
-          ) : (
-            <ArrowDown className="w-4 h-4 text-red-600" />
-          )}
-          <span className={`font-bold text-sm ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
-            {isPositive ? '+' : ''}{Number(porcentaje).toFixed(2)}%
-          </span>
-        </div>
-        
-        <svg width="40" height="20" className="flex-shrink-0">
+    <div className="text-center">
+      {/* TÍTULO ARRIBA */}
+      <div className="text-xs text-gray-500 font-medium mb-1 truncate">{label}</div>
+      
+      {/* GRÁFICO EN EL MEDIO */}
+      <div className="flex justify-center mb-1">
+        <svg width="48" height="20" className="flex-shrink-0">
+          {/* Área sombreada */}
+          <polygon
+            points={areaPoints}
+            fill={baseColor}
+            fillOpacity="0.2"
+          />
+          
+          {/* Línea principal */}
           <polyline
             points={points}
             fill="none"
-            stroke={isPositive ? "#10b981" : "#ef4444"}
-            strokeWidth="1.5"
+            stroke={baseColor}
+            strokeWidth="1"
           />
+          
+          {/* Puntos */}
           {datos.map((value, index) => {
-            const x = (index * 40) / (datos.length - 1);
-            const y = 20 - ((value - min) / range) * 15;
+            const x = (index * 48) / (datos.length - 1);
+            const y = 20 - ((value - min) / range) * 16;
             return (
               <circle
                 key={index}
                 cx={x}
                 cy={y}
-                r="1"
-                fill={isPositive ? "#10b981" : "#ef4444"}
+                r="0.8"
+                fill={baseColor}
               />
             );
           })}
         </svg>
+      </div>
+      
+      {/* PORCENTAJE Y FLECHA ABAJO */}
+      <div className="flex items-center justify-center space-x-1">
+        <span className={`font-bold text-xs ${color}`}>
+          {isPositive && !isInverted ? '+' : ''}{porcentaje}%
+        </span>
+        {isPositive ? (
+          <ArrowUp className={`w-3 h-3 ${color.includes('green') ? 'text-green-600' : color.includes('red') ? 'text-red-600' : color.includes('blue') ? 'text-blue-600' : 'text-purple-600'}`} />
+        ) : (
+          <ArrowDown className={`w-3 h-3 ${color.includes('green') ? 'text-green-600' : color.includes('red') ? 'text-red-600' : color.includes('blue') ? 'text-blue-600' : 'text-purple-600'}`} />
+        )}
       </div>
     </div>
   );
@@ -182,214 +639,312 @@ const SemaforoTributario: React.FC<{ semaforo?: Empresa['semaforoTributario'] }>
 
   return (
     <div className="flex items-center space-x-2">
-      <div className={`w-3 h-3 rounded-full ${colors.bg}`}></div>
-      <span className={`text-xs font-medium ${colors.text}`}>
+      <div className={`w-2 h-2 rounded-full ${colors.bg}`}></div>
+      <span className={`text-xs font-medium ${colors.text} truncate`}>
         {texto}
       </span>
     </div>
   );
 };
 
+// Popover para próxima obligación
+const ProximaObligacionPopover: React.FC<{
+  isOpen: boolean;
+  onClose: () => void;
+  obligacion: Empresa['proximaObligacion'] | null;
+  position: { top: number; left: number };
+}> = ({ isOpen, onClose, obligacion, position }) => {
+  const popoverRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (popoverRef.current && !popoverRef.current.contains(event.target as Node)) {
+        onClose();
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      // Bloquear scroll del body de manera robusta
+      const scrollBarWidth = window.innerWidth - document.documentElement.clientWidth;
+      document.body.style.overflow = 'hidden';
+      document.body.style.paddingRight = `${scrollBarWidth}px`;
+      
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleKeyDown);
+      
+      // Prevenir scroll con rueda del mouse
+      const preventScroll = (e: WheelEvent) => e.preventDefault();
+      document.addEventListener('wheel', preventScroll, { passive: false });
+      
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+        document.removeEventListener('keydown', handleKeyDown);
+        document.removeEventListener('wheel', preventScroll);
+      };
+    } else {
+      // Restaurar scroll del body
+      document.body.style.overflow = '';
+      document.body.style.paddingRight = '';
+    }
+
+    return () => {
+      // Cleanup al desmontar
+      document.body.style.overflow = '';
+      document.body.style.paddingRight = '';
+    };
+  }, [isOpen, onClose]);
+
+  if (!isOpen || !obligacion) return null;
+
+  const { tipo, mes, diasRestantes, vencido } = obligacion;
+
+  const getStyles = () => {
+    if (vencido) return {
+      bg: 'bg-red-50',
+      border: 'border-red-200',
+      text: 'text-red-700',
+      icon: 'text-red-600',
+      iconBg: 'bg-red-100'
+    };
+    if (diasRestantes <= 7) return {
+      bg: 'bg-yellow-50',
+      border: 'border-yellow-200',
+      text: 'text-yellow-700',
+      icon: 'text-yellow-600',
+      iconBg: 'bg-yellow-100'
+    };
+    return {
+      bg: 'bg-blue-50',
+      border: 'border-blue-200',
+      text: 'text-blue-700',
+      icon: 'text-blue-600',
+      iconBg: 'bg-blue-100'
+    };
+  };
+
+  const styles = getStyles();
+
+  const getTexto = () => {
+    if (vencido) return `Vencido hace ${Math.abs(diasRestantes)} días`;
+    return `Faltan ${diasRestantes} días`;
+  };
+
+  const getFechaVencimiento = () => {
+    const hoy = new Date();
+    const fechaVencimiento = new Date(hoy);
+    fechaVencimiento.setDate(hoy.getDate() + diasRestantes);
+    return fechaVencimiento.toLocaleDateString('es-ES', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
+  const getPrioridad = () => {
+    if (vencido) return { texto: 'URGENTE', color: 'text-red-600', bg: 'bg-red-100' };
+    if (diasRestantes <= 3) return { texto: 'ALTA', color: 'text-red-600', bg: 'bg-red-100' };
+    if (diasRestantes <= 7) return { texto: 'MEDIA', color: 'text-yellow-600', bg: 'bg-yellow-100' };
+    return { texto: 'NORMAL', color: 'text-blue-600', bg: 'bg-blue-100' };
+  };
+
+  const prioridad = getPrioridad();
+
+  return (
+    <div
+      ref={popoverRef}
+      className="fixed z-50 bg-white rounded-lg shadow-xl border border-gray-200 w-80"
+      style={{
+        top: position.top,
+        left: position.left,
+      }}
+    >
+      {/* Header */}
+      <div className={`px-4 py-4 border-b border-gray-200 ${styles.bg} rounded-t-lg`}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className={`w-10 h-10 rounded-full ${styles.iconBg} flex items-center justify-center`}>
+              {vencido ? (
+                <AlertTriangle className={`w-5 h-5 ${styles.icon}`} />
+              ) : (
+                <Calendar className={`w-5 h-5 ${styles.icon}`} />
+              )}
+            </div>
+            <div>
+              <h3 className={`text-sm font-semibold ${styles.text}`}>
+                {tipo} - {mes} 2024
+              </h3>
+              <div className="flex items-center space-x-2 mt-1">
+                <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${prioridad.bg} ${prioridad.color}`}>
+                  {prioridad.texto}
+                </span>
+                <span className={`text-xs ${styles.text}`}>
+                  {getTexto()}
+                </span>
+              </div>
+            </div>
+          </div>
+          
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 hover:bg-white rounded-full p-1 transition-colors ml-2 flex-shrink-0"
+          >
+            <X className="w-3 h-3" />
+          </button>
+        </div>
+      </div>
+
+      {/* Detalles */}
+      <div className="p-4">
+        <div className="space-y-3">
+          {/* Fecha exacta con campanita */}
+          <div className="flex items-start justify-between">
+            <div className="flex items-start space-x-3">
+              <Clock className="w-4 h-4 text-gray-400 mt-0.5" />
+              <div>
+                <p className="text-sm font-medium text-gray-900">Fecha de vencimiento</p>
+                <p className="text-xs text-gray-600 capitalize">{getFechaVencimiento()}</p>
+              </div>
+            </div>
+            
+            {/* Campanita de recordatorio */}
+            <div className="flex-shrink-0" title={diasRestantes <= 7 && !vencido ? 'Recordatorio activo' : 'Recordatorio inactivo'}>
+              {diasRestantes <= 7 && !vencido ? (
+                <Bell className="w-4 h-4 text-blue-600 fill-current" />
+              ) : (
+                <Bell className="w-4 h-4 text-gray-400" />
+              )}
+            </div>
+          </div>
+
+          {/* Descripción */}
+          <div className="flex items-start space-x-3">
+            <Calendar className="w-4 h-4 text-gray-400 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-gray-900">Descripción</p>
+              <p className="text-xs text-gray-600">
+                Declaración y pago de {tipo.toLowerCase()} correspondiente al período {mes.toLowerCase()}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Acciones en una fila */}
+      <div className="px-4 py-3 border-t border-gray-200 bg-gray-50 rounded-b-lg">
+        <div className="flex space-x-2">
+          <button
+            onClick={() => {
+              alert(`Abrir calendario para ${tipo} ${mes}`);
+              onClose();
+            }}
+            className="flex-1 flex items-center justify-center space-x-2 px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors border-0"
+          >
+            <Calendar className="w-4 h-4" />
+            <span>Calendario</span>
+            <ExternalLink className="w-3 h-3" />
+          </button>
+          
+          {!vencido && (
+            <button
+              onClick={() => {
+                alert(`Marcar como completado: ${tipo} ${mes}`);
+                onClose();
+              }}
+              className="flex-1 flex items-center justify-center space-x-2 px-3 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 transition-colors border-0"
+            >
+              <CheckCircle className="w-4 h-4" />
+              <span>Completar</span>
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
 const ProximaObligacion: React.FC<{ obligacion?: Empresa['proximaObligacion'] }> = ({ obligacion }) => {
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const [popoverPosition, setPopoverPosition] = useState({ top: 0, left: 0 });
+
   if (!obligacion) return <div className="text-xs text-gray-400">Sin datos</div>;
 
   const { tipo, mes, diasRestantes, vencido } = obligacion;
   
-  const getTextColor = () => {
-    if (vencido) return 'text-red-600';
-    if (diasRestantes <= 7) return 'text-yellow-600';
-    return 'text-gray-600';
+  const getStyles = () => {
+    if (vencido) return { 
+      bg: 'bg-red-50', 
+      border: 'border-red-200', 
+      text: 'text-red-700',
+      icon: 'text-red-600'
+    };
+    if (diasRestantes <= 7) return { 
+      bg: 'bg-yellow-50', 
+      border: 'border-yellow-200', 
+      text: 'text-yellow-700',
+      icon: 'text-yellow-600'
+    };
+    return { 
+      bg: 'bg-blue-50', 
+      border: 'border-blue-200', 
+      text: 'text-blue-700',
+      icon: 'text-blue-600'
+    };
   };
 
+  const styles = getStyles();
+
   const getTexto = () => {
-    if (vencido) return `Venció hace ${Math.abs(diasRestantes)} días`;
+    if (vencido) return `Vencido hace ${Math.abs(diasRestantes)} días`;
     return `Faltan ${diasRestantes} días`;
   };
 
-  return (
-    <div className="flex items-center space-x-2">
-      <Calendar className={`w-4 h-4 ${getTextColor()}`} />
-      <div className="text-xs">
-        <div className="font-medium text-gray-800">{tipo} {mes}</div>
-        <div className={`${getTextColor()}`}>
-          {getTexto()}
-        </div>
-      </div>
-    </div>
-  );
-};
+  const calculatePopoverPosition = (element: HTMLElement) => {
+    const rect = element.getBoundingClientRect();
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+    
+    return {
+      top: rect.bottom + scrollTop + 8,
+      left: rect.left + scrollLeft - 150,
+    };
+  };
 
-const TendenciaEgresos: React.FC<{ tendencia?: Empresa['tendencia'] }> = ({ tendencia }) => {
-  if (!tendencia) return <div className="text-xs text-gray-400">Sin datos</div>;
-
-  const { porcentaje, direccion, datos } = tendencia;
-  const isPositive = direccion === 'up';
-  
-  const max = Math.max(...datos);
-  const min = Math.min(...datos);
-  const range = max - min || 1;
-  
-  const points = datos.map((value, index) => {
-    const x = (index * 40) / (datos.length - 1);
-    const y = 20 - ((value - min) / range) * 15;
-    return `${x},${y}`;
-  }).join(' ');
+  const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    const position = calculatePopoverPosition(event.currentTarget);
+    setPopoverPosition(position);
+    setIsPopoverOpen(true);
+  };
 
   return (
-    <div className="flex flex-col items-center space-y-1">
-      <div className="text-xs text-gray-500 font-medium text-center leading-tight">Egresos</div>
-      <div className="flex items-center space-x-2">
-        <div className="flex items-center space-x-1">
-          {isPositive ? (
-            <ArrowUp className="w-4 h-4 text-red-600" />
-          ) : (
-            <ArrowDown className="w-4 h-4 text-green-600" />
-          )}
-          <span className={`font-bold text-sm ${!isPositive ? 'text-green-600' : 'text-red-600'}`}>
-            {Number(porcentaje).toFixed(2)}%
-          </span>
+    <>
+      <div 
+        className={`flex items-center space-x-1 px-2 py-1 rounded-md ${styles.bg} ${styles.border} border cursor-pointer hover:opacity-80 transition-opacity`}
+        onClick={handleClick}
+      >
+        <Calendar className={`w-3 h-3 ${styles.icon} flex-shrink-0`} />
+        <div className="text-xs overflow-hidden">
+          <div className={`font-medium ${styles.text} truncate`}>{tipo} {mes}</div>
+          <div className={`text-xs ${styles.text} truncate`}>
+            {getTexto()}
+          </div>
         </div>
-        
-        <svg width="40" height="20" className="flex-shrink-0">
-          <polyline
-            points={points}
-            fill="none"
-            stroke={!isPositive ? "#10b981" : "#ef4444"}
-            strokeWidth="1.5"
-          />
-          {datos.map((value, index) => {
-            const x = (index * 40) / (datos.length - 1);
-            const y = 20 - ((value - min) / range) * 15;
-            return (
-              <circle
-                key={index}
-                cx={x}
-                cy={y}
-                r="1"
-                fill={!isPositive ? "#10b981" : "#ef4444"}
-              />
-            );
-          })}
-        </svg>
       </div>
-    </div>
+
+      <ProximaObligacionPopover
+        isOpen={isPopoverOpen}
+        onClose={() => setIsPopoverOpen(false)}
+        obligacion={obligacion}
+        position={popoverPosition}
+      />
+    </>
   );
 };
-
-const TendenciaIGV: React.FC<{ tendencia?: Empresa['tendencia'] }> = ({ tendencia }) => {
-  if (!tendencia) return <div className="text-xs text-gray-400">Sin datos</div>;
-
-  const { porcentaje, direccion, datos } = tendencia;
-  const isPositive = direccion === 'up';
-  
-  const max = Math.max(...datos);
-  const min = Math.min(...datos);
-  const range = max - min || 1;
-  
-  const points = datos.map((value, index) => {
-    const x = (index * 40) / (datos.length - 1);
-    const y = 20 - ((value - min) / range) * 15;
-    return `${x},${y}`;
-  }).join(' ');
-
-  return (
-    <div className="flex flex-col items-center space-y-1">
-      <div className="text-xs text-gray-500 font-medium text-center leading-tight">IGV</div>
-      <div className="flex items-center space-x-2">
-        <div className="flex items-center space-x-1">
-          {isPositive ? (
-            <ArrowUp className="w-4 h-4 text-blue-600" />
-          ) : (
-            <ArrowDown className="w-4 h-4 text-orange-600" />
-          )}
-          <span className={`font-bold text-sm ${isPositive ? 'text-blue-600' : 'text-orange-600'}`}>
-            {isPositive ? '+' : ''}{Number(porcentaje).toFixed(2)}%
-          </span>
-        </div>
-        
-        <svg width="40" height="20" className="flex-shrink-0">
-          <polyline
-            points={points}
-            fill="none"
-            stroke={isPositive ? "#2563eb" : "#ea580c"}
-            strokeWidth="1.5"
-          />
-          {datos.map((value, index) => {
-            const x = (index * 40) / (datos.length - 1);
-            const y = 20 - ((value - min) / range) * 15;
-            return (
-              <circle
-                key={index}
-                cx={x}
-                cy={y}
-                r="1"
-                fill={isPositive ? "#2563eb" : "#ea580c"}
-              />
-            );
-          })}
-        </svg>
-      </div>
-    </div>
-  );
-};
-
-const TendenciaRentas: React.FC<{ tendencia?: Empresa['tendencia'] }> = ({ tendencia }) => {
-  if (!tendencia) return <div className="text-xs text-gray-400">Sin datos</div>;
-
-  const { porcentaje, direccion, datos } = tendencia;
-  const isPositive = direccion === 'up';
-  
-  const max = Math.max(...datos);
-  const min = Math.min(...datos);
-  const range = max - min || 1;
-  
-  const points = datos.map((value, index) => {
-    const x = (index * 40) / (datos.length - 1);
-    const y = 20 - ((value - min) / range) * 15;
-    return `${x},${y}`;
-  }).join(' ');
-
-  return (
-    <div className="flex flex-col items-center space-y-1">
-      <div className="text-xs text-gray-500 font-medium text-center leading-tight">Rentas</div>
-      <div className="flex items-center space-x-2">
-        <div className="flex items-center space-x-1">
-          {isPositive ? (
-            <ArrowUp className="w-4 h-4 text-purple-600" />
-          ) : (
-            <ArrowDown className="w-4 h-4 text-pink-600" />
-          )}
-          <span className={`font-bold text-sm ${isPositive ? 'text-purple-600' : 'text-pink-600'}`}>
-            {isPositive ? '+' : ''}{Number(porcentaje).toFixed(2)}%
-          </span>
-        </div>
-        
-        <svg width="40" height="20" className="flex-shrink-0">
-          <polyline
-            points={points}
-            fill="none"
-            stroke={isPositive ? "#9333ea" : "#ec4899"}
-            strokeWidth="1.5"
-          />
-          {datos.map((value, index) => {
-            const x = (index * 40) / (datos.length - 1);
-            const y = 20 - ((value - min) / range) * 15;
-            return (
-              <circle
-                key={index}
-                cx={x}
-                cy={y}
-                r="1"
-                fill={isPositive ? "#9333ea" : "#ec4899"}
-              />
-            );
-          })}
-        </svg>
-      </div>
-    </div>
-  );
-};
-
 const Empresas: React.FC<EmpresasProps> = ({ onNavigate }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterEstado, setFilterEstado] = useState('');
@@ -444,6 +999,13 @@ const Empresas: React.FC<EmpresasProps> = ({ onNavigate }) => {
   
   const empresas = empresasList;
 
+// Agregar esta función aquí:
+const getCompletitudColor = (completitud: number) => {
+  if (completitud <= 25) return '#ef4444'; // red-500
+  if (completitud <= 50) return '#eab308'; // yellow-500  
+  if (completitud <= 75) return '#f97316'; // orange-500
+  return '#22c55e'; // green-500
+};
   // Filter empresas based on search term and estado
   const filteredEmpresas = empresas.filter(empresa => {
     const matchesSearch = empresa.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -480,12 +1042,7 @@ const Empresas: React.FC<EmpresasProps> = ({ onNavigate }) => {
     }
   };
 
-  const getCompletitudColor = (completitud: number) => {
-    if (completitud <= 25) return 'bg-red-500';
-    if (completitud <= 50) return 'bg-yellow-500';
-    if (completitud <= 75) return 'bg-orange-500';
-    return 'bg-green-500';
-  };
+
 
   const toggleDropdown = (empresaId: string) => {
     setOpenDropdownId(openDropdownId === empresaId ? null : empresaId);
@@ -781,7 +1338,7 @@ const Empresas: React.FC<EmpresasProps> = ({ onNavigate }) => {
 
   return (
     <DashboardLayout currentModule="empresas" onNavigate={onNavigate}>
-      <div className="space-y-6">
+      <div className="space-y-4">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
@@ -791,7 +1348,7 @@ const Empresas: React.FC<EmpresasProps> = ({ onNavigate }) => {
         </div>
 
         {/* Search Bar and Action Buttons */}
-        <div className="bg-white rounded-lg border border-gray-200 p-4 max-w-5xl mx-auto ">  {/* proof */}
+        <div className="bg-white rounded-lg border border-gray-200 p-4 max-w-5xl mx-auto">
           <div className="flex items-center justify-between gap-4">
             {/* Search Bar and Filter */}
             <div className="flex items-center space-x-3 flex-1">
@@ -801,7 +1358,7 @@ const Empresas: React.FC<EmpresasProps> = ({ onNavigate }) => {
                 </div>
                 <input
                   type="text"
-                  placeholder="           Buscar por nombre o RUC de empresa..."
+                  placeholder="Buscar por nombre o RUC de empresa..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -831,11 +1388,9 @@ const Empresas: React.FC<EmpresasProps> = ({ onNavigate }) => {
               </button>
             </div>
           </div>
-
         </div>
-
-        {/* Add Company Button/Form */}
-        <div className="max-w-5xl mx-auto">
+{/* Add Company Button/Form */}
+        <div className="max-w-4xl mx-auto">
           {!showAddForm ? (
             <div className="mb-6 w-full">
               <button
@@ -850,7 +1405,30 @@ const Empresas: React.FC<EmpresasProps> = ({ onNavigate }) => {
             <div className="flex justify-center">
               <div className="bg-white border-2 border-blue-200 rounded-lg p-6 mb-6 w-full max-w-2xl">
                 <div className="flex items-center justify-center mb-6 relative">
-                  <h3 className="text-lg font-semibold text-gray-900">Agrega nueva empresa</h3>
+                  <div className="flex items-center space-x-3">
+                    <h3 className="text-lg font-semibold text-gray-900">Agrega nueva empresa</h3>
+                    
+                    {/* Estado badge */}
+                    {validationState.ruc === 'validating' || validationState.credentials === 'validating' ? (
+                      <span className="text-xs text-blue-600 font-medium bg-blue-50 px-2 py-1 rounded-full flex items-center space-x-1">
+                        <div className="w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                        <span>Validando...</span>
+                      </span>
+                    ) : (validationState.ruc === 'invalid' || validationState.ruc === 'duplicate' || validationState.credentials === 'invalid') ? (
+                      <span className="text-xs text-red-600 font-medium bg-red-50 px-2 py-1 rounded-full">
+                        No válido
+                      </span>
+                    ) : (!newCompanyForm.ruc.trim() || !newCompanyForm.usuarioSol.trim() || !newCompanyForm.claveSol.trim()) ? (
+                      <span className="text-xs text-yellow-600 font-medium bg-yellow-50 px-2 py-1 rounded-full">
+                        Incompleto
+                      </span>
+                    ) : (validationState.ruc === 'valid' || validationState.ruc === 'inactive') && validationState.credentials === 'valid' ? (
+                      <span className="text-xs text-green-600 font-medium bg-green-50 px-2 py-1 rounded-full">
+                        {validationState.ruc === 'inactive' ? 'Verificada (Inactiva)' : 'Verificada'}
+                      </span>
+                    ) : null}
+                  </div>
+                  
                   <button
                     onClick={handleCancelAddForm}
                     className="absolute right-0 text-gray-400 hover:text-gray-600"
@@ -862,7 +1440,7 @@ const Empresas: React.FC<EmpresasProps> = ({ onNavigate }) => {
                 <div className="space-y-6">
                   {/* RUC Input */}
                   <div className="max-w-md mx-auto">
-                    <label className="block text-sm font-medium text-gray-700 mb-2 text-center"> {/*  Input RUC*/}
+                    <label className="block text-sm font-medium text-gray-700 mb-2 text-center">
                       RUC *
                     </label>
                     <div className="relative">
@@ -1033,8 +1611,8 @@ const Empresas: React.FC<EmpresasProps> = ({ onNavigate }) => {
           )}
         </div>
 
-        {/* Empresas List */}
-        <div className="max-w-5xl mx-auto space-y-4">
+       {/* Empresas List - LAYOUT HORIZONTAL OPTIMIZADO */}
+        <div className="w-[80%] max-w-5xl mx-auto space-y-2">
           {filteredEmpresas.length === 0 ? (
             <div className="bg-white rounded-lg border border-gray-200 p-12">
               <div className="text-center">
@@ -1042,13 +1620,14 @@ const Empresas: React.FC<EmpresasProps> = ({ onNavigate }) => {
                   <Building2 className="w-10 h-10 text-gray-400" />
                 </div>
                 <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  {searchTerm || filterEstado ? 'No se encontraron empresas' : 'No hay empresas registradas'}
+                  {searchTerm || filterEstado
+                    ? 'No se encontraron empresas'
+                    : 'No hay empresas registradas'}
                 </h3>
                 <p className="text-gray-500 mb-6 max-w-md mx-auto">
-                  {searchTerm || filterEstado 
+                  {searchTerm || filterEstado
                     ? 'Intenta ajustar los criterios de búsqueda'
-                    : 'Comienza agregando tu primera empresa para gestionar sus obligaciones tributarias.'
-                  }
+                    : 'Comienza agregando tu primera empresa para gestionar sus obligaciones tributarias.'}
                 </p>
                 {!searchTerm && !filterEstado && (
                   <button className="flex items-center space-x-2 px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors mx-auto">
@@ -1058,169 +1637,243 @@ const Empresas: React.FC<EmpresasProps> = ({ onNavigate }) => {
                 )}
               </div>
             </div>
-          ) : (
-            <div className="grid gap-4">
-              {filteredEmpresas.map((empresa) => (
-                <div key={empresa.id} className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow">
-                  {/* Flex Layout SIMPLE - Bloques uno al lado del otro */}
-                  <div className="flex items-center space-x-8">
-                    
-                    {/* BLOQUE 1: Datos de empresa - COMPACTO */}
-                    <div className="flex items-center space-x-3 flex-shrink-0">
-                      {/* Icono */}
-                      <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <Building2 className="w-5 h-5 text-blue-600" />
-                      </div>
-                      
-                      {/* Info agrupada */}
-                      <div className="min-w-0">
-                        {/* Barra + % en una línea */}
-                        <div className="flex items-center space-x-2 mb-1">
-                          <div className="w-16 bg-gray-300 rounded-full h-2 border border-gray-400">
-                            <div 
-                              className={`h-2 rounded-full transition-all duration-300 ${getCompletitudColor(empresa.completitud)}`}
-                              style={{ width: `${empresa.completitud}%` }}
-                            />
-                          </div>
-                          <span className="text-xs font-medium text-gray-600 whitespace-nowrap">{empresa.completitud}%</span>
-                        </div>
-                        
-                        {/* Nombre */}
-                        <h3 className="text-sm font-semibold text-gray-900 mb-0.5 truncate" style={{maxWidth: '200px'}} title={empresa.nombre}>
-                          {empresa.nombre}
-                        </h3>
-                        
-                        {/* RUC */}
-                        <p className="text-xs text-gray-500 mb-1">RUC: {empresa.ruc}</p>
-                        
-                        {/* Estados en línea */}
-                        <div className="flex space-x-1">
-                          <span className={`px-1.5 py-0.5 text-xs rounded-full border font-medium ${getEstadoColor(empresa.estado)} whitespace-nowrap`}>
-                            {empresa.estado}
-                          </span>
-                          <span className={`px-1.5 py-0.5 text-xs rounded-full border font-medium ${getCondicionColor(empresa.condicion)} whitespace-nowrap`}>
-                            {empresa.condicion}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
+  ) : (
+    <div className="space-y-2">
+      {filteredEmpresas.map((empresa) => (
+        <div
+          key={empresa.id}
+          className="bg-white rounded-lg border border-gray-200 hover:shadow-lg transition-all duration-200 hover:border-gray-300 p-4"
+        >
+          {/* Contenedor fila optimizado */}
+          <div className="flex items-center justify-between w-full">
 
-                    {/* BLOQUE 2: Personas Asignadas */}
-                    <div className="flex items-center flex-shrink-0">
-                      <PersonasAsignadas personas={empresa.personas} />
-                    </div>
+            {/* 1️⃣ Columna Empresa */}
+            <div
+              style={{ width: '230px', minWidth: '230px', maxWidth: '230px' }}
+              className="flex-shrink-0 flex items-center space-x-2 overflow-hidden"
+            >
+              {/* Logo */}
+              <div className="w-8 h-8 bg-blue-500 flex items-center justify-center flex-shrink-0">
+                <Building2 className="w-4 h-4 text-white" />
+              </div>
 
-                    {/* BLOQUE 3: Performance Ingresos */}
-                    <div className="flex items-center flex-shrink-0">
-                      <TendenciaIngresos tendencia={empresa.tendencia} />
-                    </div>
+              {/* Card interna */}
+              <div
+                style={{ width: '168px', minWidth: '168px', maxWidth: '168px' }}
+                className="overflow-hidden"
+              >
+                {/* Progress bar */}
+              <span className="text-xs font-medium text-gray-600 mb-1 text-left">Datos completados </span>
+              <div className="flex items-center mb-2">
+                <div
+                  className="flex-1 bg-gray-200 rounded-full h-1.5 mr-2"
+                  style={{ maxWidth: '130px' }}
+                >
+                  
+                  <div
+                    className="h-2 rounded-full transition-all duration-500"
+                    style={{ 
+                    width: `${empresa.completitud}%`,
+                    backgroundColor: getCompletitudColor(empresa.completitud)
+                  }}
+                  />
+                </div>
+                <span className="text-xs font-semibold text-gray-700 w-8 text-right">
+                  {empresa.completitud}%
+                </span>
+              </div>
 
-                    {/* BLOQUE 4: Gráfico Egresos */}
-                    <div className="flex items-center flex-shrink-0">
-                      <TendenciaEgresos tendencia={{
-                        porcentaje: empresa.tendencia?.porcentaje ? -Math.abs(empresa.tendencia.porcentaje * 0.7) : -8.3,
-                        direccion: 'down' as const,
-                        datos: empresa.tendencia?.datos ? empresa.tendencia.datos.map(d => d * 0.6) : [20, 25, 22, 18, 15, 12]
-                      }} />
-                    </div>
+                {/* Nombre */}
+                <h3 className="text-sm font-bold text-gray-900 mb-1 leading-tight line-clamp-2">
+                  {empresa.nombre}
+                </h3>
 
-                    {/* BLOQUE 5: Gráfico IGV */}
-                    <div className="flex items-center flex-shrink-0">
-                      <TendenciaIGV tendencia={{
-                        porcentaje: empresa.tendencia?.porcentaje ? empresa.tendencia.porcentaje * 0.4 : 3.2,
-                        direccion: Math.random() > 0.5 ? 'up' as const : 'down' as const,
-                        datos: empresa.tendencia?.datos ? empresa.tendencia.datos.map(d => d * 0.3) : [8, 12, 15, 11, 9, 14]
-                      }} />
-                    </div>
+                {/* RUC */}
+                <p className="text-xs text-gray-500 mb-2 truncate">
+                  RUC: {empresa.ruc}
+                </p>
 
-                    {/* BLOQUE 6: Gráfico Rentas */}
-                    <div className="flex items-center flex-shrink-0">
-                      <TendenciaRentas tendencia={{
-                        porcentaje: empresa.tendencia?.porcentaje ? empresa.tendencia.porcentaje * 0.6 : 5.8,
-                        direccion: 'up' as const,
-                        datos: empresa.tendencia?.datos ? empresa.tendencia.datos.map(d => d * 0.4) : [12, 14, 16, 18, 20, 22]
-                      }} />
-                    </div>
+                {/* Estados con flex-wrap mejorado */}
+                <div className="flex flex-wrap justify-between">
+                  <span
+                    className={`text-xs rounded border font-medium text-center ${getEstadoColor(empresa.estado)}`}
+                    style={{
+                      padding: '2px 6px',
+                      maxWidth: '100%',
+                      wordBreak: 'break-word',
+                      lineHeight: '1.2',
+                    }}
+                  >
+                    {empresa.estado}
+                  </span>
+                  <span
+                    className={`text-xs rounded border font-medium text-center ${getCondicionColor(empresa.condicion)}`}
+                    style={{
+                      padding: '2px 6px',
+                      maxWidth: '100%',
+                      wordBreak: 'break-word',
+                      lineHeight: '1.2',
+                    }}
+                  >
+                    {empresa.condicion}
+                  </span>
+                </div>
+              </div>
+            </div>
+            
+            {/* 3️⃣ Estado de la Empresa */}
+            <div style={{ width: '90px' }} className="flex-shrink-0 overflow-hidden">
+              <div className="text-center">
+                <div className="text-xs text-gray-500 font-medium mb-1">Estado</div>
+                <span 
+                  className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
+                    empresa.estado.toLowerCase() === 'activo' 
+                      ? 'bg-green-100 text-green-800' 
+                      : 'bg-red-100 text-red-800'
+                  }`}
+                >
+                  {empresa.estado.toLowerCase() === 'activo' ? 'Activo' : 'No Activo'}
+                </span>
+              </div>
+            </div>
 
-                    {/* BLOQUE 7: Estado Tributario */}
-                    <div className="flex items-center flex-shrink-0">
-                      <SemaforoTributario semaforo={empresa.semaforoTributario} />
-                    </div>
+            {/* 2️⃣ Personas Asignadas */}
+            <div
+              style={{ width: '140px', minWidth: '140px', maxWidth: '140px' }}
+              className="flex-shrink-0 overflow-hidden"
+            >
+               {/* TÍTULO */}
+              <div className="text-xs text-gray-500 font-medium mb-1 text-center">Asignados</div>
+              <PersonasAsignadas personas={empresa.personas}
+              empresaNombre={empresa.nombre} />
+            </div>
 
-                    {/* BLOQUE 8: Próximo Vencimiento */}
-                    <div className="flex items-center flex-shrink-0">
-                      <ProximaObligacion obligacion={empresa.proximaObligacion} />
-                    </div>
+            {/* 3️⃣ Ingresos */}
+            <div style={{ width: '80px' }} className="flex-shrink-0 overflow-hidden">
+              <MiniChart
+                label="Ingresos"
+                porcentaje={empresa.tendencia?.porcentaje || 12.5}
+                direccion="up"
+                datos={[65, 78, 85, 92, 88, 95]}
+                color="text-green-600"
+              />
+            </div>
 
-                    {/* BLOQUE 9: Menu Dropdown */}
-                    <div className="flex items-center justify-end flex-1">
-                      {/* Dropdown Menu */}
-                      <div className="relative">
-                        <button
-                        onClick={() => toggleDropdown(empresa.id)}
-                        className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                        title="Opciones"
+            {/* 4️⃣ Egresos */}
+            <div style={{ width: '80px' }} className="flex-shrink-0 overflow-hidden">
+              <MiniChart
+                label="Egresos"
+                porcentaje={-8.75}
+                direccion="down"
+                datos={[20, 25, 22, 18, 15, 12]}
+                color="text-red-600"
+                isInverted
+              />
+            </div>
+
+            {/* 5️⃣ IGV */}
+            <div style={{ width: '80px' }} className="flex-shrink-0 overflow-hidden">
+              <MiniChart
+                label="IGV"
+                porcentaje={5}
+                direccion="up"
+                datos={[8, 12, 15, 11, 9, 14]}
+                color="text-blue-600"
+              />
+            </div>
+
+            {/* 6️⃣ Rentas */}
+            <div style={{ width: '80px' }} className="flex-shrink-0 overflow-hidden">
+              <MiniChart
+                label="Rentas"
+                porcentaje={7.5}
+                direccion="up"
+                datos={[12, 14, 16, 18, 20, 22]}
+                color="text-purple-600"
+              />
+            </div>
+
+            {/* 7️⃣ Estado Tributario */}
+            <div style={{ width: '180px' }} className="flex-shrink-0 overflow-hidden">
+              <SemaforoTributario semaforo={empresa.semaforoTributario} />
+            </div>
+
+            {/* 8️⃣ Próximo Vencimiento */}
+            <div style={{ width: '150px' }} className="flex-shrink-0 overflow-hidden">
+              <ProximaObligacion obligacion={empresa.proximaObligacion} />
+            </div>
+
+            {/* 9️⃣ Menu de acciones */}
+            <div className="flex-shrink-0 ml-auto">
+              <div className="relative">
+                <button
+                  onClick={() => toggleDropdown(empresa.id)}
+                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <MoreVertical className="w-5 h-5" />
+                </button>
+
+                {openDropdownId === empresa.id && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-30"
+                      onClick={() => setOpenDropdownId(null)}
+                    />
+                    <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-xl z-40">
+                      <button
+                        onClick={() =>
+                          handleAction('permisos', empresa.id, empresa.nombre)
+                        }
+                        className="flex items-center space-x-3 w-full px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors rounded-t-lg"
                       >
-                        <MoreVertical className="w-5 h-5" />
+                        <Shield className="w-4 h-4" />
+                        <span>Gestionar Permisos</span>
                       </button>
 
-                      {/* Dropdown Menu */}
-                      {openDropdownId === empresa.id && (
-                        <>
-                          {/* Backdrop to close dropdown */}
-                          <div 
-                            className="fixed inset-0 z-30" 
-                            onClick={() => setOpenDropdownId(null)}
-                          />
-                          
-                          {/* Menu Options */}
-                          <div className="absolute right-0 top-full mt-1 w-65 bg-white border border-gray-200 rounded-lg shadow-xl z-40">
-                            <button
-                              onClick={() => handleAction('permisos', empresa.id, empresa.nombre)}
-                              className="flex items-center space-x-3 w-full px-3 py-3 text-sm text-gray-700 hover:bg-blue-50 border-gray-200 hover:text-blue-600 transition-colors rounded-t-lg"
-                            >
-                              <Shield className="w-20 h-4" />
-                              <span>Gestionar Permisos</span>
-                            </button>
-                            
-                            <button
-                              onClick={() => handleAction('ficha', empresa.id, empresa.nombre)}
-                              className="flex items-center space-x-3 w-full px-5 py-3 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 border-gray-200 transition-colors border-t border-gray-100"
-                            >
-                              <FileText className="w-20 h-4" />
-                              <span>Ver Ficha RUC</span>
-                            </button>
-                            
-                            <button
-                              onClick={() => handleAction('editar', empresa.id, empresa.nombre)}
-                              className="flex items-center space-x-3 w-full px-5 py-3 text-sm text-gray-700 hover:bg-yellow-50 hover:text-yellow-600 border-gray-200 transition-colors border-t border-gray-100"
-                            >
-                              <Edit3 className="w-20 h-4" />
-                              <span>Editar Empresa</span>
-                            </button>
-                            
-                            <button
-                              onClick={() => handleAction('eliminar', empresa.id, empresa.nombre)}
-                              className="flex items-center space-x-3 w-full px-5 py-3 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 border-gray-200 transition-colors border-t border-gray-100 rounded-b-lg"
-                            >
-                              <Trash2 className="w-20 h-4" />
-                              <span>Eliminar Empresa</span>
-                            </button>
-                          </div>
-                        </>
-                      )}
-                      </div>
+                      <button
+                        onClick={() =>
+                          handleAction('ficha', empresa.id, empresa.nombre)
+                        }
+                        className="flex items-center space-x-3 w-full px-4 py-3 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 border-t border-gray-100 transition-colors"
+                      >
+                        <FileText className="w-4 h-4" />
+                        <span>Ver Ficha RUC</span>
+                      </button>
+
+                      <button
+                        onClick={() =>
+                          handleAction('editar', empresa.id, empresa.nombre)
+                        }
+                        className="flex items-center space-x-3 w-full px-4 py-3 text-sm text-gray-700 hover:bg-yellow-50 hover:text-yellow-600 border-t border-gray-100 transition-colors"
+                      >
+                        <Edit3 className="w-4 h-4" />
+                        <span>Editar Empresa</span>
+                      </button>
+
+                      <button
+                        onClick={() =>
+                          handleAction('eliminar', empresa.id, empresa.nombre)
+                        }
+                        className="flex items-center space-x-3 w-full px-4 py-3 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 border-t border-gray-100 transition-colors rounded-b-lg"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        <span>Eliminar Empresa</span>
+                      </button>
                     </div>
-                  </div>
-                </div>
-              ))}
+                  </>
+                )}
+              </div>
             </div>
-          )}
+          </div>
         </div>
+      ))}
+    </div>
+  )}
+</div>
 
         {/* Summary Footer */}
         {filteredEmpresas.length > 0 && (
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
+          <div className="bg-white rounded-lg border border-gray-200 p-4 max-w-7xl mx-auto">
             <div className="flex items-center justify-between text-sm text-gray-600">
               <span>Total: {filteredEmpresas.length} empresas</span>
               <div className="flex items-center space-x-4">
