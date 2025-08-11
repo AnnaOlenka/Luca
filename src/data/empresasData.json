@@ -7,7 +7,11 @@
       "estado": "Activo",
       "condicion": "Habido",
       "completitud": 75,
-      "logo": null
+      "logo": null,
+      "usuarioSol": "ACME01",
+      "claveSol": "acme123",
+      "credentialsStatus": "valid",
+      "credentialsValid": true
     },
     {
       "id": "2", 
@@ -16,7 +20,11 @@
       "estado": "Activo",
       "condicion": "Habido",
       "completitud": 50,
-      "logo": null
+      "logo": null,
+      "usuarioSol": "USUARIOMAL",
+      "claveSol": "wrongpass",
+      "credentialsStatus": "invalid",
+      "credentialsValid": false
     },
     {
       "id": "3",
@@ -25,7 +33,11 @@
       "estado": "Baja Provisional por Oficio",
       "condicion": "No habido",
       "completitud": 25,
-      "logo": null
+      "logo": null,
+      "usuarioSol": "GAMMA123",
+      "claveSol": "gamma456",
+      "credentialsStatus": "valid",
+      "credentialsValid": true
     },
     {
       "id": "4",
@@ -34,7 +46,11 @@
       "estado": "Activo",
       "condicion": "Habido",
       "completitud": 100,
-      "logo": null
+      "logo": null,
+      "usuarioSol": "DELTA456",
+      "claveSol": "delta789",
+      "credentialsStatus": "valid",
+      "credentialsValid": true
     },
     {
       "id": "5",
@@ -43,7 +59,11 @@
       "estado": "Activo",
       "condicion": "Por verificar",
       "completitud": 75,
-      "logo": null
+      "logo": null,
+      "usuarioSol": "USUARIOMAL",
+      "claveSol": "wrongpass",
+      "credentialsStatus": "invalid",
+      "credentialsValid": false
     },
     {
       "id": "6",
@@ -52,7 +72,11 @@
       "estado": "Baja Provisional por Oficio",
       "condicion": "No hallado se mudo de domicilio",
       "completitud": 25,
-      "logo": null
+      "logo": null,
+      "usuarioSol": "ZETA789",
+      "claveSol": "zeta321",
+      "credentialsStatus": "valid",
+      "credentialsValid": true
     }
   ]
 }

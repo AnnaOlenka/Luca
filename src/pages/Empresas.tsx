@@ -43,6 +43,11 @@ interface Empresa {
   condicion: string;
   completitud: number;
   logo?: string | null;
+  // Propiedades de credenciales
+  usuarioSol?: string;
+  claveSol?: string;
+  credentialsStatus?: 'valid' | 'invalid' | 'checking' | 'idle';
+  credentialsValid?: boolean;
   personas?: Array<{
     id: number;
     nombre: string;
@@ -437,6 +442,7 @@ const PersonasAsignadas: React.FC<{
   const [isListaPopoverOpen, setIsListaPopoverOpen] = useState(false);
   const [popoverPosition, setPopoverPosition] = useState({ top: 0, left: 0 });
   const clickedElementRef = useRef<HTMLElement | null>(null);
+ 
 
   // Efecto para recalcular posición cuando cambie el layout o haya scroll
   useEffect(() => {
@@ -1283,6 +1289,13 @@ const getCompletitudColor = (completitud: number) => {
   };
 
   const handleEditSave = (updatedEmpresa: Empresa) => {
+    console.log('🏢 handleEditSave recibió empresa actualizada:', {
+      nombre: updatedEmpresa.nombre,
+      credentialsStatus: updatedEmpresa.credentialsStatus,
+      credentialsValid: updatedEmpresa.credentialsValid,
+      usuarioSol: updatedEmpresa.usuarioSol
+    });
+    
     setEmpresasList(prevList =>
       prevList.map(empresa =>
         empresa.id === updatedEmpresa.id ? updatedEmpresa : empresa
