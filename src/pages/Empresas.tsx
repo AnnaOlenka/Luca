@@ -125,7 +125,7 @@ const TendenciaIngresos: React.FC<{ tendencia?: Empresa['tendencia'] }> = ({ ten
 
   return (
     <div className="flex flex-col items-center space-y-1">
-      <div className="text-xs text-gray-500 font-medium">Ingresos</div>
+      <div className="text-xs text-gray-500 font-medium text-center leading-tight">Ingresos</div>
       <div className="flex items-center space-x-2">
         <div className="flex items-center space-x-1">
           {isPositive ? (
@@ -134,7 +134,7 @@ const TendenciaIngresos: React.FC<{ tendencia?: Empresa['tendencia'] }> = ({ ten
             <ArrowDown className="w-4 h-4 text-red-600" />
           )}
           <span className={`font-bold text-sm ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
-            {isPositive ? '+' : ''}{porcentaje}%
+            {isPositive ? '+' : ''}{Number(porcentaje).toFixed(2)}%
           </span>
         </div>
         
@@ -237,7 +237,7 @@ const TendenciaEgresos: React.FC<{ tendencia?: Empresa['tendencia'] }> = ({ tend
 
   return (
     <div className="flex flex-col items-center space-y-1">
-      <div className="text-xs text-gray-500 font-medium">Egresos</div>
+      <div className="text-xs text-gray-500 font-medium text-center leading-tight">Egresos</div>
       <div className="flex items-center space-x-2">
         <div className="flex items-center space-x-1">
           {isPositive ? (
@@ -246,7 +246,7 @@ const TendenciaEgresos: React.FC<{ tendencia?: Empresa['tendencia'] }> = ({ tend
             <ArrowDown className="w-4 h-4 text-green-600" />
           )}
           <span className={`font-bold text-sm ${!isPositive ? 'text-green-600' : 'text-red-600'}`}>
-            {porcentaje}%
+            {Number(porcentaje).toFixed(2)}%
           </span>
         </div>
         
@@ -294,7 +294,7 @@ const TendenciaIGV: React.FC<{ tendencia?: Empresa['tendencia'] }> = ({ tendenci
 
   return (
     <div className="flex flex-col items-center space-y-1">
-      <div className="text-xs text-gray-500 font-medium">IGV</div>
+      <div className="text-xs text-gray-500 font-medium text-center leading-tight">IGV</div>
       <div className="flex items-center space-x-2">
         <div className="flex items-center space-x-1">
           {isPositive ? (
@@ -303,7 +303,7 @@ const TendenciaIGV: React.FC<{ tendencia?: Empresa['tendencia'] }> = ({ tendenci
             <ArrowDown className="w-4 h-4 text-orange-600" />
           )}
           <span className={`font-bold text-sm ${isPositive ? 'text-blue-600' : 'text-orange-600'}`}>
-            {isPositive ? '+' : ''}{porcentaje}%
+            {isPositive ? '+' : ''}{Number(porcentaje).toFixed(2)}%
           </span>
         </div>
         
@@ -351,7 +351,7 @@ const TendenciaRentas: React.FC<{ tendencia?: Empresa['tendencia'] }> = ({ tende
 
   return (
     <div className="flex flex-col items-center space-y-1">
-      <div className="text-xs text-gray-500 font-medium">Rentas</div>
+      <div className="text-xs text-gray-500 font-medium text-center leading-tight">Rentas</div>
       <div className="flex items-center space-x-2">
         <div className="flex items-center space-x-1">
           {isPositive ? (
@@ -360,7 +360,7 @@ const TendenciaRentas: React.FC<{ tendencia?: Empresa['tendencia'] }> = ({ tende
             <ArrowDown className="w-4 h-4 text-pink-600" />
           )}
           <span className={`font-bold text-sm ${isPositive ? 'text-purple-600' : 'text-pink-600'}`}>
-            {isPositive ? '+' : ''}{porcentaje}%
+            {isPositive ? '+' : ''}{Number(porcentaje).toFixed(2)}%
           </span>
         </div>
         
