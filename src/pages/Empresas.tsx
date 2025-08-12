@@ -4,6 +4,7 @@ import RucModal from '../components/Modals/RucModal';
 import ImportCsvModal from '../components/Modals/ImportCsvModal';
 import DeleteConfirmModal from '../components/Modals/DeleteConfirmModal';
 import EditCompanyModal from '../components/Modals/EditCompanyModal';
+import CompanyPermissionsModal from '../components/Modals/CompanyPermissionsModal';
 import { 
   Building2, 
   Search, 
@@ -221,7 +222,7 @@ const PersonaPopover: React.FC<{
     
     <button
       onClick={() => {
-        alert(`Configurar permisos de ${persona.nombre}`);
+        alert('Configurar permisos - Modal disponible desde la tabla principal');
         onClose();
       }}
       className=" border-0 outline-none w-full flex items-center space-x-3 px-3 py-2 text-xs text-gray-700 hover:bg-gray-50 transition-colors"
@@ -1108,9 +1109,11 @@ const Empresas: React.FC<EmpresasProps> = ({ onNavigate }) => {
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isPermissionsModalOpen, setIsPermissionsModalOpen] = useState(false);
   const [selectedEmpresa, setSelectedEmpresa] = useState<Empresa | null>(null);
   const [empresaToDelete, setEmpresaToDelete] = useState<Empresa | null>(null);
   const [empresaToEdit, setEmpresaToEdit] = useState<Empresa | null>(null);
+  const [empresaForPermissions, setEmpresaForPermissions] = useState<Empresa | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
   const [newCompanyForm, setNewCompanyForm] = useState({
@@ -1153,6 +1156,68 @@ const Empresas: React.FC<EmpresasProps> = ({ onNavigate }) => {
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
   
   const empresas = empresasList;
+
+  // Mock data para usuarios disponibles
+  const mockAvailableUsers = [
+    {
+      id: 'user-1',
+      nombre: 'Juan Carlos Pérez',
+      email: 'juan.perez@email.com',
+      telefono: '+51 999 123 456',
+      documento: '12345678'
+    },
+    {
+      id: 'user-2',
+      nombre: 'María Elena García',
+      email: 'maria.garcia@email.com',
+      telefono: '+51 999 654 321',
+      documento: '87654321'
+    },
+    {
+      id: 'user-3',
+      nombre: 'Carlos Alberto Ruiz',
+      email: 'carlos.ruiz@email.com',
+      telefono: '+51 999 789 123',
+      documento: '11223344'
+    },
+    {
+      id: 'user-4',
+      nombre: 'Ana Sofía Torres',
+      email: 'ana.torres@email.com',
+      telefono: '+51 999 456 789',
+      documento: '44332211'
+    },
+    {
+      id: 'user-5',
+      nombre: 'Roberto Mendoza',
+      email: 'roberto.mendoza@email.com',
+      telefono: '+51 999 321 654',
+      documento: '55667788'
+    }
+  ];
+
+  // Usuarios asignados por defecto
+  const mockAssignedUsers = [
+    { ...mockAvailableUsers[0], role: 'gerente_apoderado' },
+    { ...mockAvailableUsers[1], role: 'contador_senior' },
+    { ...mockAvailableUsers[2], role: 'contador' }
+  ];
+
+  // Función para abrir modal de permisos
+  const handleOpenPermissionsModal = (empresa: Empresa) => {
+    setEmpresaForPermissions(empresa);
+    setIsPermissionsModalOpen(true);
+  };
+
+  // Función para guardar permisos
+  const handleSavePermissions = async (users: any[]): Promise<void> => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        console.log('Permisos guardados para empresa:', empresaForPermissions?.nombre, users);
+        resolve();
+      }, 1500);
+    });
+  };
 
 // Agregar esta función aquí:
 const getCompletitudColor = (completitud: number) => {
@@ -1214,7 +1279,10 @@ const getCompletitudColor = (completitud: number) => {
     
     switch (action) {
       case 'permisos':
-        alert(`Gestionar permisos para: ${empresaNombre}`);
+        const empresaPermisos = empresas.find(e => e.id === empresaId);
+        if (empresaPermisos) {
+          handleOpenPermissionsModal(empresaPermisos);
+        }
         break;
       case 'ficha':
         const empresa = empresas.find(e => e.id === empresaId);
@@ -2094,6 +2162,25 @@ const getCompletitudColor = (completitud: number) => {
           isOpen={isEditModalOpen}
           onClose={closeEditModal}
           onSave={handleEditSave}
+        />
+      )}
+
+      {/* Company Permissions Modal */}
+      {empresaForPermissions && (
+        <CompanyPermissionsModal
+          isOpen={isPermissionsModalOpen}
+          onClose={() => {
+            setIsPermissionsModalOpen(false);
+            setEmpresaForPermissions(null);
+          }}
+          empresa={{
+            id: empresaForPermissions.id,
+            nombre: empresaForPermissions.nombre,
+            ruc: empresaForPermissions.ruc
+          }}
+          availableUsers={mockAvailableUsers}
+          assignedUsers={mockAssignedUsers}
+          onSave={handleSavePermissions}
         />
       )}
     </DashboardLayout>

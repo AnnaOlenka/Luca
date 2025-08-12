@@ -28,24 +28,83 @@ const EditCompanyModal: React.FC<EditCompanyModalProps> = ({ empresa, isOpen, on
   // Funciones de validación
   const validateEmail = (email: string): string => {
     if (!email) return '';
+    
+    // Verificar que no sean solo símbolos
+    if (/^[^a-zA-Z0-9@._+-]+$/.test(email)) {
+      return 'Email no debe contener solo símbolos';
+    }
+    
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     return emailRegex.test(email) ? '' : 'Formato de email inválido';
   };
 
   const validateDni = (dni: string): string => {
     if (!dni) return '';
-    const dniRegex = /^\d{8}$/;
-    return dniRegex.test(dni) ? '' : 'DNI debe tener exactamente 8 dígitos';
+    
+    // Verificar que no sean solo símbolos
+    if (/^[^a-zA-Z0-9]+$/.test(dni)) {
+      return 'DNI no debe contener solo símbolos';
+    }
+    
+    // Verificar si tiene letras
+    if (/[a-zA-Z]/.test(dni)) {
+      return 'DNI solo debe tener números';
+    }
+    
+    // Verificar si tiene exactamente 8 dígitos
+    if (dni.length !== 8 || !/^\d{8}$/.test(dni)) {
+      return 'DNI debe tener exactamente 8 dígitos';
+    }
+    
+    return '';
   };
 
   const validatePhone = (phone: string): string => {
     if (!phone) return '';
+    
+    // Verificar que no sean solo símbolos
+    if (/^[^a-zA-Z0-9]+$/.test(phone)) {
+      return 'Teléfono no debe contener solo símbolos';
+    }
+    
     const phoneRegex = /^\d+$/;
     return phoneRegex.test(phone) ? '' : 'Teléfono debe contener solo números';
   };
 
+  const validateName = (name: string): string => {
+    if (!name) return '';
+    
+    // Verificar que no sean solo números
+    if (/^\d+$/.test(name)) {
+      return 'Nombre no debe ser números';
+    }
+    
+    // Verificar que no sean solo símbolos (que no contengan letras ni números)
+    if (/^[^\w\s]+$/.test(name)) {
+      return 'Nombre no debe contener solo símbolos';
+    }
+    
+    // Verificar que contenga solo letras y espacios
+    if (!/^[a-zA-Z\s]+$/.test(name)) {
+      return 'Nombre debe contener solo letras';
+    }
+    
+    // Verificar que tenga más de una letra
+    if (name.trim().length <= 1) {
+      return 'Nombre debe tener más de una letra';
+    }
+    
+    return '';
+  };
+
   const validateNumericField = (value: string, fieldName: string): string => {
     if (!value) return '';
+    
+    // Verificar que no sean solo símbolos
+    if (/^[^a-zA-Z0-9.]+$/.test(value)) {
+      return `${fieldName} no debe contener solo símbolos`;
+    }
+    
     const numericRegex = /^\d*\.?\d*$/;
     if (!numericRegex.test(value)) {
       return `${fieldName} debe ser un número válido`;
@@ -54,6 +113,27 @@ const EditCompanyModal: React.FC<EditCompanyModalProps> = ({ empresa, isOpen, on
     if (numValue < 0) {
       return `${fieldName} no puede ser negativo`;
     }
+    return '';
+  };
+
+  const validateTextOnlyField = (value: string, fieldName: string): string => {
+    if (!value) return '';
+    
+    // Verificar que no contenga solo números
+    if (/^\d+$/.test(value)) {
+      return `${fieldName} debe contener letras, no números.`;
+    }
+    
+    // Verificar que no sean solo símbolos (que no contengan letras ni números)
+    if (/^[^\w\s]+$/.test(value)) {
+      return `${fieldName} no debe contener solo símbolos`;
+    }
+    
+    // Verificar que contenga solo letras y espacios
+    if (!/^[a-zA-Z\s]+$/.test(value)) {
+      return `${fieldName} debe contener solo letras`;
+    }
+    
     return '';
   };
 
@@ -71,6 +151,10 @@ const EditCompanyModal: React.FC<EditCompanyModalProps> = ({ empresa, isOpen, on
       case 'adminTelefono':
       case 'contadorTelefono':
         return validatePhone(value);
+      case 'representanteNombres':
+      case 'adminNombre':
+      case 'contadorNombre':
+        return validateName(value);
       case 'facturacionAnual':
         return validateNumericField(value, 'Facturación anual');
       case 'numTrabajadores':
@@ -89,6 +173,8 @@ const EditCompanyModal: React.FC<EditCompanyModalProps> = ({ empresa, isOpen, on
         const numValue = parseFloat(value);
         if (numValue > 100) return 'Porcentaje no puede ser mayor a 100';
         return '';
+      case 'sector':
+        return validateTextOnlyField(value, 'Sector');
       default:
         return '';
     }
@@ -620,32 +706,68 @@ const EditCompanyModal: React.FC<EditCompanyModalProps> = ({ empresa, isOpen, on
                                 <div className="grid grid-cols-2 gap-4">
                                   <div>
                                     <label className="block text-xs font-medium text-gray-700 mb-1">Nombre Completo</label>
-                                    <input
-                                      type="text"
-                                      value={persona.nombre}
-                                      onChange={(e) => {
-                                        const updatedPersonas = personasData.map(p => 
-                                          p.id === persona.id ? {...p, nombre: e.target.value} : p
-                                        );
-                                        setPersonasData(updatedPersonas);
-                                        // También actualizar en formData para persistir
-                                        let newFormData = { ...formData };
-                                        if (persona.rol === 'Representante Legal') {
-                                          newFormData.representanteNombres = e.target.value;
-                                        } else if (persona.rol === 'Administrador') {
-                                          newFormData.adminNombre = e.target.value;
-                                        } else if (persona.rol === 'Contador') {
-                                          newFormData.contadorNombre = e.target.value;
-                                        }
-                                        
-                                        // Actualizar completitud en tiempo real
-                                        const newCompletitud = calculateCompletitud(newFormData, credentialsStatus);
-                                        newFormData.completitud = newCompletitud;
-                                        setFormData(newFormData);
-                                      }}
-                                      className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-blue-500"
-                                      placeholder="Nombre completo"
-                                    />
+                                    <div>
+                                      <input
+                                        type="text"
+                                        value={persona.nombre}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          const updatedPersonas = personasData.map(p => 
+                                            p.id === persona.id ? {...p, nombre: value} : p
+                                          );
+                                          setPersonasData(updatedPersonas);
+                                          
+                                          // También actualizar en formData y validar
+                                          let newFormData = { ...formData };
+                                          let fieldName = '';
+                                          if (persona.rol === 'Representante Legal') {
+                                            fieldName = 'representanteNombres';
+                                            newFormData.representanteNombres = value;
+                                          } else if (persona.rol === 'Administrador') {
+                                            fieldName = 'adminNombre';
+                                            newFormData.adminNombre = value;
+                                          } else if (persona.rol === 'Contador') {
+                                            fieldName = 'contadorNombre';
+                                            newFormData.contadorNombre = value;
+                                          }
+                                          
+                                          // Validar el campo
+                                          const error = validateField(fieldName, value);
+                                          const newValidationErrors = { ...validationErrors };
+                                          
+                                          if (error) {
+                                            newValidationErrors[fieldName] = error;
+                                          } else {
+                                            delete newValidationErrors[fieldName];
+                                          }
+                                          
+                                          setValidationErrors(newValidationErrors);
+                                          
+                                          // Actualizar completitud en tiempo real
+                                          const newCompletitud = calculateCompletitud(newFormData, credentialsStatus);
+                                          newFormData.completitud = newCompletitud;
+                                          setFormData(newFormData);
+                                        }}
+                                        className={`w-full px-2 py-1 border rounded text-sm focus:ring-1 ${
+                                          validationErrors[
+                                            persona.rol === 'Representante Legal' ? 'representanteNombres' :
+                                            persona.rol === 'Administrador' ? 'adminNombre' : 'contadorNombre'
+                                          ] ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
+                                        }`}
+                                        placeholder="Nombre completo"
+                                      />
+                                      {validationErrors[
+                                        persona.rol === 'Representante Legal' ? 'representanteNombres' :
+                                        persona.rol === 'Administrador' ? 'adminNombre' : 'contadorNombre'
+                                      ] && (
+                                        <p className="text-xs text-red-600 mt-1">
+                                          {validationErrors[
+                                            persona.rol === 'Representante Legal' ? 'representanteNombres' :
+                                            persona.rol === 'Administrador' ? 'adminNombre' : 'contadorNombre'
+                                          ]}
+                                        </p>
+                                      )}
+                                    </div>
                                   </div>
                                   <div>
                                     <label className="block text-xs font-medium text-gray-700 mb-1">DNI</label>
@@ -1096,13 +1218,20 @@ const EditCompanyModal: React.FC<EditCompanyModalProps> = ({ empresa, isOpen, on
                     </div>
                     <div>
                       <label className="block text-xs font-medium text-gray-700 mb-1">Sector</label>
-                      <input
-                        type="text"
-                        value={formData.sector || ''}
-                        onChange={(e) => handleInputChange('sector', e.target.value)}
-                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-blue-500"
-                        placeholder="Construcción"
-                      />
+                      <div>
+                        <input
+                          type="text"
+                          value={formData.sector || ''}
+                          onChange={(e) => handleInputChange('sector', e.target.value)}
+                          className={`w-full px-2 py-1 border rounded text-sm focus:ring-1 ${
+                            validationErrors.sector ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
+                          }`}
+                          placeholder="Construcción"
+                        />
+                        {validationErrors.sector && (
+                          <p className="text-xs text-red-600 mt-1">{validationErrors.sector}</p>
+                        )}
+                      </div>
                     </div>
                   </div>
                   <div>
