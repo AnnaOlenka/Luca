@@ -1891,7 +1891,7 @@ const getCompletitudColor = (completitud: number) => {
             {/* 3️⃣ Estado de la Empresa */}
             <div style={{ width: '90px' }} className="flex-shrink-0 overflow-hidden">
               <div className="text-center">
-                <div className="text-xs text-gray-500 font-medium mb-1">Estado</div>
+                <div className="text-xs text-gray-500 font-medium mb-1">Estado en Luca</div>
                 <span 
                   className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
                     empresa.estado.toLowerCase() === 'activo' 
@@ -1965,11 +1965,13 @@ const getCompletitudColor = (completitud: number) => {
 
             {/* 7️⃣ Estado Tributario */}
             <div style={{ width: '180px' }} className="flex-shrink-0 overflow-hidden">
+              <div className="text-xs text-gray-500 font-medium mb-1 text-center">Semaforo Tributario</div>
               <SemaforoTributario semaforo={empresa.semaforoTributario} />
             </div>
 
             {/* 8️⃣ Próximo Vencimiento */}
             <div style={{ width: '150px' }} className="flex-shrink-0 overflow-hidden">
+              <div className="text-xs text-gray-500 font-medium mb-1 text-center">Próxima Obligación</div>
               <ProximaObligacion 
                 obligacion={empresa.proximaObligacion} 
                 empresaId={empresa.id} 
