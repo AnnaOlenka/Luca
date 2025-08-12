@@ -1,11 +1,378 @@
-::1 - - [06/Aug/2025 10:54:31] "HEAD / HTTP/1.1" 200 -
-::1 - - [06/Aug/2025 10:54:53] "GET / HTTP/1.1" 200 -
-::1 - - [06/Aug/2025 10:54:54] code 404, message File not found
-::1 - - [06/Aug/2025 10:54:54] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
-::1 - - [06/Aug/2025 10:54:54] "GET /static/css/main.cf183e35.css HTTP/1.1" 200 -
-::1 - - [06/Aug/2025 10:54:54] "GET /static/js/main.d31094c8.js HTTP/1.1" 200 -
-::1 - - [06/Aug/2025 10:54:54] "GET /static/css/main.cf183e35.css.map HTTP/1.1" 200 -
-::1 - - [06/Aug/2025 10:54:54] "GET /static/js/main.d31094c8.js.map HTTP/1.1" 200 -
-::1 - - [06/Aug/2025 10:54:54] "GET /manifest.json HTTP/1.1" 200 -
-::1 - - [06/Aug/2025 10:54:54] "GET /favicon.ico HTTP/1.1" 200 -
-::1 - - [06/Aug/2025 10:54:54] "GET /logo192.png HTTP/1.1" 200 -
+
+> luca-wireframes@0.1.0 start
+> cross-env BROWSER=none react-scripts start
+
+(node:2825) [DEP0176] DeprecationWarning: fs.F_OK is deprecated, use fs.constants.F_OK instead
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:2825) [DEP_WEBPACK_DEV_SERVER_ON_AFTER_SETUP_MIDDLEWARE] DeprecationWarning: 'onAfterSetupMiddleware' option is deprecated. Please use the 'setupMiddlewares' option.
+(node:2825) [DEP_WEBPACK_DEV_SERVER_ON_BEFORE_SETUP_MIDDLEWARE] DeprecationWarning: 'onBeforeSetupMiddleware' option is deprecated. Please use the 'setupMiddlewares' option.
+Starting the development server...
+
+Compiled successfully!
+
+You can now view luca-wireframes in the browser.
+
+  Local:            http://localhost:3002
+  On Your Network:  http://192.168.18.23:3002
+
+Note that the development build is not optimized.
+To create a production build, use npm run build.
+
+webpack compiled successfully
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+No issues found.
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+ERROR in src/components/Onboarding/OnboardingModal.tsx:160:23
+TS2719: Type 'CompanyData' is not assignable to type 'CompanyData'. Two different types with this name exist, but they are unrelated.
+  The types of 'validationState.credentials' are incompatible between these types.
+    Type '"error_conexion" | "valid" | "invalid" | "validating" | null' is not assignable to type '"valid" | "invalid" | "validating" | null'.
+      Type '"error_conexion"' is not assignable to type '"valid" | "invalid" | "validating" | null'.
+    158 |                     <CompanyAccordionItem
+    159 |                       key={company.id}
+  > 160 |                       company={company}
+        |                       ^^^^^^^
+    161 |                       companyNumber={index + 1}
+    162 |                       isLastCompany={index === state.companies.length - 1}
+    163 |                       onUpdate={actions.updateCompanyField}
+
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Onboarding/CompanyAccordionItem.tsx
+  Line 131:11:  'credentialsValid' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Onboarding/CompanyAccordionItem.tsx
+  Line 131:11:  'credentialsValid' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Onboarding/CompanyAccordionItem.tsx
+  Line 131:11:  'credentialsValid' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Onboarding/CompanyAccordionItem.tsx
+  Line 131:11:  'credentialsValid' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Onboarding/CompanyAccordionItem.tsx
+  Line 131:11:  'credentialsValid' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Onboarding/CompanyAccordionItem.tsx
+  Line 131:11:  'credentialsValid' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Onboarding/CompanyAccordionItem.tsx
+  Line 131:11:  'credentialsValid' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Onboarding/CompanyAccordionItem.tsx
+  Line 131:11:  'credentialsValid' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Onboarding/CompanyAccordionItem.tsx
+  Line 131:11:  'credentialsValid' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Onboarding/CompanyAccordionItem.tsx
+  Line 131:11:  'credentialsValid' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Onboarding/CompanyAccordionItem.tsx
+  Line 131:11:  'credentialsValid' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Onboarding/CompanyAccordionItem.tsx
+  Line 131:11:  'credentialsValid' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+No issues found.
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+No issues found.
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+No issues found.
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+No issues found.
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+No issues found.
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+No issues found.
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+No issues found.
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+No issues found.
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+No issues found.
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+No issues found.
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+No issues found.
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+No issues found.
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+No issues found.
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+No issues found.
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+No issues found.
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+No issues found.
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+No issues found.
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+No issues found.
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+No issues found.
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+No issues found.
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+No issues found.
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+No issues found.
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+No issues found.
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+No issues found.
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+No issues found.
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+No issues found.
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+No issues found.
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+No issues found.
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+No issues found.
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+No issues found.

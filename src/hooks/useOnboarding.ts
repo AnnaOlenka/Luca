@@ -10,10 +10,10 @@ interface CompanyData {
   solUser: string;
   solPassword: string;
   isValid: boolean;
-  status: 'validando' | 'no_valido' | 'incompleto' | 'verificada';
+  status: 'validando' | 'no_valido' | 'incompleto' | 'verificada' | 'error_conexion';
   validationState: {
-    ruc: 'valid' | 'invalid' | 'duplicate' | 'inactive' | 'validating' | null;
-    credentials: 'valid' | 'invalid' | 'validating' | null;
+    ruc: 'valid' | 'invalid' | 'duplicate' | 'inactive' | 'validating' | 'error_conexion' | null;
+    credentials: 'valid' | 'invalid' | 'validating' | 'error_conexion' | null;
   };
   expanded: boolean;
 }
@@ -177,6 +177,11 @@ const useOnboarding = () => {
       return 'invalid';
     }
 
+    // Check for connection error RUCs
+    if (rucData.status === 'error_conexion') {
+      return 'error_conexion';
+    }
+
     if (rucData.status === 'inactive' || rucData.status === 'suspended') {
       return 'inactive';
     }
@@ -185,6 +190,12 @@ const useOnboarding = () => {
   }, [state.companies]);
 
   const validateCredentials = useCallback((solUser: string, solPassword: string) => {
+    // Check for connection error credentials
+    const errorCredentials = ['CONEXION01', 'TIMEOUT07'];
+    if (errorCredentials.includes(solUser)) {
+      return 'error_conexion';
+    }
+    
     const validCred = validCredentialsData.validCredentials.find(
       cred => cred.solUser === solUser && cred.solPassword === solPassword
     );
@@ -260,8 +271,8 @@ const useOnboarding = () => {
             const updatedCompany = { ...company };
             updatedCompany.validationState.ruc = rucValidation;
             
-            // Update business name and SUNAT info if RUC is valid
-            if (rucValidation === 'valid' || rucValidation === 'inactive') {
+            // Update business name and SUNAT info if RUC is valid or has error_conexion
+            if (rucValidation === 'valid' || rucValidation === 'inactive' || rucValidation === 'error_conexion') {
               const rucData = validCredentialsData.validRucs.find(r => r.ruc === value);
               updatedCompany.businessName = rucData?.businessName || '';
               updatedCompany.sunatStatus = rucData?.sunatStatus || '';
@@ -272,12 +283,16 @@ const useOnboarding = () => {
               updatedCompany.sunatCondition = '';
             }
             
-            // If RUC becomes valid and both credentials exist, auto-validate credentials
+            // If RUC becomes valid/inactive and both credentials exist, auto-validate credentials
+            // NO validar credenciales si RUC tiene error de conexión
             if ((rucValidation === 'valid' || rucValidation === 'inactive') && 
                 company.solUser.trim() && company.solPassword.trim()) {
               // Trigger credential validation
               const credValidation = validateCredentials(company.solUser, company.solPassword);
               updatedCompany.validationState.credentials = credValidation;
+            } else if (rucValidation === 'error_conexion') {
+              // Limpiar validación de credenciales si RUC tiene error de conexión
+              updatedCompany.validationState.credentials = null;
             }
             
             // Update status based on validation results
@@ -287,10 +302,16 @@ const useOnboarding = () => {
             // Determinar si hay errores (priorizar errores sobre campos vacíos)
             const hasRucErrors = rucValidation === 'invalid' || rucValidation === 'duplicate';
             const hasCredentialErrors = updatedCompany.validationState.credentials === 'invalid';
+            const hasConnectionErrors = rucValidation === 'error_conexion' || updatedCompany.validationState.credentials === 'error_conexion';
             const hasRucIncomplete = !updatedCompany.ruc.trim() || (updatedCompany.ruc.trim().length > 0 && updatedCompany.ruc.trim().length < 11);
             const hasCredentialsIncomplete = !updatedCompany.solUser.trim() || !updatedCompany.solPassword.trim();
             
-            if (hasRucErrors || (hasRucIncomplete && updatedCompany.ruc.trim().length > 0)) {
+            // Check for connection error first (RUC or credentials)
+            if (hasConnectionErrors) {
+              updatedCompany.status = 'error_conexion';
+              updatedCompany.isValid = false;
+              updatedCompany.expanded = true; // Keep expanded for user to see the error
+            } else if (hasRucErrors || (hasRucIncomplete && updatedCompany.ruc.trim().length > 0)) {
               updatedCompany.status = 'no_valido'; // RUC tiene errores o menos de 11 dígitos
             } else if (hasCredentialErrors) {
               updatedCompany.status = 'no_valido'; // Credenciales incorrectas
@@ -411,10 +432,15 @@ const useOnboarding = () => {
             
             // Determinar si hay errores (priorizar errores sobre campos vacíos)
             const hasRucErrors = updatedCompany.validationState.ruc === 'invalid' || updatedCompany.validationState.ruc === 'duplicate';
+            const hasConnectionErrors = updatedCompany.validationState.ruc === 'error_conexion' || credValidation === 'error_conexion';
             const hasRucIncomplete = !updatedCompany.ruc.trim() || (updatedCompany.ruc.trim().length > 0 && updatedCompany.ruc.trim().length < 11);
             const hasCredentialsIncomplete = !updatedCompany.solUser.trim() || !updatedCompany.solPassword.trim();
             
-            if (credValidation === 'invalid') {
+            if (hasConnectionErrors) {
+              updatedCompany.status = 'error_conexion'; // Error de conexión
+              updatedCompany.isValid = false;
+              updatedCompany.expanded = true;
+            } else if (credValidation === 'invalid') {
               updatedCompany.status = 'no_valido'; // Credenciales incorrectas
             } else if (hasRucErrors || (hasRucIncomplete && updatedCompany.ruc.trim().length > 0)) {
               updatedCompany.status = 'no_valido'; // RUC tiene errores o menos de 11 dígitos

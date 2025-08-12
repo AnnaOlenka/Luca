@@ -62,11 +62,6 @@ const RucModal: React.FC<RucModalProps> = ({ isOpen, onClose, empresa }) => {
       doc.setTextColor(59, 130, 246);
       doc.text('FICHA RUC - CONSULTA SUNAT', 20, 20);
       
-      // Subtítulo
-      doc.setFontSize(12);
-      doc.setTextColor(100, 100, 100);
-      doc.text('Resultado de la Búsqueda', 20, 30);
-      
       // Línea separadora azul
       doc.setDrawColor(59, 130, 246);
       doc.setLineWidth(0.8);
@@ -232,7 +227,6 @@ const RucModal: React.FC<RucModalProps> = ({ isOpen, onClose, empresa }) => {
               <h2 className="font-bold text-lg">
                 FICHA RUC - CONSULTA SUNAT
               </h2>
-              <p className="text-sm opacity-90">Resultado de la Búsqueda</p>
             </div>
             <button 
               onClick={onClose}

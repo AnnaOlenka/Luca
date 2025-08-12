@@ -10,10 +10,10 @@ interface CompanyData {
   solUser: string;
   solPassword: string;
   isValid: boolean;
-  status: 'validando' | 'no_valido' | 'incompleto' | 'verificada';
+  status: 'validando' | 'no_valido' | 'incompleto' | 'verificada' | 'error_conexion';
   validationState: {
-    ruc: 'valid' | 'invalid' | 'duplicate' | 'inactive' | 'validating' | null;
-    credentials: 'valid' | 'invalid' | 'validating' | null;
+    ruc: 'valid' | 'invalid' | 'duplicate' | 'inactive' | 'validating' | 'error_conexion' | null;
+    credentials: 'valid' | 'invalid' | 'validating' | 'error_conexion' | null;
   };
   expanded: boolean;
 }
@@ -82,7 +82,9 @@ const CompanyAccordionItem: React.FC<CompanyAccordionItemProps> = ({
       // Si el campo se vacía, limpiar la validación de credenciales
       if (!value.trim()) {
         setTimeout(() => onValidate(company.id, 'clearCredentials', ''), 50);
-      } else if (value && company.solPassword && company.validationState.ruc === 'valid') {
+      } else if (value && company.solPassword && 
+                 (company.validationState.ruc === 'valid' || company.validationState.ruc === 'inactive')) {
+        // Solo validar cuando ambos campos están completos y RUC está válido/inactivo (NO si hay error_conexion en RUC)
         setTimeout(() => onValidate(company.id, 'credentials', value), 100);
       }
     } else if (field === 'solPassword') {
@@ -90,7 +92,9 @@ const CompanyAccordionItem: React.FC<CompanyAccordionItemProps> = ({
       // Si el campo se vacía, limpiar la validación de credenciales
       if (!value.trim()) {
         setTimeout(() => onValidate(company.id, 'clearCredentials', ''), 50);
-      } else if (value && company.solUser && company.validationState.ruc === 'valid') {
+      } else if (value && company.solUser && 
+                 (company.validationState.ruc === 'valid' || company.validationState.ruc === 'inactive')) {
+        // Solo validar cuando ambos campos están completos y RUC está válido/inactivo (NO si hay error_conexion en RUC)
         setTimeout(() => onValidate(company.id, 'credentials', value), 100);
       }
     }
@@ -128,7 +132,6 @@ const CompanyAccordionItem: React.FC<CompanyAccordionItemProps> = ({
     // Verificar estados específicos
     const rucValid = validationState.ruc === 'valid' || validationState.ruc === 'inactive';
     const rucInvalid = (hasRuc && !hasValidRuc) || validationState.ruc === 'invalid' || validationState.ruc === 'duplicate';
-    const credentialsValid = validationState.credentials === 'valid';
     const credentialsInvalid = validationState.credentials === 'invalid';
     
     // Verificar si hay campos vacíos
@@ -137,6 +140,37 @@ const CompanyAccordionItem: React.FC<CompanyAccordionItemProps> = ({
     const passwordEmpty = !hasPassword;
     
     const messages = [];
+    
+    // CASO ESPECIAL: Error de conexión - pueden ser múltiples etiquetas
+    const hasRucConnectionError = validationState.ruc === 'error_conexion';
+    const hasCredentialsConnectionError = validationState.credentials === 'error_conexion';
+    
+    // Caso: RUC válido + Error de conexión en credenciales
+    if (rucValid && hasCredentialsConnectionError) {
+      const messages = [];
+      messages.push({ text: 'Validado: RUC válido', type: 'verified' });
+      messages.push({ text: 'En Proceso: Error de conexión en credenciales', type: 'error' });
+      return messages;
+    }
+    
+    // Caso: Error de conexión en RUC (puede tener credenciales incompletas también)
+    if (status === 'error_conexion' || hasRucConnectionError) {
+      const errorMessages = [];
+      
+      // Error de conexión en RUC
+      errorMessages.push({ text: 'En Proceso: Error de conexión en RUC', type: 'error' });
+      
+      // Agregar etiquetas de campos incompletos junto con error de conexión en RUC
+      if (userEmpty && passwordEmpty) {
+        errorMessages.push({ text: 'Incompleto: Credenciales vacías', type: 'incomplete' });
+      } else if (userEmpty) {
+        errorMessages.push({ text: 'Incompleto: Usuario vacío', type: 'incomplete' });
+      } else if (passwordEmpty) {
+        errorMessages.push({ text: 'Incompleto: Contraseña vacía', type: 'incomplete' });
+      }
+      
+      return errorMessages;
+    }
     
     // Caso especial: RUC válido pero credenciales incompletas
     if (rucValid && (userEmpty || passwordEmpty)) {
@@ -201,7 +235,7 @@ const CompanyAccordionItem: React.FC<CompanyAccordionItemProps> = ({
     }
     
     // Para casos simples, retornar una sola etiqueta
-    switch (status) {
+    switch (status as 'validando' | 'no_valido' | 'incompleto' | 'verificada' | 'error_conexion') {
       case 'incompleto':
         if (hasRuc && !hasValidRuc) {
           return [{ text: 'Inválido: RUC inválido', type: 'invalid' }];
@@ -249,6 +283,9 @@ const CompanyAccordionItem: React.FC<CompanyAccordionItemProps> = ({
       case 'validando':
         return [{ text: 'Validando...', type: 'validating' }];
 
+      case 'error_conexion':
+        return [{ text: 'En Proceso: Error de conexión', type: 'error' }];
+
       default:
         return [{ text: '', type: 'default' }];
     }
@@ -265,6 +302,8 @@ const CompanyAccordionItem: React.FC<CompanyAccordionItemProps> = ({
         return 'text-red-600 bg-red-50';
       case 'incomplete':
         return 'text-yellow-600 bg-yellow-50';
+      case 'error':
+        return 'text-orange-600 bg-orange-50';
       default:
         return 'text-gray-600 bg-gray-50';
     }
@@ -283,6 +322,8 @@ const CompanyAccordionItem: React.FC<CompanyAccordionItemProps> = ({
         return 'border-yellow-500 focus:border-yellow-500';
       case 'validating':
         return 'border-blue-500 focus:border-blue-500';
+      case 'error_conexion':
+        return 'border-orange-500 focus:border-orange-500';
       default:
         return 'border-gray-300 focus:border-blue-500';
     }
@@ -299,6 +340,8 @@ const CompanyAccordionItem: React.FC<CompanyAccordionItemProps> = ({
         return <AlertCircle className="w-4 h-4 text-yellow-500" />;
       case 'validating':
         return <Clock className="w-4 h-4 text-blue-500 animate-spin" />;
+      case 'error_conexion':
+        return <AlertTriangle className="w-4 h-4 text-orange-500" />;
       default:
         return null;
     }
@@ -318,6 +361,8 @@ const CompanyAccordionItem: React.FC<CompanyAccordionItemProps> = ({
             return 'Empresa inactiva en SUNAT (se puede verificar con credenciales)';
           case 'validating':
             return 'Validando RUC...';
+          case 'error_conexion':
+            return 'Error de conexión en RUC';
           default:
             return '';
         }
@@ -329,6 +374,8 @@ const CompanyAccordionItem: React.FC<CompanyAccordionItemProps> = ({
             return 'Usuario o contraseña incorrectos';
           case 'validating':
             return 'Validando credenciales...';
+          case 'error_conexion':
+            return 'Error de conexión en credenciales';
           default:
             return '';
         }
@@ -385,13 +432,16 @@ const CompanyAccordionItem: React.FC<CompanyAccordionItemProps> = ({
                 {company.status === 'incompleto' && (
                   <AlertCircle className="w-4 h-4 text-yellow-500" />
                 )}
+                {company.status === 'error_conexion' && (
+                  <AlertTriangle className="w-4 h-4 text-orange-500" />
+                )}
               </div>
               {company.businessName && company.sunatStatus && company.sunatCondition && (
                 <div className="flex items-start space-x-2 mt-1">
-                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium h-auto leading-tight text-center ${getSunatStatusColor(company.sunatStatus)}`} style={{ maxWidth: '84px' }}>
+                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium h-auto leading-tight text-center ${getSunatStatusColor(company.sunatStatus)}`} style={{ maxWidth: '144px' }}>
                     <span className="w-full break-words">Estado: {company.sunatStatus}</span>
                   </span>
-                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium h-auto leading-tight text-center text-blue-600 bg-blue-100" style={{ maxWidth: '84px' }}>
+                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium h-auto leading-tight text-center text-blue-600 bg-blue-100" style={{ maxWidth: '144px' }}>
                     <span className="w-full break-words">Condición: {company.sunatCondition}</span>
                   </span>
                 </div>
@@ -546,6 +596,11 @@ const CompanyAccordionItem: React.FC<CompanyAccordionItemProps> = ({
               {!realTimeValidation.solPassword && company.solPassword.trim() && company.validationState.credentials === 'invalid' && (
                 <p className="text-sm text-red-600 mt-1 text-left">
                   Credenciales incorrectas
+                </p>
+              )}
+              {!realTimeValidation.solPassword && company.solPassword.trim() && company.validationState.credentials === 'error_conexion' && (
+                <p className="text-sm text-orange-600 mt-1 text-left">
+                  Error de conexión en credenciales
                 </p>
               )}
               {!realTimeValidation.solPassword && company.solPassword.trim() && company.validationState.credentials === 'validating' && (

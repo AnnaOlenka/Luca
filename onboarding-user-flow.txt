@@ -1,5 +1,5 @@
-ONBOARDING MODAL - USER FLOW COMPLETO
-======================================
+ONBOARDING MODAL - USER FLOW COMPLETO (ACTUALIZADO 2024)
+==========================================================
 
 ```mermaid
 graph TB
@@ -81,24 +81,30 @@ graph TB
     
     ValidateRucRealTime --> CheckRucLength{value.length}
     CheckRucLength -->|0| SetRucNull[realTimeValidation.ruc = null]
-    CheckRucLength -->|< 11 && !digits only| SetRucError[realTimeValidation.ruc = 'Error message']
+    CheckRucLength -->|< 11 && !digits only| SetRucError[realTimeValidation.ruc = 'El RUC debe contener solo números']
     CheckRucLength -->|< 11 && digits only| SetRucIncomplete[realTimeValidation.ruc = 'El RUC debe tener 11 dígitos']
     CheckRucLength -->|== 11| ClearRucError[realTimeValidation.ruc = null]
     
     ClearRucError --> TriggerRucValidation[setTimeout: onValidate('ruc', value), 100ms]
     TriggerRucValidation --> ValidateCompanyRuc[validateCompany('ruc')]
     
-    %% VALIDACIÓN RUC EN SERVIDOR
+    %% VALIDACIÓN RUC EN SERVIDOR (ACTUALIZADA CON ERROR_CONEXION)
     ValidateCompanyRuc --> SetValidating[validationState.ruc = 'validating', status = 'validando']
     SetValidating --> DelayValidation[setTimeout 1500ms]
     DelayValidation --> CheckRucInData{validateRuc: buscar en validCredentials.json}
     
     CheckRucInData -->|No encontrado| SetInvalid[validationState.ruc = 'invalid', status = 'no_valido']
     CheckRucInData -->|Duplicado| SetDuplicate[validationState.ruc = 'duplicate', status = 'no_valido']
+    CheckRucInData -->|Error conexión RUC| SetRucErrorConexion[validationState.ruc = 'error_conexion', status = 'error_conexion']
     CheckRucInData -->|Inactivo| SetInactive[validationState.ruc = 'inactive', businessName actualizado]
     CheckRucInData -->|Válido| SetValid[validationState.ruc = 'valid', businessName actualizado]
     
-    %% DESPUÉS DE VALIDACIÓN RUC
+    %% MANEJO DE ERROR DE CONEXIÓN EN RUC
+    SetRucErrorConexion --> ClearCredentialsOnRucError[validationState.credentials = null]
+    ClearCredentialsOnRucError --> UpdateStateErrorRuc[status = 'error_conexion', isValid = false, expanded = true]
+    UpdateStateErrorRuc --> RenderMultipleLabelsRuc[Renderizar múltiples etiquetas:<br/>- 'En Proceso: Error de conexión en RUC'<br/>- Etiquetas de credenciales incompletas]
+    
+    %% DESPUÉS DE VALIDACIÓN RUC EXITOSA
     SetInvalid --> UpdateState[Actualizar estado con validationState]
     SetDuplicate --> UpdateState
     SetInactive --> CheckCredentialsExist{solUser && solPassword existen?}
@@ -107,8 +113,9 @@ graph TB
     CheckCredentialsExist -->|Sí| AutoValidateCredentials[validateCredentials automáticamente]
     CheckCredentialsExist -->|No| UpdateState
     
-    %% VALIDACIÓN DE CREDENCIALES
-    AutoValidateCredentials --> CheckCredsInData{Buscar en validCredentials.json}
+    %% VALIDACIÓN DE CREDENCIALES (ACTUALIZADA)
+    AutoValidateCredentials --> CheckCredsInData{Buscar en validCredentials.json<br/>SOLO SI RUC es válido/inactivo}
+    CheckCredsInData -->|Error conexión credenciales| SetCredsErrorConexion[validationState.credentials = 'error_conexion']
     CheckCredsInData -->|Válidas| SetCredsValid[validationState.credentials = 'valid']
     CheckCredsInData -->|Inválidas| SetCredsInvalid[validationState.credentials = 'invalid']
     
@@ -118,10 +125,10 @@ graph TB
     
     HandleCredsChange --> CheckFieldEmpty{Campo vacío?}
     CheckFieldEmpty -->|Sí| ClearCredValidation[onValidate('clearCredentials')]
-    CheckFieldEmpty -->|No| CheckRucValid{validationState.ruc === 'valid'?}
+    CheckFieldEmpty -->|No| CheckRucValidForCreds{validationState.ruc === 'valid' || 'inactive'?}
     
-    CheckRucValid -->|No| NoValidation[No validar credenciales]
-    CheckRucValid -->|Sí| CheckBothFields{solUser && solPassword completos?}
+    CheckRucValidForCreds -->|No| NoValidation[No validar credenciales<br/>RUC debe ser válido primero]
+    CheckRucValidForCreds -->|Sí| CheckBothFields{solUser && solPassword completos?}
     CheckBothFields -->|No| NoValidation
     CheckBothFields -->|Sí| ValidateCredentials[setTimeout: onValidate('credentials'), 100ms]
     
@@ -129,21 +136,32 @@ graph TB
     SetCredsValidating --> DelayCredsValidation[setTimeout 1500ms]
     DelayCredsValidation --> CheckCredsInData
     
-    %% DETERMINACIÓN DE ESTADO FINAL
+    %% DETERMINACIÓN DE ESTADO FINAL (ACTUALIZADA)
     SetCredsValid --> DetermineStatus[Determinar estado final de empresa]
     SetCredsInvalid --> DetermineStatus
+    SetCredsErrorConexion --> DetermineStatus
     NoValidation --> DetermineStatus
     
-    DetermineStatus --> CheckFinalStatus{Lógica de priorización}
+    DetermineStatus --> CheckFinalStatus{Lógica de priorización ACTUALIZADA}
+    CheckFinalStatus -->|Error conexión RUC o credenciales| SetStatusErrorConexion[status = 'error_conexion']
     CheckFinalStatus -->|RUC errors o < 11 dígitos| SetStatusInvalid[status = 'no_valido']
     CheckFinalStatus -->|Credenciales incorrectas| SetStatusInvalid
     CheckFinalStatus -->|RUC válido + credenciales válidas| SetStatusVerified[status = 'verificada', isValid = true, expanded = false]
     CheckFinalStatus -->|Campos vacíos sin errores| SetStatusIncomplete[status = 'incompleto']
     
+    %% RENDERIZADO DE MÚLTIPLES ETIQUETAS (NUEVO)
+    SetStatusErrorConexion --> RenderMultipleLabels[getDescriptiveStatusMessages()<br/>Renderizar etiquetas múltiples]
+    RenderMultipleLabels --> CheckErrorType{Tipo de error de conexión}
+    
+    CheckErrorType -->|RUC válido + error credenciales| ShowRucValidAndCredsError[- 'Validado: RUC válido' (verde)<br/>- 'En Proceso: Error de conexión en credenciales' (naranja)]
+    CheckErrorType -->|Error conexión RUC + credenciales incompletas| ShowRucErrorAndIncomplete[- 'En Proceso: Error de conexión en RUC' (naranja)<br/>- 'Incompleto: Credenciales vacías/Usuario vacío/Contraseña vacía' (amarillo)]
+    
     %% CONTEO DE EMPRESAS VERIFICADAS
     SetStatusVerified --> RecalculateCount[newValidCount = empresas.filter(c => c.isValid).length]
     SetStatusInvalid --> RecalculateCount
     SetStatusIncomplete --> RecalculateCount
+    ShowRucValidAndCredsError --> RecalculateCount
+    ShowRucErrorAndIncomplete --> RecalculateCount
     
     %% LÓGICA DEL TOUR STEP 3
     RecalculateCount --> CheckTourStep3{newValidCount >= 1 &&<br/>showTourFloating &&<br/>tourStep === 2?}
@@ -155,14 +173,27 @@ graph TB
     AutoCloseTimer --> AutoCloseTour[onClose() - handleTourClose]
     AutoCloseTour --> SaveCloseFlag
     
+    %% RENDERIZADO VISUAL ACTUALIZADO
+    UpdateUI --> RenderValidationVisuals[Renderizar indicadores visuales ACTUALIZADOS]
+    RenderValidationVisuals --> ShowBordersUpdated[Colores de borde según validationState:<br/>- valid: verde<br/>- invalid/duplicate: rojo<br/>- inactive: amarillo<br/>- validating: azul<br/>- error_conexion: naranja]
+    
+    ShowBordersUpdated --> ShowIconsUpdated[Iconos de validación:<br/>- CheckCircle (verde): valid<br/>- XCircle (rojo): invalid/duplicate<br/>- AlertCircle (amarillo): inactive<br/>- Clock (azul, spinning): validating<br/>- AlertTriangle (naranja): error_conexion]
+    
+    ShowIconsUpdated --> ShowMessagesUpdated[Mensajes debajo de inputs:<br/>- RUC: 'Error de conexión en RUC'<br/>- Credenciales: 'Error de conexión en credenciales']
+    
+    ShowMessagesUpdated --> ShowStatusBadges[Badges de estado en header:<br/>- 'Validado: RUC válido' (verde)<br/>- 'Validado: RUC y credenciales validadas' (verde)<br/>- 'En Proceso: Error de conexión en RUC' (naranja)<br/>- 'En Proceso: Error de conexión en credenciales' (naranja)<br/>- 'Inválido: RUC inválido/credenciales inválidas' (rojo)<br/>- 'Incompleto: RUC/credenciales vacías' (amarillo)<br/>- 'Validando...' (azul)]
+    
+    ShowStatusBadges --> ShowBusinessName[Mostrar razón social si RUC válido/inactivo/error_conexion]
+    ShowBusinessName --> ShowSunatInfo[Mostrar estado y condición SUNAT si disponible]
+    
     %% ACCIONES DEL USUARIO EN LA EMPRESA
-    UpdateUI --> UserActions{Acciones disponibles}
+    ShowSunatInfo --> UserActions{Acciones disponibles}
     UserActions -->|Click accordion header| ExpandCollapse[expandCompany: toggle expanded state]
     UserActions -->|Click eliminar empresa| DeleteCompany[deleteCompany: filtrar empresa del array]
     UserActions -->|Modificar campos| HandleFieldChange
     
     %% ACCIONES DEL MODAL
-    UpdateUI --> ModalActions{Acciones del modal}
+    UserActions --> ModalActions{Acciones del modal}
     ModalActions -->|Click 'Ir a la Bandeja'| HandleBandejaClick[onNavigateToBandeja()]
     ModalActions -->|Click X cerrar modal| HandleModalClose[Confirmar guardar borrador?]
     ModalActions -->|Click fuera modal| HandleModalClose
@@ -180,40 +211,30 @@ graph TB
     
     HandleBandejaClick --> CloseModal
     
-    %% ESTILOS Y VALIDACIONES VISUALES
-    UpdateUI --> RenderValidation[Renderizar indicadores visuales]
-    RenderValidation --> ShowBorders[Colores de borde según validationState]
-    ShowBorders --> ShowIcons[Iconos de validación: CheckCircle, XCircle, Clock]
-    ShowIcons --> ShowMessages[Mensajes de validación debajo de inputs]
-    ShowMessages --> ShowStatus[Badge de estado: Verificada, No válido, Incompleto, Validando]
-    ShowStatus --> ShowBusinessName[Mostrar razón social si RUC válido]
-    ShowBusinessName --> ShowSunatInfo[Mostrar estado y condición SUNAT]
-    
-    %% PLACEHOLDERS DINÁMICOS
-    ShowSunatInfo --> UpdatePlaceholders[Actualizar placeholders de inputs]
-    UpdatePlaceholders --> CheckInputEmpty{Input vacío?}
-    CheckInputEmpty -->|Sí| ShowHelpPlaceholder[Placeholder: 'Ingresa tu usuario/contraseña']
-    CheckInputEmpty -->|No| ShowNormalPlaceholder[Placeholder: 'Usuario SOL/Contraseña SOL']
-    
-    ShowHelpPlaceholder --> UserActions
-    ShowNormalPlaceholder --> UserActions
-    
     %% COMPONENTES INVOLUCRADOS
     classDef component fill:#e1f5fe
     classDef action fill:#f3e5f5
     classDef validation fill:#e8f5e8
     classDef storage fill:#fff3e0
     classDef tour fill:#fce4ec
+    classDef error fill:#ffebee
+    classDef success fill:#e8f5e8
+    classDef warning fill:#fff8e1
+    classDef info fill:#e3f2fd
     
     class OnboardingModal,CompanyAccordionItem,TourFloating,useOnboarding component
     class HandleFieldChange,AddNewCompany,ValidateCompany,HandleTourContinue action
     class ValidateRucRealTime,CheckRucInData,CheckCredsInData,DetermineStatus validation
     class SaveTourFlag,SaveDraft,CheckLocalStorage storage
     class InitializeTour,ShowTourStep1,ShowTourStep2,ShowTourStep3 tour
+    class SetRucErrorConexion,SetCredsErrorConexion,ShowRucErrorAndIncomplete error
+    class SetStatusVerified,ShowRucValidAndCredsError success
+    class SetStatusIncomplete,ShowBusinessName warning
+    class SetValidating,ShowMessagesUpdated info
 ```
 
-COMPONENTES PRINCIPALES Y SUS RESPONSABILIDADES:
-===============================================
+COMPONENTES PRINCIPALES Y SUS RESPONSABILIDADES (ACTUALIZADAS):
+===============================================================
 
 ## 1. OnboardingModal.tsx
 - **Renderizado**: Modal principal, header, footer, estado vacío
@@ -222,11 +243,18 @@ COMPONENTES PRINCIPALES Y SUS RESPONSABILIDADES:
 - **Interacciones**: Cerrar modal, navegar a bandeja, agregar empresa
 - **Props**: isOpen, onClose, onNavigateToBandeja
 
-## 2. CompanyAccordionItem.tsx
+## 2. CompanyAccordionItem.tsx (ACTUALIZADO)
 - **Renderizado**: Acordeón individual de empresa, inputs, validaciones visuales
 - **Validación en Tiempo Real**: validateRucRealTime, validateSolUserRealTime, validateSolPasswordRealTime
 - **Gestión de Focus**: Auto-focus en RUC, scroll suave
-- **Estados Visuales**: Colores de borde, iconos, mensajes, badges de estado
+- **Estados Visuales**: Colores de borde (incluye naranja para error_conexion), iconos (incluye AlertTriangle), mensajes, badges de estado
+- **Múltiples Etiquetas**: getDescriptiveStatusMessages() puede retornar múltiples etiquetas simultáneamente
+- **Etiquetas Específicas**: 
+  - "Validado: RUC válido" (verde)
+  - "En Proceso: Error de conexión en RUC" (naranja) 
+  - "En Proceso: Error de conexión en credenciales" (naranja)
+  - "Incompleto: Usuario vacío/Contraseña vacía/Credenciales vacías" (amarillo)
+  - "Inválido: RUC inválido/credenciales inválidas" (rojo)
 - **Props**: company, onUpdate, onValidate, onDelete, onExpand
 - **Estado Local**: realTimeValidation para mensajes inmediatos
 
@@ -237,38 +265,89 @@ COMPONENTES PRINCIPALES Y SUS RESPONSABILIDADES:
 - **Props**: isVisible, step, onSkip, onContinue, onClose
 - **Estado Local**: autoCloseTimer para gestionar cierre automático
 
-## 4. useOnboarding.ts (Hook Principal)
+## 4. useOnboarding.ts (Hook Principal - ACTUALIZADO)
 - **Estado Global**: Gestiona companies, validCompanyCount, tourState
 - **Persistencia**: localStorage para tour-shown y draft
-- **Validaciones**: validateRuc, validateCredentials contra JSON
+- **Validaciones ACTUALIZADAS**: 
+  - validateRuc: puede retornar 'error_conexion' para RUCs específicos (20999888777, 20777666555)
+  - validateCredentials: puede retornar 'error_conexion' para usuarios específicos (CONEXION01, TIMEOUT07)
+  - validateCredentials NO se ejecuta si RUC tiene error_conexion o es inválido
 - **Acciones**: addNewCompany, updateCompanyField, validateCompany
 - **Tour Logic**: initializeTour, handleTourContinue, handleTourSkip, handleTourClose
 - **Timers**: Gestión de setTimeout para validaciones y tour
+- **Lógica de Estado**: Prioriza error_conexion > errores de validación > campos incompletos
 
-## 5. validCredentials.json
+## 5. validCredentials.json (ACTUALIZADO)
+- **RUCs de Prueba para Error de Conexión**:
+  - 20999888777: "CONEXIÓN PERDIDA S.A.C." (status: "error_conexion")
+  - 20777666555: "TIMEOUT SERVICES EIRL" (status: "error_conexion")
+- **Credenciales de Prueba para Error de Conexión**:
+  - CONEXION01/ErrorConn123
+  - TIMEOUT07/Timeout456
 - **Data Source**: RUCs válidos con businessName, status, sunatStatus
 - **Credenciales**: Combinaciones válidas de solUser/solPassword
 - **Validación**: Fuente de verdad para validateRuc y validateCredentials
 
-FLUJOS CRÍTICOS:
-================
+## 6. src/index.css (ACTUALIZADO)
+- **Colores Orange Agregados**:
+  - .bg-orange-50 { background-color: #fff7ed; }
+  - .text-orange-500 { color: #f97316; }
+  - .text-orange-600 { color: #ea580c; }
+  - .border-orange-500 { border-color: #f97316; }
+  - .focus\:border-orange-500:focus { border-color: #f97316; }
 
-### A) INICIALIZACIÓN DEL TOUR
-1. Modal abre → useEffect verifica condiciones
-2. Si es primera vez → initializeTour()
-3. Guarda flag en localStorage → Crea empresa → Muestra Step 1
+FLUJOS CRÍTICOS ACTUALIZADOS:
+=============================
 
-### B) VALIDACIÓN EN CASCADA
-1. Input RUC → Validación tiempo real → Validación servidor
-2. RUC válido + credenciales → Auto-validación credenciales
-3. Estado final → Actualización conteo → Lógica tour Step 3
+### A) VALIDACIÓN CON ERROR DE CONEXIÓN EN RUC
+1. Usuario ingresa RUC 20999888777 → Validación tiempo real OK (11 dígitos)
+2. validateRuc busca en JSON → Encuentra status: "error_conexion"
+3. validationState.ruc = 'error_conexion', status = 'error_conexion'
+4. businessName se actualiza pero validationState.credentials = null
+5. Etiqueta: "En Proceso: Error de conexión en RUC" (naranja)
+6. Si credenciales están vacías: + "Incompleto: Credenciales vacías" (amarillo)
 
-### C) PERSISTENCIA DE ESTADO
-1. Tour mostrado → localStorage 'luca-tour-shown'
-2. Draft empresas → localStorage 'luca-onboarding-draft'
-3. Recarga página → Estado se restaura desde localStorage
+### B) VALIDACIÓN CON ERROR DE CONEXIÓN EN CREDENCIALES
+1. Usuario ingresa RUC válido → validationState.ruc = 'valid'
+2. Usuario completa credenciales CONEXION01/ErrorConn123
+3. validateCredentials detecta usuario "CONEXION01" → retorna 'error_conexion'
+4. validationState.credentials = 'error_conexion', status = 'error_conexion'
+5. Etiquetas múltiples: "Validado: RUC válido" (verde) + "En Proceso: Error de conexión en credenciales" (naranja)
+6. Mensaje debajo del input: "Error de conexión en credenciales" (naranja)
 
-### D) PRIORIZACIÓN DE ERRORES
-1. Errores RUC > Campos vacíos → status = 'no_valido'
-2. Solo campos vacíos → status = 'incompleto'
-3. Todo válido → status = 'verificada' + isValid = true
+### C) RESTRICCIÓN DE VALIDACIÓN DE CREDENCIALES
+1. Credenciales SOLO se validan si RUC está en estado 'valid' o 'inactive'
+2. Si RUC tiene 'error_conexion', 'invalid', o 'duplicate' → NO se validan credenciales
+3. validationState.credentials permanece null hasta que RUC sea válido
+
+### D) RENDERIZADO DE MÚLTIPLES ETIQUETAS
+1. getDescriptiveStatusMessages() evalúa estado primero por error_conexion
+2. Puede retornar array con múltiples objetos {text, type}
+3. Cada etiqueta se renderiza con color específico según type:
+   - 'verified': verde
+   - 'error': naranja  
+   - 'incomplete': amarillo
+   - 'invalid': rojo
+   - 'validating': azul
+
+### E) PRIORIZACIÓN DE ESTADOS (ACTUALIZADA)
+1. Error de conexión (RUC o credenciales) → status = 'error_conexion' 
+2. Errores de validación (RUC inválido, credenciales incorrectas) → status = 'no_valido'
+3. Campos incompletos sin errores → status = 'incompleto'
+4. Todo válido → status = 'verificada' + isValid = true
+
+CASOS DE USO PARA TESTING:
+=========================
+
+### ERROR DE CONEXIÓN EN RUC:
+- RUC: 20999888777 → Error de conexión + credenciales incompletas
+- RUC: 20777666555 → Error de conexión + credenciales incompletas
+
+### ERROR DE CONEXIÓN EN CREDENCIALES:  
+- RUC válido (ej: 20123456789) + CONEXION01 + ErrorConn123 → RUC válido + error credenciales
+- RUC válido (ej: 20123456789) + TIMEOUT07 + Timeout456 → RUC válido + error credenciales
+
+### VALIDACIÓN NORMAL:
+- RUC válido + credenciales correctas → Todo verificado
+- RUC inválido → Solo error de RUC
+- Campos vacíos → Incompleto
