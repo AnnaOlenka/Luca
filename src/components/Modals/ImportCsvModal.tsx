@@ -10,7 +10,9 @@ import {
   RefreshCw,
   AlertTriangle,
   Save,
-  Loader2
+  Loader2,
+  Trash2,
+  Edit
 } from 'lucide-react';
 
 interface ImportedCompany {
@@ -59,7 +61,7 @@ const mockSunatAPI = {
         }
 
         const failingRucs = ['20111111111', '20222222222', '20184452123', '15493998971'];
-        if (failingRucs.includes(ruc)) {
+        if (failingRucs.includes(ruc) || (usuario === 'usuariomal' || clave === 'clavemal')) {
           resolve({
             success: false,
             error: 'Credenciales incorrectas - Usuario o clave SOL inválidos'
@@ -117,6 +119,13 @@ const ImportCsvModal: React.FC<ImportCsvModalProps> = ({ isOpen, onClose, onImpo
   const [verificationResults, setVerificationResults] = useState<VerificationResult[]>([]);
   const [currentVerifyingIndex, setCurrentVerifyingIndex] = useState(-1);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [editingCompanyId, setEditingCompanyId] = useState<string | null>(null);
+  const [editingForm, setEditingForm] = useState({
+    ruc: '',
+    usuario: '',
+    claveSol: ''
+  });
 
   if (!isOpen) return null;
 
@@ -304,6 +313,7 @@ const ImportCsvModal: React.FC<ImportCsvModalProps> = ({ isOpen, onClose, onImpo
     setCurrentVerifyingIndex(-1);
     setIsProcessing(false);
     setDragActive(false);
+    setEditingCompanyId(null);
   };
 
   const handleClose = () => {
@@ -368,6 +378,47 @@ const ImportCsvModal: React.FC<ImportCsvModalProps> = ({ isOpen, onClose, onImpo
       }
     }
     setIsProcessing(false);
+  };
+
+  const handleEdit = (company: VerificationResult) => {
+    setEditingCompanyId(company.id);
+    setEditingForm({
+      ruc: company.ruc,
+      usuario: company.usuario,
+      claveSol: company.claveSol,
+    });
+  };
+
+  const handleSaveEdit = (companyId: string) => {
+    const updatedResults = verificationResults.map(company => {
+      if (company.id === companyId) {
+        return {
+          ...company,
+          ruc: editingForm.ruc,
+          usuario: editingForm.usuario,
+          claveSol: editingForm.claveSol,
+          // Corrección definitiva: Mantener el estado en 'error' para que sea elegible para reintentar.
+          status: 'error',
+          error: 'Credenciales actualizadas. Por favor, reintente la verificación.',
+          verified: false,
+          companyData: undefined
+        } as VerificationResult; // El casteo asegura que el tipo es correcto
+      }
+      return company;
+    });
+
+    setVerificationResults(updatedResults);
+    setEditingCompanyId(null);
+  };
+
+
+  const handleCancelEdit = () => {
+    setEditingCompanyId(null);
+  };
+
+  const handleDelete = (companyId: string) => {
+    const updatedResults = verificationResults.filter(company => company.id !== companyId);
+    setVerificationResults(updatedResults);
   };
 
   const validCompanies = verificationResults.filter(c => c.verified);
@@ -596,8 +647,8 @@ const ImportCsvModal: React.FC<ImportCsvModalProps> = ({ isOpen, onClose, onImpo
                         <span className="text-gray-600">{totalCount} de {importedCompanies.length} ({Math.round((totalCount / importedCompanies.length) * 100)}%)</span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-3">
-                        <div 
-                          className="h-3 rounded-full transition-all bg-blue-600" 
+                        <div
+                          className="h-3 rounded-full transition-all bg-blue-600"
                           style={{width: `${(totalCount / importedCompanies.length) * 100}%`}}
                         ></div>
                       </div>
@@ -715,22 +766,95 @@ const ImportCsvModal: React.FC<ImportCsvModalProps> = ({ isOpen, onClose, onImpo
                             <th className="p-3 text-center">RUC</th>
                             <th className="p-3 text-center">Usuario</th>
                             <th className="p-3 text-center">Error</th>
+                            <th className="p-3 text-center">Acciones</th>
                           </tr>
                         </thead>
                         <tbody>
                           {errorCompanies.map((company) => (
-                            <tr key={company.id} className="border-t">
-                              <td className="p-3 font-mono">{company.ruc}</td>
-                              <td className="p-3">{company.usuario}</td>
-                              <td className="p-3 text-red-700">{company.error}</td>
-                            </tr>
+                            <React.Fragment key={company.id}>
+                              <tr className="border-t">
+                                <td className="p-3 font-mono">{company.ruc}</td>
+                                <td className="p-3">{company.usuario}</td>
+                                <td className="p-3 text-red-700">{company.error}</td>
+                                <td className="p-3">
+                                  <div className="flex items-center justify-center space-x-2">
+                                    <button
+                                      onClick={() => handleEdit(company)}
+                                      className="text-blue-600 hover:text-blue-800"
+                                      aria-label="Editar"
+                                    >
+                                      <Edit className="w-4 h-4" />
+                                    </button>
+                                    <button
+                                      onClick={() => handleDelete(company.id)}
+                                      className="text-red-600 hover:text-red-800"
+                                      aria-label="Eliminar"
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                              {editingCompanyId === company.id && (
+                                <tr className="bg-gray-100 border-b-2 border-blue-400">
+                                  <td colSpan={4} className="p-4">
+                                    <div className="p-4 border rounded-lg bg-white shadow-inner">
+                                      <h5 className="text-md font-semibold mb-3">Editar credenciales para {company.ruc}</h5>
+                                      <div className="flex flex-col space-y-3">
+                                        <div>
+                                          <label className="block text-sm font-medium text-gray-700 mb-1">RUC</label>
+                                          <input
+                                            type="text"
+                                            value={editingForm.ruc}
+                                            onChange={(e) => setEditingForm({...editingForm, ruc: e.target.value})}
+                                            className="w-full border-gray-300 rounded-md shadow-sm text-sm"
+                                          />
+                                        </div>
+                                        <div>
+                                          <label className="block text-sm font-medium text-gray-700 mb-1">Usuario SOL</label>
+                                          <input
+                                            type="text"
+                                            value={editingForm.usuario}
+                                            onChange={(e) => setEditingForm({...editingForm, usuario: e.target.value})}
+                                            className="w-full border-gray-300 rounded-md shadow-sm text-sm"
+                                          />
+                                        </div>
+                                        <div>
+                                          <label className="block text-sm font-medium text-gray-700 mb-1">Clave SOL</label>
+                                          <input
+                                            type="password"
+                                            value={editingForm.claveSol}
+                                            onChange={(e) => setEditingForm({...editingForm, claveSol: e.target.value})}
+                                            className="w-full border-gray-300 rounded-md shadow-sm text-sm"
+                                          />
+                                        </div>
+                                        <div className="flex justify-end space-x-2 mt-4">
+                                          <button
+                                            onClick={handleCancelEdit}
+                                            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                                          >
+                                            Cancelar
+                                          </button>
+                                          <button
+                                            onClick={() => handleSaveEdit(company.id)}
+                                            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 flex items-center space-x-2"
+                                          >
+                                            <Save className="w-4 h-4" />
+                                            <span>Guardar</span>
+                                          </button>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </td>
+                                </tr>
+                              )}
+                            </React.Fragment>
                           ))}
                         </tbody>
                       </table>
                     </div>
                   </>
                 )}
-
               </div>
             )}
           </div>
@@ -759,20 +883,19 @@ const ImportCsvModal: React.FC<ImportCsvModalProps> = ({ isOpen, onClose, onImpo
                     className="px-6 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     disabled={isProcessing}
                   >
-                    <RefreshCw className="w-4 h-4" />
+                    <RefreshCw className={`w-4 h-4 ${isProcessing ? 'animate-spin' : ''}`} />
                     <span>{isProcessing ? 'Reintentando...' : `Reintentar Errores (${errorCompanies.length})`}</span>
                   </button>
                 )}
-                {validCompanies.length > 0 && (
-                  <button
-                    onClick={handleImportValidCompanies}
-                    className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                    disabled={isProcessing}
-                  >
-                    <Save className="w-4 h-4" />
-                    <span>Importar Empresas Válidas ({validCompanies.length})</span>
-                  </button>
-                )}
+
+                <button
+                  onClick={handleImportValidCompanies}
+                  disabled={validCompanies.length === 0}
+                  className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <FileCheck className="w-4 h-4" />
+                  <span>Importar Empresas Válidas ({validCompanies.length})</span>
+                </button>
               </div>
             </div>
           )}

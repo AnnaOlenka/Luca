@@ -23,7 +23,76 @@ const EditCompanyModal: React.FC<EditCompanyModalProps> = ({ empresa, isOpen, on
   const [isValidatingCredentials, setIsValidatingCredentials] = useState<boolean>(false);
   const [credentialsStatus, setCredentialsStatus] = useState<'valid' | 'invalid' | 'checking' | 'idle'>('idle');
   const [validationTimeout, setValidationTimeout] = useState<NodeJS.Timeout | null>(null);
- const [validationErrors, setValidationErrors] = useState({});
+ const [validationErrors, setValidationErrors] = useState<{[key: string]: string}>({});
+ 
+  // Funciones de validación
+  const validateEmail = (email: string): string => {
+    if (!email) return '';
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return emailRegex.test(email) ? '' : 'Formato de email inválido';
+  };
+
+  const validateDni = (dni: string): string => {
+    if (!dni) return '';
+    const dniRegex = /^\d{8}$/;
+    return dniRegex.test(dni) ? '' : 'DNI debe tener exactamente 8 dígitos';
+  };
+
+  const validatePhone = (phone: string): string => {
+    if (!phone) return '';
+    const phoneRegex = /^\d+$/;
+    return phoneRegex.test(phone) ? '' : 'Teléfono debe contener solo números';
+  };
+
+  const validateNumericField = (value: string, fieldName: string): string => {
+    if (!value) return '';
+    const numericRegex = /^\d*\.?\d*$/;
+    if (!numericRegex.test(value)) {
+      return `${fieldName} debe ser un número válido`;
+    }
+    const numValue = parseFloat(value);
+    if (numValue < 0) {
+      return `${fieldName} no puede ser negativo`;
+    }
+    return '';
+  };
+
+  const validateField = (field: string, value: string): string => {
+    switch (field) {
+      case 'representanteEmail':
+      case 'adminEmail':
+      case 'contadorEmail':
+        return validateEmail(value);
+      case 'representanteDni':
+      case 'adminDni':
+      case 'contadorDni':
+        return validateDni(value);
+      case 'representanteTelefono':
+      case 'adminTelefono':
+      case 'contadorTelefono':
+        return validatePhone(value);
+      case 'facturacionAnual':
+        return validateNumericField(value, 'Facturación anual');
+      case 'numTrabajadores':
+        return validateNumericField(value, 'Número de trabajadores');
+      case 'volumenMensual':
+        return validateNumericField(value, 'Volumen mensual');
+      case 'metaIngresosMensual':
+        return validateNumericField(value, 'Meta mensual de ingresos');
+      case 'promedioEgresosMensual':
+        return validateNumericField(value, 'Promedio mensual de egresos');
+      case 'porcentajeGastosPersonal':
+      case 'porcentajeGastosOperativos':
+      case 'porcentajeRentaAnual':
+        const percentError = validateNumericField(value, 'Porcentaje');
+        if (percentError) return percentError;
+        const numValue = parseFloat(value);
+        if (numValue > 100) return 'Porcentaje no puede ser mayor a 100';
+        return '';
+      default:
+        return '';
+    }
+  };
  
   // Función para calcular el porcentaje de completitud
   const calculateCompletitud = (data: any, credStatus: string) => {
@@ -168,13 +237,25 @@ const EditCompanyModal: React.FC<EditCompanyModalProps> = ({ empresa, isOpen, on
   if (!isOpen || !empresa) return null;
 
   const tabs = [
-    { id: 'personas', label: 'Personas & Roles', icon: User },
-    { id: 'comercial', label: 'Información Comercial', icon: Briefcase },
     { id: 'credenciales', label: 'Credenciales SUNAT', icon: FileText },
+    { id: 'personas', label: 'Contacto', icon: User },
+    { id: 'comercial', label: 'Información Comercial', icon: Briefcase },
     { id: 'marcas', label: 'Marcas Registradas', icon: Award }
   ];
 
   const handleInputChange = (field: string, value: any) => {
+    // Validar el campo
+    const error = validateField(field, value);
+    const newValidationErrors = { ...validationErrors };
+    
+    if (error) {
+      newValidationErrors[field] = error;
+    } else {
+      delete newValidationErrors[field];
+    }
+    
+    setValidationErrors(newValidationErrors);
+    
     const newFormData = { ...formData, [field]: value };
     
     // Campos que afectan la completitud
@@ -568,93 +649,200 @@ const EditCompanyModal: React.FC<EditCompanyModalProps> = ({ empresa, isOpen, on
                                   </div>
                                   <div>
                                     <label className="block text-xs font-medium text-gray-700 mb-1">DNI</label>
-                                    <input
-                                      type="text"
-                                      value={persona.dni}
-                                      onChange={(e) => {
-                                        const updatedPersonas = personasData.map(p => 
-                                          p.id === persona.id ? {...p, dni: e.target.value} : p
-                                        );
-                                        setPersonasData(updatedPersonas);
-                                        // También actualizar en formData
-                                        let newFormData = { ...formData };
-                                        if (persona.rol === 'Representante Legal') {
-                                          newFormData.representanteDni = e.target.value;
-                                        } else if (persona.rol === 'Administrador') {
-                                          newFormData.adminDni = e.target.value;
-                                        } else if (persona.rol === 'Contador') {
-                                          newFormData.contadorDni = e.target.value;
-                                        }
-                                        
-                                        // Actualizar completitud en tiempo real
-                                        const newCompletitud = calculateCompletitud(newFormData, credentialsStatus);
-                                        newFormData.completitud = newCompletitud;
-                                        setFormData(newFormData);
-                                      }}
-                                      className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-blue-500"
-                                      placeholder="12345678"
-                                      maxLength={8}
-                                    />
+                                    <div>
+                                      <input
+                                        type="text"
+                                        value={persona.dni}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          const updatedPersonas = personasData.map(p => 
+                                            p.id === persona.id ? {...p, dni: value} : p
+                                          );
+                                          setPersonasData(updatedPersonas);
+                                          
+                                          // También actualizar en formData y validar
+                                          let newFormData = { ...formData };
+                                          let fieldName = '';
+                                          if (persona.rol === 'Representante Legal') {
+                                            fieldName = 'representanteDni';
+                                            newFormData.representanteDni = value;
+                                          } else if (persona.rol === 'Administrador') {
+                                            fieldName = 'adminDni';
+                                            newFormData.adminDni = value;
+                                          } else if (persona.rol === 'Contador') {
+                                            fieldName = 'contadorDni';
+                                            newFormData.contadorDni = value;
+                                          }
+                                          
+                                          // Validar el campo
+                                          const error = validateField(fieldName, value);
+                                          const newValidationErrors = { ...validationErrors };
+                                          
+                                          if (error) {
+                                            newValidationErrors[fieldName] = error;
+                                          } else {
+                                            delete newValidationErrors[fieldName];
+                                          }
+                                          
+                                          setValidationErrors(newValidationErrors);
+                                          
+                                          // Actualizar completitud en tiempo real
+                                          const newCompletitud = calculateCompletitud(newFormData, credentialsStatus);
+                                          newFormData.completitud = newCompletitud;
+                                          setFormData(newFormData);
+                                        }}
+                                        className={`w-full px-2 py-1 border rounded text-sm focus:ring-1 ${
+                                          validationErrors[
+                                            persona.rol === 'Representante Legal' ? 'representanteDni' :
+                                            persona.rol === 'Administrador' ? 'adminDni' : 'contadorDni'
+                                          ] ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
+                                        }`}
+                                        placeholder="12345678"
+                                        maxLength={8}
+                                      />
+                                      {validationErrors[
+                                        persona.rol === 'Representante Legal' ? 'representanteDni' :
+                                        persona.rol === 'Administrador' ? 'adminDni' : 'contadorDni'
+                                      ] && (
+                                        <p className="text-xs text-red-600 mt-1">
+                                          {validationErrors[
+                                            persona.rol === 'Representante Legal' ? 'representanteDni' :
+                                            persona.rol === 'Administrador' ? 'adminDni' : 'contadorDni'
+                                          ]}
+                                        </p>
+                                      )}
+                                    </div>
                                   </div>
                                   <div>
                                     <label className="block text-xs font-medium text-gray-700 mb-1">Email</label>
-                                    <input
-                                      type="email"
-                                      value={persona.email}
-                                      onChange={(e) => {
-                                        const updatedPersonas = personasData.map(p => 
-                                          p.id === persona.id ? {...p, email: e.target.value} : p
-                                        );
-                                        setPersonasData(updatedPersonas);
-                                        // También actualizar en formData
-                                        let newFormData = { ...formData };
-                                        if (persona.rol === 'Representante Legal') {
-                                          newFormData.representanteEmail = e.target.value;
-                                        } else if (persona.rol === 'Administrador') {
-                                          newFormData.adminEmail = e.target.value;
-                                        } else if (persona.rol === 'Contador') {
-                                          newFormData.contadorEmail = e.target.value;
-                                        }
-                                        
-                                        // Actualizar completitud en tiempo real
-                                        const newCompletitud = calculateCompletitud(newFormData, credentialsStatus);
-                                        newFormData.completitud = newCompletitud;
-                                        setFormData(newFormData);
-                                      }}
-                                      className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-blue-500"
-                                      placeholder="email@empresa.com"
-                                    />
+                                    <div>
+                                      <input
+                                        type="email"
+                                        value={persona.email}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          const updatedPersonas = personasData.map(p => 
+                                            p.id === persona.id ? {...p, email: value} : p
+                                          );
+                                          setPersonasData(updatedPersonas);
+                                          
+                                          // También actualizar en formData y validar
+                                          let newFormData = { ...formData };
+                                          let fieldName = '';
+                                          if (persona.rol === 'Representante Legal') {
+                                            fieldName = 'representanteEmail';
+                                            newFormData.representanteEmail = value;
+                                          } else if (persona.rol === 'Administrador') {
+                                            fieldName = 'adminEmail';
+                                            newFormData.adminEmail = value;
+                                          } else if (persona.rol === 'Contador') {
+                                            fieldName = 'contadorEmail';
+                                            newFormData.contadorEmail = value;
+                                          }
+                                          
+                                          // Validar el campo
+                                          const error = validateField(fieldName, value);
+                                          const newValidationErrors = { ...validationErrors };
+                                          
+                                          if (error) {
+                                            newValidationErrors[fieldName] = error;
+                                          } else {
+                                            delete newValidationErrors[fieldName];
+                                          }
+                                          
+                                          setValidationErrors(newValidationErrors);
+                                          
+                                          // Actualizar completitud en tiempo real
+                                          const newCompletitud = calculateCompletitud(newFormData, credentialsStatus);
+                                          newFormData.completitud = newCompletitud;
+                                          setFormData(newFormData);
+                                        }}
+                                        className={`w-full px-2 py-1 border rounded text-sm focus:ring-1 ${
+                                          validationErrors[
+                                            persona.rol === 'Representante Legal' ? 'representanteEmail' :
+                                            persona.rol === 'Administrador' ? 'adminEmail' : 'contadorEmail'
+                                          ] ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
+                                        }`}
+                                        placeholder="email@empresa.com"
+                                      />
+                                      {validationErrors[
+                                        persona.rol === 'Representante Legal' ? 'representanteEmail' :
+                                        persona.rol === 'Administrador' ? 'adminEmail' : 'contadorEmail'
+                                      ] && (
+                                        <p className="text-xs text-red-600 mt-1">
+                                          {validationErrors[
+                                            persona.rol === 'Representante Legal' ? 'representanteEmail' :
+                                            persona.rol === 'Administrador' ? 'adminEmail' : 'contadorEmail'
+                                          ]}
+                                        </p>
+                                      )}
+                                    </div>
                                   </div>
                                   <div>
                                     <label className="block text-xs font-medium text-gray-700 mb-1">Teléfono</label>
-                                    <input
-                                      type="tel"
-                                      value={persona.telefono}
-                                      onChange={(e) => {
-                                        const updatedPersonas = personasData.map(p => 
-                                          p.id === persona.id ? {...p, telefono: e.target.value} : p
-                                        );
-                                        setPersonasData(updatedPersonas);
-                                        
-                                        // También actualizar en formData para teléfono
-                                        let newFormData = { ...formData };
-                                        if (persona.rol === 'Representante Legal') {
-                                          newFormData.representanteTelefono = e.target.value;
-                                        } else if (persona.rol === 'Administrador') {
-                                          newFormData.adminTelefono = e.target.value;
-                                        } else if (persona.rol === 'Contador') {
-                                          newFormData.contadorTelefono = e.target.value;
-                                        }
-                                        
-                                        // Actualizar completitud en tiempo real
-                                        const newCompletitud = calculateCompletitud(newFormData, credentialsStatus);
-                                        newFormData.completitud = newCompletitud;
-                                        setFormData(newFormData);
-                                      }}
-                                      className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-blue-500"
-                                      placeholder="987654321"
-                                      maxLength={9}
-                                    />
+                                    <div>
+                                      <input
+                                        type="tel"
+                                        value={persona.telefono}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          const updatedPersonas = personasData.map(p => 
+                                            p.id === persona.id ? {...p, telefono: value} : p
+                                          );
+                                          setPersonasData(updatedPersonas);
+                                          
+                                          // También actualizar en formData y validar
+                                          let newFormData = { ...formData };
+                                          let fieldName = '';
+                                          if (persona.rol === 'Representante Legal') {
+                                            fieldName = 'representanteTelefono';
+                                            newFormData.representanteTelefono = value;
+                                          } else if (persona.rol === 'Administrador') {
+                                            fieldName = 'adminTelefono';
+                                            newFormData.adminTelefono = value;
+                                          } else if (persona.rol === 'Contador') {
+                                            fieldName = 'contadorTelefono';
+                                            newFormData.contadorTelefono = value;
+                                          }
+                                          
+                                          // Validar el campo
+                                          const error = validateField(fieldName, value);
+                                          const newValidationErrors = { ...validationErrors };
+                                          
+                                          if (error) {
+                                            newValidationErrors[fieldName] = error;
+                                          } else {
+                                            delete newValidationErrors[fieldName];
+                                          }
+                                          
+                                          setValidationErrors(newValidationErrors);
+                                          
+                                          // Actualizar completitud en tiempo real
+                                          const newCompletitud = calculateCompletitud(newFormData, credentialsStatus);
+                                          newFormData.completitud = newCompletitud;
+                                          setFormData(newFormData);
+                                        }}
+                                        className={`w-full px-2 py-1 border rounded text-sm focus:ring-1 ${
+                                          validationErrors[
+                                            persona.rol === 'Representante Legal' ? 'representanteTelefono' :
+                                            persona.rol === 'Administrador' ? 'adminTelefono' : 'contadorTelefono'
+                                          ] ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
+                                        }`}
+                                        placeholder="987654321"
+                                        maxLength={9}
+                                      />
+                                      {validationErrors[
+                                        persona.rol === 'Representante Legal' ? 'representanteTelefono' :
+                                        persona.rol === 'Administrador' ? 'adminTelefono' : 'contadorTelefono'
+                                      ] && (
+                                        <p className="text-xs text-red-600 mt-1">
+                                          {validationErrors[
+                                            persona.rol === 'Representante Legal' ? 'representanteTelefono' :
+                                            persona.rol === 'Administrador' ? 'adminTelefono' : 'contadorTelefono'
+                                          ]}
+                                        </p>
+                                      )}
+                                    </div>
                                   </div>
                                   <div>
                                     <label className="block text-xs font-medium text-gray-700 mb-1">Rol</label>
@@ -722,13 +910,20 @@ const EditCompanyModal: React.FC<EditCompanyModalProps> = ({ empresa, isOpen, on
                   <div className="grid grid-cols-2 gap-2">
                     <div>
                       <label className="block text-xs font-medium text-gray-700 mb-1">Facturación Anual</label>
-                      <input
-                        type="text"
-                        value={formData.facturacionAnual || ''}
-                        onChange={(e) => handleInputChange('facturacionAnual', e.target.value)}
-                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-blue-500"
-                        placeholder="1,500,000"
-                      />
+                      <div>
+                        <input
+                          type="text"
+                          value={formData.facturacionAnual || ''}
+                          onChange={(e) => handleInputChange('facturacionAnual', e.target.value)}
+                          className={`w-full px-2 py-1 border rounded text-sm focus:ring-1 ${
+                            validationErrors.facturacionAnual ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
+                          }`}
+                          placeholder="1500000"
+                        />
+                        {validationErrors.facturacionAnual && (
+                          <p className="text-xs text-red-600 mt-1">{validationErrors.facturacionAnual}</p>
+                        )}
+                      </div>
                     </div>
                     <div>
                       <label className="block text-xs font-medium text-gray-700 mb-1">Moneda</label>
@@ -744,13 +939,21 @@ const EditCompanyModal: React.FC<EditCompanyModalProps> = ({ empresa, isOpen, on
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-gray-700 mb-1">N° Trabajadores</label>
-                    <input
-                      type="number"
-                      value={formData.numTrabajadores || ''}
-                      onChange={(e) => handleInputChange('numTrabajadores', e.target.value)}
-                      className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-blue-500"
-                      placeholder="25"
-                    />
+                    <div>
+                      <input
+                        type="number"
+                        value={formData.numTrabajadores || ''}
+                        onChange={(e) => handleInputChange('numTrabajadores', e.target.value)}
+                        className={`w-full px-2 py-1 border rounded text-sm focus:ring-1 ${
+                          validationErrors.numTrabajadores ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
+                        }`}
+                        placeholder="25"
+                        min="0"
+                      />
+                      {validationErrors.numTrabajadores && (
+                        <p className="text-xs text-red-600 mt-1">{validationErrors.numTrabajadores}</p>
+                      )}
+                    </div>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
@@ -1004,27 +1207,41 @@ const EditCompanyModal: React.FC<EditCompanyModalProps> = ({ empresa, isOpen, on
                   <div className="grid grid-cols-2 gap-2">
                     <div>
                       <label className="block text-xs font-medium text-gray-700 mb-1">% Gastos Personal</label>
-                      <input
-                        type="number"
-                        value={formData.porcentajeGastosPersonal || ''}
-                        onChange={(e) => handleInputChange('porcentajeGastosPersonal', e.target.value)}
-                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-orange-500"
-                        placeholder="40"
-                        min="0"
-                        max="100"
-                      />
+                      <div>
+                        <input
+                          type="number"
+                          value={formData.porcentajeGastosPersonal || ''}
+                          onChange={(e) => handleInputChange('porcentajeGastosPersonal', e.target.value)}
+                          className={`w-full px-2 py-1 border rounded text-sm focus:ring-1 ${
+                            validationErrors.porcentajeGastosPersonal ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-orange-500'
+                          }`}
+                          placeholder="40"
+                          min="0"
+                          max="100"
+                        />
+                        {validationErrors.porcentajeGastosPersonal && (
+                          <p className="text-xs text-red-600 mt-1">{validationErrors.porcentajeGastosPersonal}</p>
+                        )}
+                      </div>
                     </div>
                     <div>
                       <label className="block text-xs font-medium text-gray-700 mb-1">% Gastos Operativos</label>
-                      <input
-                        type="number"
-                        value={formData.porcentajeGastosOperativos || ''}
-                        onChange={(e) => handleInputChange('porcentajeGastosOperativos', e.target.value)}
-                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-orange-500"
-                        placeholder="35"
-                        min="0"
-                        max="100"
-                      />
+                      <div>
+                        <input
+                          type="number"
+                          value={formData.porcentajeGastosOperativos || ''}
+                          onChange={(e) => handleInputChange('porcentajeGastosOperativos', e.target.value)}
+                          className={`w-full px-2 py-1 border rounded text-sm focus:ring-1 ${
+                            validationErrors.porcentajeGastosOperativos ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-orange-500'
+                          }`}
+                          placeholder="35"
+                          min="0"
+                          max="100"
+                        />
+                        {validationErrors.porcentajeGastosOperativos && (
+                          <p className="text-xs text-red-600 mt-1">{validationErrors.porcentajeGastosOperativos}</p>
+                        )}
+                      </div>
                     </div>
                   </div>
 

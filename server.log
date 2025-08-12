@@ -376,3 +376,1012 @@ webpack compiled with 1 warning
 Files successfully emitted, waiting for typecheck results...
 Issues checking in progress...
 No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 26:9:   'validationErrors' is assigned a value but never used                                                                    @typescript-eslint/no-unused-vars
+  Line 26:27:  'setValidationErrors' is assigned a value but never used                                                                 @typescript-eslint/no-unused-vars
+  Line 166:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 456:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 26:9:   'validationErrors' is assigned a value but never used                                                                    @typescript-eslint/no-unused-vars
+  Line 26:27:  'setValidationErrors' is assigned a value but never used                                                                 @typescript-eslint/no-unused-vars
+  Line 166:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 456:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 26:9:   'validationErrors' is assigned a value but never used                                                                    @typescript-eslint/no-unused-vars
+  Line 26:27:  'setValidationErrors' is assigned a value but never used                                                                 @typescript-eslint/no-unused-vars
+  Line 60:9:   'validateField' is assigned a value but never used                                                                       @typescript-eslint/no-unused-vars
+  Line 235:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 525:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 26:9:   'validationErrors' is assigned a value but never used                                                                    @typescript-eslint/no-unused-vars
+  Line 26:27:  'setValidationErrors' is assigned a value but never used                                                                 @typescript-eslint/no-unused-vars
+  Line 60:9:   'validateField' is assigned a value but never used                                                                       @typescript-eslint/no-unused-vars
+  Line 235:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 525:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 235:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 537:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 235:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 537:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 235:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 537:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 235:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 537:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 235:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 537:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 235:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 537:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 235:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 537:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 235:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 537:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 235:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 537:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 235:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 537:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 235:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 537:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 235:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 537:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 235:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 537:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 235:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 537:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 235:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 537:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 235:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 537:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 235:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 537:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 235:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 537:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 245:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 547:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 245:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 547:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 57:9:   'validateName' is assigned a value but never used                                                                        @typescript-eslint/no-unused-vars
+  Line 86:9:   'validateTextOnlyField' is assigned a value but never used                                                               @typescript-eslint/no-unused-vars
+  Line 272:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 574:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 57:9:   'validateName' is assigned a value but never used                                                                        @typescript-eslint/no-unused-vars
+  Line 86:9:   'validateTextOnlyField' is assigned a value but never used                                                               @typescript-eslint/no-unused-vars
+  Line 272:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 574:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 278:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 580:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 278:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 580:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 278:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 580:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 278:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 580:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 278:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 580:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 278:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 580:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 278:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 580:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 278:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 580:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 278:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 580:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 278:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 580:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 278:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 580:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 278:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 580:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 278:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 580:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 278:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 580:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 288:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 590:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 288:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 590:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 235:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 537:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 235:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 537:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 235:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 537:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/ImportCsvModal.tsx
+  Line 13:3:  'Loader2' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 235:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 537:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/ImportCsvModal.tsx
+  Line 13:3:  'Loader2' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+Compiling...
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+Compiled with warnings.
+
+[eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 235:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 537:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/ImportCsvModal.tsx
+  Line 13:3:  'Loader2' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 235:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 537:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/ImportCsvModal.tsx
+  Line 13:3:  'Loader2' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+ERROR in src/components/Modals/ImportCsvModal.tsx:401:28
+TS2345: Argument of type '(VerificationResult | { ruc: string; usuario: string; claveSol: string; status: string; error: string; verified: boolean; companyData?: { razonSocial: string; estado: string; condicion: string; direccion: string; actividadPrincipal: string; } | undefined; id: string; })[]' is not assignable to parameter of type 'SetStateAction<VerificationResult[]>'.
+  Type '(VerificationResult | { ruc: string; usuario: string; claveSol: string; status: string; error: string; verified: boolean; companyData?: { razonSocial: string; estado: string; condicion: string; direccion: string; actividadPrincipal: string; } | undefined; id: string; })[]' is not assignable to type 'VerificationResult[]'.
+    Type 'VerificationResult | { ruc: string; usuario: string; claveSol: string; status: string; error: string; verified: boolean; companyData?: { razonSocial: string; estado: string; condicion: string; direccion: string; actividadPrincipal: string; } | undefined; id: string; }' is not assignable to type 'VerificationResult'.
+      Type '{ ruc: string; usuario: string; claveSol: string; status: string; error: string; verified: boolean; companyData?: { razonSocial: string; estado: string; condicion: string; direccion: string; actividadPrincipal: string; } | undefined; id: string; }' is not assignable to type 'VerificationResult'.
+        Types of property 'status' are incompatible.
+          Type 'string' is not assignable to type '"idle" | "pending" | "success" | "error"'.
+    399 |         : company
+    400 |     );
+  > 401 |     setVerificationResults(updatedResults);
+        |                            ^^^^^^^^^^^^^^
+    402 |     setEditingCompanyId(null); // Ocultar el formulario de edición
+    403 |   };
+    404 |
+
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 235:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 537:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/ImportCsvModal.tsx
+  Line 13:3:  'Loader2' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 235:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 537:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/ImportCsvModal.tsx
+  Line 13:3:  'Loader2' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+ERROR in src/components/Modals/ImportCsvModal.tsx:409:28
+TS2345: Argument of type '(VerificationResult | { ruc: string; usuario: string; claveSol: string; status: string; error: string; verified: boolean; companyData?: { razonSocial: string; estado: string; condicion: string; direccion: string; actividadPrincipal: string; } | undefined; id: string; })[]' is not assignable to parameter of type 'SetStateAction<VerificationResult[]>'.
+  Type '(VerificationResult | { ruc: string; usuario: string; claveSol: string; status: string; error: string; verified: boolean; companyData?: { razonSocial: string; estado: string; condicion: string; direccion: string; actividadPrincipal: string; } | undefined; id: string; })[]' is not assignable to type 'VerificationResult[]'.
+    Type 'VerificationResult | { ruc: string; usuario: string; claveSol: string; status: string; error: string; verified: boolean; companyData?: { razonSocial: string; estado: string; condicion: string; direccion: string; actividadPrincipal: string; } | undefined; id: string; }' is not assignable to type 'VerificationResult'.
+      Type '{ ruc: string; usuario: string; claveSol: string; status: string; error: string; verified: boolean; companyData?: { razonSocial: string; estado: string; condicion: string; direccion: string; actividadPrincipal: string; } | undefined; id: string; }' is not assignable to type 'VerificationResult'.
+        Types of property 'status' are incompatible.
+          Type 'string' is not assignable to type '"idle" | "pending" | "success" | "error"'.
+    407 |         : company
+    408 |     );
+  > 409 |     setVerificationResults(updatedResults);
+        |                            ^^^^^^^^^^^^^^
+    410 |     setEditingCompanyId(null); // Ocultar el formulario de edición
+    411 |   };
+    412 |
+
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 235:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 537:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/ImportCsvModal.tsx
+  Line 13:3:  'Loader2' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 235:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 537:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/ImportCsvModal.tsx
+  Line 13:3:  'Loader2' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+ERROR in src/components/Modals/ImportCsvModal.tsx:409:28
+TS2345: Argument of type '(VerificationResult | { ruc: string; usuario: string; claveSol: string; status: string; error: string; verified: boolean; companyData?: { razonSocial: string; estado: string; condicion: string; direccion: string; actividadPrincipal: string; } | undefined; id: string; })[]' is not assignable to parameter of type 'SetStateAction<VerificationResult[]>'.
+  Type '(VerificationResult | { ruc: string; usuario: string; claveSol: string; status: string; error: string; verified: boolean; companyData?: { razonSocial: string; estado: string; condicion: string; direccion: string; actividadPrincipal: string; } | undefined; id: string; })[]' is not assignable to type 'VerificationResult[]'.
+    Type 'VerificationResult | { ruc: string; usuario: string; claveSol: string; status: string; error: string; verified: boolean; companyData?: { razonSocial: string; estado: string; condicion: string; direccion: string; actividadPrincipal: string; } | undefined; id: string; }' is not assignable to type 'VerificationResult'.
+      Type '{ ruc: string; usuario: string; claveSol: string; status: string; error: string; verified: boolean; companyData?: { razonSocial: string; estado: string; condicion: string; direccion: string; actividadPrincipal: string; } | undefined; id: string; }' is not assignable to type 'VerificationResult'.
+        Types of property 'status' are incompatible.
+          Type 'string' is not assignable to type '"idle" | "pending" | "success" | "error"'.
+    407 |         : company
+    408 |     );
+  > 409 |     setVerificationResults(updatedResults);
+        |                            ^^^^^^^^^^^^^^
+    410 |     setEditingCompanyId(null); // Ocultar el formulario de edición
+    411 |   };
+    412 |
+
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 235:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 537:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/ImportCsvModal.tsx
+  Line 13:3:  'Loader2' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 235:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 537:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/ImportCsvModal.tsx
+  Line 13:3:  'Loader2' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 235:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 537:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/ImportCsvModal.tsx
+  Line 13:3:  'Loader2' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 235:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 537:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/ImportCsvModal.tsx
+  Line 13:3:  'Loader2' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 235:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 537:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/ImportCsvModal.tsx
+  Line 13:3:  'Loader2' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 235:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 537:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/ImportCsvModal.tsx
+  Line 13:3:  'Loader2' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 235:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 537:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/ImportCsvModal.tsx
+  Line 13:3:  'Loader2' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 235:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 537:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/ImportCsvModal.tsx
+  Line 13:3:  'Loader2' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 235:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 537:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/ImportCsvModal.tsx
+  Line 13:3:  'Loader2' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 235:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 537:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/ImportCsvModal.tsx
+  Line 13:3:  'Loader2' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 235:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 537:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/ImportCsvModal.tsx
+  Line 13:3:  'Loader2' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Modals/EditCompanyModal.tsx
+  Line 2:53:   'Shield' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  Line 235:6:  React Hook useEffect has a missing dependency: 'calculateCompletitud'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 537:9:  'closeOtherSections' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+
+src/components/Modals/ImportCsvModal.tsx
+  Line 13:3:  'Loader2' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/components/Modals/RucModal.tsx
+  Line 2:10:  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+No issues found.
