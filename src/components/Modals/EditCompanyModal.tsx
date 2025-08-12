@@ -1502,7 +1502,7 @@ const EditCompanyModal: React.FC<EditCompanyModalProps> = ({ empresa, isOpen, on
             className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg text-sm disabled:opacity-50"
             disabled={successMessage.show}
           >
-            Cerrar
+            Cancelar
           </button>
           {/* Solo mostrar botón Guardar en tabs que no tienen guardado individual */}
           {(activeTab === 'comercial' || activeTab === 'credenciales') && (

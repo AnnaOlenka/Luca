@@ -1132,7 +1132,6 @@ const Empresas: React.FC<EmpresasProps> = ({ onNavigate }) => {
         { id: 1, nombre: "Carlos Rodriguez", iniciales: "CR", cargo: "Representante Legal", estado: "activo" as const },
         { id: 2, nombre: "Ana Martinez", iniciales: "AM", cargo: "Contador", estado: "activo" as const },
         { id: 3, nombre: "Luis Gonzalez", iniciales: "LG", cargo: "Asistente", estado: index === 0 ? "pendiente" as const : "activo" as const },
-        { id: 4, nombre: "Maria Silva", iniciales: "MS", cargo: "Auditor", estado: "activo" as const }
       ],
       tendencia: { 
         porcentaje: index === 0 ? 12.5 : index === 1 ? -3.2 : 8.7, 
