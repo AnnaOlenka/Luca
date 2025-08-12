@@ -116,6 +116,160 @@ const CompanyAccordionItem: React.FC<CompanyAccordionItemProps> = ({
     setRealTimeValidation(prev => ({ ...prev, solPassword: null }));
   };
 
+  // Nueva función para generar los mensajes descriptivos del estado (puede retornar múltiples)
+  const getDescriptiveStatusMessages = () => {
+    const { ruc, solUser, solPassword, status, validationState } = company;
+    
+    const hasRuc = ruc.trim().length > 0;
+    const hasValidRuc = hasRuc && ruc.trim().length === 11 && /^\d+$/.test(ruc.trim());
+    const hasUser = solUser.trim().length > 0;
+    const hasPassword = solPassword.trim().length > 0;
+    
+    // Verificar estados específicos
+    const rucValid = validationState.ruc === 'valid' || validationState.ruc === 'inactive';
+    const rucInvalid = (hasRuc && !hasValidRuc) || validationState.ruc === 'invalid' || validationState.ruc === 'duplicate';
+    const credentialsValid = validationState.credentials === 'valid';
+    const credentialsInvalid = validationState.credentials === 'invalid';
+    
+    // Verificar si hay campos vacíos
+    const rucEmpty = !hasRuc;
+    const userEmpty = !hasUser;
+    const passwordEmpty = !hasPassword;
+    
+    const messages = [];
+    
+    // Caso especial: RUC válido pero credenciales incompletas
+    if (rucValid && (userEmpty || passwordEmpty)) {
+      // Agregar etiqueta de RUC válido
+      messages.push({ text: 'RUC válido', type: 'verified' });
+      
+      // Agregar etiqueta de incompleto para credenciales
+      if (userEmpty && passwordEmpty) {
+        messages.push({ text: 'Incompleto: Credenciales vacías', type: 'incomplete' });
+      } else if (userEmpty) {
+        messages.push({ text: 'Incompleto: Usuario vacío', type: 'incomplete' });
+      } else if (passwordEmpty) {
+        messages.push({ text: 'Incompleto: Contraseña vacía', type: 'incomplete' });
+      }
+      
+      return messages;
+    }
+    
+    // Caso especial: RUC válido pero credenciales inválidas
+    if (rucValid && credentialsInvalid) {
+      // Agregar etiqueta de RUC válido
+      messages.push({ text: 'RUC válido', type: 'verified' });
+      
+      // Agregar etiqueta de credenciales inválidas
+      messages.push({ text: 'Inválido: Credenciales inválidas', type: 'invalid' });
+      
+      return messages;
+    }
+    
+    // Caso: Campos inválidos Y campos vacíos
+    const hasInvalidFields = rucInvalid || credentialsInvalid;
+    const hasEmptyFields = rucEmpty || userEmpty || passwordEmpty;
+    
+    if (hasInvalidFields && hasEmptyFields) {
+      // Mensaje de inválidos
+      if (rucInvalid && credentialsInvalid) {
+        messages.push({ text: 'Inválido: RUC y credenciales inválidas', type: 'invalid' });
+      } else if (rucInvalid) {
+        messages.push({ text: 'Inválido: RUC inválido', type: 'invalid' });
+      } else if (credentialsInvalid) {
+        messages.push({ text: 'Inválido: Credenciales inválidas', type: 'invalid' });
+      }
+      
+      // Mensaje de vacíos
+      if (rucEmpty && userEmpty && passwordEmpty) {
+        messages.push({ text: 'Incompleto: RUC y credenciales vacías', type: 'incomplete' });
+      } else if (rucEmpty && userEmpty) {
+        messages.push({ text: 'Incompleto: RUC y usuario vacíos', type: 'incomplete' });
+      } else if (rucEmpty && passwordEmpty) {
+        messages.push({ text: 'Incompleto: RUC y contraseña vacías', type: 'incomplete' });
+      } else if (userEmpty && passwordEmpty) {
+        messages.push({ text: 'Incompleto: Credenciales vacías', type: 'incomplete' });
+      } else if (rucEmpty) {
+        messages.push({ text: 'Incompleto: RUC vacío', type: 'incomplete' });
+      } else if (userEmpty) {
+        messages.push({ text: 'Incompleto: Usuario vacío', type: 'incomplete' });
+      } else if (passwordEmpty) {
+        messages.push({ text: 'Incompleto: Contraseña vacía', type: 'incomplete' });
+      }
+      
+      return messages;
+    }
+    
+    // Para casos simples, retornar una sola etiqueta
+    switch (status) {
+      case 'incompleto':
+        if (hasRuc && !hasValidRuc) {
+          return [{ text: 'Inválido: RUC inválido', type: 'invalid' }];
+        }
+        
+        if (!hasRuc && !hasUser && !hasPassword) {
+          return [{ text: 'Incompleto: RUC y credenciales vacías', type: 'incomplete' }];
+        }
+        if (!hasRuc && hasUser && hasPassword) {
+          return [{ text: 'Incompleto: RUC vacío', type: 'incomplete' }];
+        }
+        if (hasRuc && !hasUser && !hasPassword) {
+          return [{ text: 'Incompleto: Credenciales vacías', type: 'incomplete' }];
+        }
+        if (hasRuc && !hasUser && hasPassword) {
+          return [{ text: 'Incompleto: Usuario vacío', type: 'incomplete' }];
+        }
+        if (hasRuc && hasUser && !hasPassword) {
+          return [{ text: 'Incompleto: Contraseña vacía', type: 'incomplete' }];
+        }
+        if (!hasRuc && hasUser && !hasPassword) {
+          return [{ text: 'Incompleto: RUC y contraseña vacías', type: 'incomplete' }];
+        }
+        if (!hasRuc && !hasUser && hasPassword) {
+          return [{ text: 'Incompleto: RUC y usuario vacíos', type: 'incomplete' }];
+        }
+        
+        return [{ text: 'Incompleto', type: 'incomplete' }];
+
+      case 'no_valido':
+        if (rucInvalid && credentialsInvalid) {
+          return [{ text: 'Inválido: RUC y credenciales inválidas', type: 'invalid' }];
+        }
+        if (rucInvalid) {
+          return [{ text: 'Inválido: RUC inválido', type: 'invalid' }];
+        }
+        if (credentialsInvalid) {
+          return [{ text: 'Inválido: Credenciales inválidas', type: 'invalid' }];
+        }
+        return [{ text: 'Inválido', type: 'invalid' }];
+
+      case 'verificada':
+        return [{ text: 'Validado: RUC y credenciales validadas', type: 'verified' }];
+
+      case 'validando':
+        return [{ text: 'Validando...', type: 'validating' }];
+
+      default:
+        return [{ text: '', type: 'default' }];
+    }
+  };
+
+  const getStatusColor = (type: string) => {
+    switch (type) {
+      case 'verified':
+        // Todos los estados verificados son verdes, incluso si la empresa está inactiva
+        return 'text-green-600 bg-green-50';
+      case 'validating':
+        return 'text-blue-600 bg-blue-50';
+      case 'invalid':
+        return 'text-red-600 bg-red-50';
+      case 'incomplete':
+        return 'text-yellow-600 bg-yellow-50';
+      default:
+        return 'text-gray-600 bg-gray-50';
+    }
+  };
+
   const getFieldBorderColor = (field: string, state: string | null) => {
     if (!state) return 'border-gray-300 focus:border-blue-500';
     
@@ -220,13 +374,7 @@ const CompanyAccordionItem: React.FC<CompanyAccordionItemProps> = ({
                 </span>
                 {/* Status indicator */}
                 {company.status === 'verificada' && (
-                  <>
-                    {company.validationState.ruc === 'inactive' ? (
-                      <AlertTriangle className="w-4 h-4 text-orange-500" />
-                    ) : (
-                      <CheckCircle className="w-4 h-4 text-green-500" />
-                    )}
-                  </>
+                  <CheckCircle className="w-4 h-4 text-green-500" />
                 )}
                 {company.status === 'validando' && (
                   <Clock className="w-4 h-4 text-blue-500 animate-spin" />
@@ -239,12 +387,12 @@ const CompanyAccordionItem: React.FC<CompanyAccordionItemProps> = ({
                 )}
               </div>
               {company.businessName && company.sunatStatus && company.sunatCondition && (
-                <div className="flex items-center space-x-2 mt-1">
-                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getSunatStatusColor(company.sunatStatus)}`}>
-                    Estado: {company.sunatStatus}
+                <div className="flex items-start space-x-2 mt-1">
+                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium h-auto leading-tight text-center ${getSunatStatusColor(company.sunatStatus)}`} style={{ maxWidth: '84px' }}>
+                    <span className="w-full break-words">Estado: {company.sunatStatus}</span>
                   </span>
-                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium text-blue-600 bg-blue-100">
-                    Condición: {company.sunatCondition}
+                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium h-auto leading-tight text-center text-blue-600 bg-blue-100" style={{ maxWidth: '84px' }}>
+                    <span className="w-full break-words">Condición: {company.sunatCondition}</span>
                   </span>
                 </div>
               )}
@@ -253,31 +401,19 @@ const CompanyAccordionItem: React.FC<CompanyAccordionItemProps> = ({
 
           {/* Actions */}
           <div className="flex items-center space-x-2">
-            {/* Status badge */}
-            {company.status === 'verificada' && (
-              <span className={`text-xs font-medium px-2 py-1 rounded-full ${
-                company.validationState.ruc === 'inactive' 
-                  ? 'text-orange-600 bg-orange-50' 
-                  : 'text-green-600 bg-green-50'
-              }`}>
-                {company.validationState.ruc === 'inactive' ? 'Verificada (Inactiva)' : 'Verificada'}
-              </span>
-            )}
-            {company.status === 'validando' && (
-              <span className="text-xs text-blue-600 font-medium bg-blue-50 px-2 py-1 rounded-full">
-                Validando...
-              </span>
-            )}
-            {company.status === 'no_valido' && (
-              <span className="text-xs text-red-600 font-medium bg-red-50 px-2 py-1 rounded-full">
-                No válido
-              </span>
-            )}
-            {company.status === 'incompleto' && (
-              <span className="text-xs text-yellow-600 font-medium bg-yellow-50 px-2 py-1 rounded-full">
-                Incompleto
-              </span>
-            )}
+            {/* Status badges with descriptive messages - can be multiple */}
+            <div className="flex flex-col items-end space-y-1">
+              {getDescriptiveStatusMessages().map((message, index) => (
+                message.text && (
+                  <span 
+                    key={index}
+                    className={`text-xs font-medium px-2 py-1 rounded-full ${getStatusColor(message.type)}`}
+                  >
+                    {message.text}
+                  </span>
+                )
+              ))}
+            </div>
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -317,8 +453,6 @@ const CompanyAccordionItem: React.FC<CompanyAccordionItemProps> = ({
                 </div>
               </div>
               
-
-
               {/* Real-time Validation Message */}
               {realTimeValidation.ruc && (
                 <p className="text-sm mt-1 text-left text-red-600">
