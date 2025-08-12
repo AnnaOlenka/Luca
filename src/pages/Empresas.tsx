@@ -1430,6 +1430,8 @@ const getCompletitudColor = (completitud: number) => {
            newCompanyForm.claveSol.trim();
   };
 
+  
+
   const handleSubmitNewCompany = async () => {
     if (!validateForm()) return;
     
@@ -1625,6 +1627,8 @@ const getCompletitudColor = (completitud: number) => {
           </div>
         </div>
 {/* Add Company Button/Form */}
+
+
         <div className="max-w-4xl mx-auto">
           {!showAddForm ? (
             <div className="mb-6 w-full">
@@ -1845,6 +1849,8 @@ const getCompletitudColor = (completitud: number) => {
             </div>
           )}
         </div>
+
+
 
        {/* Empresas List - LAYOUT HORIZONTAL OPTIMIZADO */}
         <div className="w-[80%] max-w-5xl mx-auto space-y-2">
