@@ -110,6 +110,7 @@
 .max-h-\[500px\] { max-height: 500px; }
 .max-h-\[600px\] { max-height: 600px; }
 .min-h-\[85vh\] { min-height: 85vh; }
+.min-h-\[75vh\] { min-height: 75vh; }
 .min-w-0 { min-width: 0px; }
 
 /* Posicionamiento */

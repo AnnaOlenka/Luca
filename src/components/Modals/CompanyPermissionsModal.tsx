@@ -414,7 +414,7 @@ const CompanyPermissionsModal: React.FC<CompanyPermissionsModalProps> = ({
       <div className="fixed inset-0 bg-black bg-opacity-50" onClick={onClose} />
       
       <div className="flex min-h-screen items-center justify-center p-4">
-        <div className="relative bg-white rounded-lg shadow-xl w-full max-w-4xl min-h-[85vh] max-h-[98vh] overflow-hidden">
+        <div className="relative bg-white rounded-lg shadow-xl w-full max-w-4xl min-h-[75vh] max-h-[90vh] overflow-hidden">
           
           <div className="bg-white border-b border-gray-200 px-6 py-4">
             <div className="flex items-center justify-between">
@@ -523,7 +523,7 @@ const CompanyPermissionsModal: React.FC<CompanyPermissionsModalProps> = ({
                 </div>
               </div>
 
-              <div className="overflow-auto" style={{ maxHeight: 'calc(98vh - 240px)' }}>
+              <div className="overflow-auto" style={{ maxHeight: 'calc(90vh - 260px)' }}>
                 
                 {errors.length > 0 && (
                   <div className="m-6 bg-red-50 border border-red-200 rounded-lg p-4">
@@ -658,7 +658,7 @@ const CompanyPermissionsModal: React.FC<CompanyPermissionsModalProps> = ({
           )}
 
           {activeTab === 'permissions' && (
-            <div className="overflow-auto" style={{ maxHeight: 'calc(98vh - 200px)' }}>
+            <div className="overflow-auto" style={{ maxHeight: 'calc(90vh - 220px)' }}>
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead className="bg-gray-50 border-b border-gray-200">
