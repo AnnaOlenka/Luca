@@ -29,7 +29,7 @@ interface CompanyAccordionItemProps {
 }
 
 const CompanyAccordionItem: React.FC<CompanyAccordionItemProps> = ({
-  company,
+  company, 
   companyNumber,
   isLastCompany,
   onUpdate,

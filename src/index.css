@@ -105,6 +105,11 @@
 .max-w-4xl { max-width: 56rem; }
 .max-h-96 { max-height: 24rem; }
 .max-h-\[90vh\] { max-height: 90vh; }
+.max-h-\[95vh\] { max-height: 95vh; }
+.max-h-\[98vh\] { max-height: 98vh; }
+.max-h-\[500px\] { max-height: 500px; }
+.max-h-\[600px\] { max-height: 600px; }
+.min-h-\[85vh\] { min-height: 85vh; }
 .min-w-0 { min-width: 0px; }
 
 /* Posicionamiento */
@@ -119,6 +124,7 @@
 .top-0 { top: 0px; }
 .z-40 { z-index: 40; }
 .z-50 { z-index: 50; }
+.z-\[70\] { z-index: 70; }
 
 /* Colores de fondo */
 .bg-white { background-color: #ffffff; }

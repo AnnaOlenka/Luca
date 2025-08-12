@@ -14,6 +14,7 @@ import {
   Trash2,
   Edit
 } from 'lucide-react';
+import validCredentialsData from '../../data/validCredentials.json';
 
 interface ImportedCompany {
   id: string;
@@ -33,70 +34,153 @@ interface VerificationResult extends ImportedCompany {
     actividadPrincipal: string;
   };
   status: 'idle' | 'pending' | 'success' | 'error';
+  validationState?: {
+    ruc: 'valid' | 'invalid' | 'duplicate' | 'inactive' | 'validating' | 'error_conexion' | null;
+    credentials: 'valid' | 'invalid' | 'validating' | 'error_conexion' | null;
+  };
 }
 
 const mockSunatAPI = {
-  verificarCredenciales: (ruc: string, usuario: string, clave: string) => {
-    return new Promise<{ success: boolean; error?: string; data?: any }>((resolve) => {
+  verificarCredenciales: (ruc: string, usuario: string, clave: string, existingRucs: string[] = []) => {
+    return new Promise<{ success: boolean; error?: string; data?: any; validationState?: any }>((resolve) => {
       // Simulate API delay
       setTimeout(() => {
-        // Mock validation logic
-        const isValidRuc = ruc.length === 11 && /^\d+$/.test(ruc);
-        const hasCredentials = usuario && clave;
+        // Validar formato básico del RUC
+        const isValidRucFormat = ruc.length === 11 && /^\d+$/.test(ruc);
+        const hasCredentials = usuario.trim().length > 0 && clave.trim().length > 0;
 
-        if (!isValidRuc) {
+        // 1. Validar formato de RUC
+        if (!isValidRucFormat) {
           resolve({
             success: false,
-            error: 'RUC inválido - debe tener 11 dígitos numéricos'
+            error: 'RUC inválido - debe tener 11 dígitos numéricos',
+            validationState: {
+              ruc: 'invalid',
+              credentials: null
+            }
           });
           return;
         }
 
+        // 2. Validar que existan credenciales
         if (!hasCredentials) {
+          const errorMsg = !usuario.trim() && !clave.trim() 
+            ? 'Usuario y clave SOL son requeridos'
+            : !usuario.trim() 
+            ? 'Usuario SOL requerido'
+            : 'Clave SOL requerida';
+          
           resolve({
             success: false,
-            error: 'Usuario y clave SOL son requeridos'
+            error: errorMsg,
+            validationState: {
+              ruc: 'valid',
+              credentials: 'invalid'
+            }
           });
           return;
         }
 
-        const failingRucs = ['20111111111', '20222222222', '20184452123', '15493998971'];
-        if (failingRucs.includes(ruc) || (usuario === 'usuariomal' || clave === 'clavemal')) {
+        // 3. Buscar RUC en validCredentials.json
+        const validRuc = validCredentialsData.validRucs.find(r => r.ruc === ruc);
+        
+        if (!validRuc) {
+          // RUC no existe en SUNAT
           resolve({
             success: false,
-            error: 'Credenciales incorrectas - Usuario o clave SOL inválidos'
+            error: 'RUC inválido o no existe en SUNAT',
+            validationState: {
+              ruc: 'invalid',
+              credentials: null
+            }
           });
           return;
         }
 
-        const suspendedRucs = ['20333333333'];
-        if (suspendedRucs.includes(ruc)) {
+        // 4. Verificar si el RUC simula error de conexión
+        if (validRuc.status === 'error_conexion') {
           resolve({
             success: false,
-            error: 'RUC suspendido temporalmente por SUNAT'
+            error: 'Error de conexión con SUNAT - Intente nuevamente',
+            validationState: {
+              ruc: 'error_conexion',
+              credentials: 'error_conexion'
+            }
           });
           return;
         }
 
-        const mockCompanyNames = [
-          'COMERCIAL IMPORTADORA DEL SUR S.A.C.',
-          'CONSTRUCTORA EDIFICACIONES MODERNAS E.I.R.L.',
-          'SERVICIOS TECNOLÓGICOS AVANZADOS S.A.',
-          'DISTRIBUIDORA COMERCIAL NORTE S.R.L.',
-          'INVERSIONES Y PROYECTOS LIMA S.A.C.'
-        ];
+        // 5. Verificar si el RUC está inactivo
+        if (validRuc.status === 'inactive') {
+          resolve({
+            success: false,
+            error: 'Empresa inactiva en SUNAT (se puede verificar con credenciales)',
+            validationState: {
+              ruc: 'inactive',
+              credentials: null
+            }
+          });
+          return;
+        }
 
-        const randomIndex = Math.floor(Math.random() * mockCompanyNames.length);
+        // 6. Verificar RUC duplicado en el sistema
+        if (existingRucs && existingRucs.includes(ruc)) {
+          resolve({
+            success: false,
+            error: 'Este RUC ya está registrado en el sistema',
+            validationState: {
+              ruc: 'duplicate',
+              credentials: null
+            }
+          });
+          return;
+        }
+        
+        // 7. Verificar credenciales
+        const validCredential = validCredentialsData.validCredentials.find(
+          c => c.solUser === usuario && c.solPassword === clave
+        );
 
+        if (!validCredential) {
+          // Credenciales inválidas
+          resolve({
+            success: false,
+            error: 'Usuario o contraseña SOL incorrectos',
+            validationState: {
+              ruc: validRuc.status === 'active' ? 'valid' : 'inactive',
+              credentials: 'invalid'
+            }
+          });
+          return;
+        }
+
+        // 8. Simular error de conexión específico para ciertas credenciales
+        if (usuario === 'CONEXION01' || usuario === 'TIMEOUT07') {
+          resolve({
+            success: false,
+            error: 'Error de conexión con SUNAT al validar credenciales',
+            validationState: {
+              ruc: 'valid',
+              credentials: 'error_conexion'
+            }
+          });
+          return;
+        }
+
+        // 9. Éxito - RUC válido y credenciales correctas
         resolve({
           success: true,
           data: {
-            razonSocial: mockCompanyNames[randomIndex],
-            estado: 'ACTIVO',
-            condicion: 'HABIDO',
+            razonSocial: validRuc.businessName,
+            estado: validRuc.sunatStatus,
+            condicion: validRuc.sunatCondition,
             direccion: `AV. ${['PRINCIPAL', 'COMERCIAL', 'INDUSTRIAL', 'CENTRAL'][Math.floor(Math.random() * 4)]} ${Math.floor(Math.random() * 999) + 100}`,
             distrito: 'LIMA',
             actividadPrincipal: '4711 - VENTA AL POR MENOR EN COMERCIOS NO ESPECIALIZADOS'
+          },
+          validationState: {
+            ruc: validRuc.status === 'active' ? 'valid' : 'inactive',
+            credentials: 'valid'
           }
         });
       }, Math.random() * 1000 + 500); // Random delay between 500-1500ms
@@ -104,13 +188,80 @@ const mockSunatAPI = {
   }
 };
 
+// Función para generar mensajes de error más descriptivos basados en validationState
+const getDetailedErrorMessage = (company: VerificationResult) => {
+  const { ruc, usuario, claveSol, validationState, error } = company;
+  
+  const hasRuc = ruc.trim().length > 0;
+  const hasValidRuc = hasRuc && ruc.trim().length === 11 && /^\d+$/.test(ruc.trim());
+  const hasUser = usuario.trim().length > 0;
+  const hasPassword = claveSol.trim().length > 0;
+  
+  // Si tenemos validationState, usar esa información para generar mensajes específicos
+  if (validationState) {
+    const { ruc: rucState, credentials: credState } = validationState;
+    
+    // Errores de RUC
+    if (rucState === 'invalid') {
+      if (!hasValidRuc) {
+        return 'RUC debe tener 11 dígitos numéricos';
+      }
+      return 'RUC inválido o no existe en SUNAT';
+    }
+    if (rucState === 'duplicate') {
+      return 'Este RUC ya está registrado en el sistema';
+    }
+    if (rucState === 'inactive') {
+      return 'Empresa inactiva en SUNAT (se puede verificar con credenciales)';
+    }
+    if (rucState === 'error_conexion') {
+      return 'Error de conexión con SUNAT al validar RUC';
+    }
+    
+    // Errores de credenciales cuando RUC es válido
+    if (rucState === 'valid' && credState === 'invalid') {
+      if (!hasUser && !hasPassword) {
+        return 'Usuario y contraseña SOL son requeridos';
+      }
+      if (!hasUser) {
+        return 'Usuario SOL requerido';
+      }
+      if (!hasPassword) {
+        return 'Contraseña SOL requerida';
+      }
+      return 'Usuario o contraseña SOL incorrectos';
+    }
+    if (credState === 'error_conexion') {
+      return 'Error de conexión con SUNAT al validar credenciales';
+    }
+  }
+  
+  // Fallback a validaciones básicas si no hay validationState
+  if (!hasRuc) {
+    return 'RUC requerido';
+  }
+  if (!hasValidRuc) {
+    return 'RUC debe tener 11 dígitos numéricos';
+  }
+  if (!hasUser) {
+    return 'Usuario SOL requerido';
+  }
+  if (!hasPassword) {
+    return 'Contraseña SOL requerida';
+  }
+  
+  // Usar el error específico del API como fallback
+  return error || 'Error de validación';
+};
+
 interface ImportCsvModalProps {
   isOpen: boolean;
   onClose: () => void;
   onImportSuccess: (companies: any[]) => void;
+  existingRucs?: string[]; // RUCs ya existentes en el sistema
 }
 
-const ImportCsvModal: React.FC<ImportCsvModalProps> = ({ isOpen, onClose, onImportSuccess }) => {
+const ImportCsvModal: React.FC<ImportCsvModalProps> = ({ isOpen, onClose, onImportSuccess, existingRucs = [] }) => {
   const [dragActive, setDragActive] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [importedCompanies, setImportedCompanies] = useState<ImportedCompany[]>([]);
@@ -223,16 +374,40 @@ const ImportCsvModal: React.FC<ImportCsvModalProps> = ({ isOpen, onClose, onImpo
     setCurrentVerifyingIndex(0);
 
     const results: VerificationResult[] = [];
+    const processedRucs = new Set<string>(); // Para detectar duplicados dentro del mismo archivo
 
     for (let i = 0; i < companiesToVerify.length; i++) {
       setCurrentVerifyingIndex(i);
       const company = companiesToVerify[i];
 
+      // Verificar duplicados dentro del mismo archivo CSV
+      if (processedRucs.has(company.ruc)) {
+        const result: VerificationResult = {
+          ...company,
+          verified: false,
+          error: 'RUC duplicado en el archivo CSV',
+          status: 'error',
+          validationState: {
+            ruc: 'duplicate',
+            credentials: null
+          }
+        };
+        results.push(result);
+        setVerificationResults([...results]);
+        continue;
+      }
+      
+      processedRucs.add(company.ruc);
+
       try {
+        // Crear una copia del arreglo existingRucs que incluya los RUCs ya existentes
+        const allExistingRucs = [...existingRucs];
+        
         const verification = await mockSunatAPI.verificarCredenciales(
           company.ruc,
           company.usuario,
-          company.claveSol
+          company.claveSol,
+          allExistingRucs
         );
 
         const result: VerificationResult = {
@@ -240,7 +415,8 @@ const ImportCsvModal: React.FC<ImportCsvModalProps> = ({ isOpen, onClose, onImpo
           verified: verification.success,
           error: verification.success ? undefined : verification.error,
           companyData: verification.success ? verification.data : undefined,
-          status: verification.success ? 'success' : 'error'
+          status: verification.success ? 'success' : 'error',
+          validationState: verification.validationState || null
         };
 
         results.push(result);
@@ -252,7 +428,11 @@ const ImportCsvModal: React.FC<ImportCsvModalProps> = ({ isOpen, onClose, onImpo
           verified: false,
           error: 'Error de conexión con SUNAT',
           companyData: undefined,
-          status: 'error'
+          status: 'error',
+          validationState: {
+            ruc: 'error_conexion',
+            credentials: 'error_conexion'
+          }
         };
         results.push(result);
         setVerificationResults([...results]);
@@ -323,7 +503,20 @@ const ImportCsvModal: React.FC<ImportCsvModalProps> = ({ isOpen, onClose, onImpo
   };
 
   const downloadTemplate = () => {
-    const csvContent = "RUC,Usuario,Clave SOL\n20123456789,usuario1,clave123\n20987654321,usuario2,clave456\n20111111111,usuariomal,clavemal\n20333333333,usuariosus,clavesus";
+    // Usar datos del archivo validCredentials.json para la plantilla
+    let csvContent = "RUC,Usuario,Clave SOL\n";
+    
+    // Añadir algunos ejemplos válidos
+    csvContent += "20123456789,ROCAFUER01,password123\n";
+    csvContent += "20987654321,ADMIN001,Sol123456\n";
+    csvContent += "20654321987,USER002,Clave789\n";
+    
+    // Añadir algunos ejemplos con errores para demostrar validaciones
+    csvContent += "20456789123,CONTA03,Pass2024\n"; // RUC inactivo
+    csvContent += "20888999000,GERENTE4,Sol987654\n"; // RUC inactivo
+    csvContent += "20999888777,CONEXION01,ErrorConn123\n"; // Error de conexión
+    csvContent += "12345678901,USUARIO_MAL,clave_incorrecta\n"; // RUC y credenciales inválidas
+    
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -363,7 +556,8 @@ const ImportCsvModal: React.FC<ImportCsvModalProps> = ({ isOpen, onClose, onImpo
             verified: verification.success,
             error: verification.success ? undefined : verification.error,
             companyData: verification.success ? verification.data : undefined,
-            status: verification.success ? 'success' : 'error'
+            status: verification.success ? 'success' : 'error',
+            validationState: verification.validationState || null
           };
           setVerificationResults([...updatedResults]);
         } catch (error) {
@@ -371,7 +565,11 @@ const ImportCsvModal: React.FC<ImportCsvModalProps> = ({ isOpen, onClose, onImpo
             ...updatedResults[i],
             verified: false,
             error: 'Error de conexión con SUNAT',
-            status: 'error'
+            status: 'error',
+            validationState: {
+              ruc: 'error_conexion',
+              credentials: 'error_conexion'
+            }
           };
           setVerificationResults([...updatedResults]);
         }
@@ -397,12 +595,15 @@ const ImportCsvModal: React.FC<ImportCsvModalProps> = ({ isOpen, onClose, onImpo
           ruc: editingForm.ruc,
           usuario: editingForm.usuario,
           claveSol: editingForm.claveSol,
-          // Corrección definitiva: Mantener el estado en 'error' para que sea elegible para reintentar.
           status: 'error',
           error: 'Credenciales actualizadas. Por favor, reintente la verificación.',
           verified: false,
-          companyData: undefined
-        } as VerificationResult; // El casteo asegura que el tipo es correcto
+          companyData: undefined,
+          validationState: {
+            ruc: null,
+            credentials: null
+          }
+        } as VerificationResult;
       }
       return company;
     });
@@ -410,7 +611,6 @@ const ImportCsvModal: React.FC<ImportCsvModalProps> = ({ isOpen, onClose, onImpo
     setVerificationResults(updatedResults);
     setEditingCompanyId(null);
   };
-
 
   const handleCancelEdit = () => {
     setEditingCompanyId(null);
@@ -612,7 +812,7 @@ const ImportCsvModal: React.FC<ImportCsvModalProps> = ({ isOpen, onClose, onImpo
                               ) : (
                                 <div className="text-sm text-red-700">
                                   <div className="font-medium">Error de verificación</div>
-                                  <div className="text-xs">{result.error}</div>
+                                  <div className="text-xs">{getDetailedErrorMessage(result)}</div>
                                 </div>
                               )}
                             </div>
@@ -765,7 +965,7 @@ const ImportCsvModal: React.FC<ImportCsvModalProps> = ({ isOpen, onClose, onImpo
                           <tr>
                             <th className="p-3 text-center">RUC</th>
                             <th className="p-3 text-center">Usuario</th>
-                            <th className="p-3 text-center">Error</th>
+                            <th className="p-3 text-center">Error de Validación</th>
                             <th className="p-3 text-center">Acciones</th>
                           </tr>
                         </thead>
@@ -775,7 +975,7 @@ const ImportCsvModal: React.FC<ImportCsvModalProps> = ({ isOpen, onClose, onImpo
                               <tr className="border-t">
                                 <td className="p-3 font-mono">{company.ruc}</td>
                                 <td className="p-3">{company.usuario}</td>
-                                <td className="p-3 text-red-700">{company.error}</td>
+                                <td className="p-3 text-red-700">{getDetailedErrorMessage(company)}</td>
                                 <td className="p-3">
                                   <div className="flex items-center justify-center space-x-2">
                                     <button

@@ -414,7 +414,7 @@ const CompanyPermissionsModal: React.FC<CompanyPermissionsModalProps> = ({
       <div className="fixed inset-0 bg-black bg-opacity-50" onClick={onClose} />
       
       <div className="flex min-h-screen items-center justify-center p-4">
-        <div className="relative bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
+        <div className="relative bg-white rounded-lg shadow-xl w-full max-w-4xl min-h-[85vh] max-h-[98vh] overflow-hidden">
           
           <div className="bg-white border-b border-gray-200 px-6 py-4">
             <div className="flex items-center justify-between">
@@ -495,6 +495,13 @@ const CompanyPermissionsModal: React.FC<CompanyPermissionsModalProps> = ({
                     </span>
                     <div className="relative">
                       <button
+                        ref={(el) => {
+                          // Pass the ref to the AddUserPopover component
+                          if (showAddUserModal && el) {
+                            // Store reference for position calculation
+                            (window as any).addUserButtonRef = el;
+                          }
+                        }}
                         onClick={() => setShowAddUserModal(true)}
                         className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2"
                       >
@@ -516,7 +523,7 @@ const CompanyPermissionsModal: React.FC<CompanyPermissionsModalProps> = ({
                 </div>
               </div>
 
-              <div className="overflow-auto" style={{ maxHeight: 'calc(90vh - 300px)' }}>
+              <div className="overflow-auto" style={{ maxHeight: 'calc(98vh - 240px)' }}>
                 
                 {errors.length > 0 && (
                   <div className="m-6 bg-red-50 border border-red-200 rounded-lg p-4">
@@ -651,7 +658,7 @@ const CompanyPermissionsModal: React.FC<CompanyPermissionsModalProps> = ({
           )}
 
           {activeTab === 'permissions' && (
-            <div className="overflow-auto" style={{ maxHeight: 'calc(90vh - 250px)' }}>
+            <div className="overflow-auto" style={{ maxHeight: 'calc(98vh - 200px)' }}>
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead className="bg-gray-50 border-b border-gray-200">
@@ -828,6 +835,7 @@ const AddUserPopover: React.FC<AddUserPopoverProps> = ({
   const [selectedUser, setSelectedUser] = useState<string>('');
   const [selectedRole, setSelectedRole] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [position, setPosition] = useState<'bottom' | 'top'>('bottom');
   const popoverRef = useRef<HTMLDivElement>(null);
 
   const filteredUsers = availableUsers.filter(user =>
@@ -844,6 +852,40 @@ const AddUserPopover: React.FC<AddUserPopoverProps> = ({
       setSearchTerm('');
     }
   };
+
+  // Calculate optimal position based on available space
+  useEffect(() => {
+    if (isOpen) {
+      const calculatePosition = () => {
+        const button = (window as any).addUserButtonRef;
+        if (!button) return;
+
+        const buttonRect = button.getBoundingClientRect();
+        const viewportHeight = window.innerHeight;
+        const popoverHeight = 600; // Estimated max height
+        
+        const spaceBelow = viewportHeight - buttonRect.bottom;
+        const spaceAbove = buttonRect.top;
+        
+        // If there's not enough space below and more space above, position above
+        if (spaceBelow < popoverHeight && spaceAbove > spaceBelow) {
+          setPosition('top');
+        } else {
+          setPosition('bottom');
+        }
+      };
+
+      // Calculate position initially and on scroll/resize
+      calculatePosition();
+      window.addEventListener('scroll', calculatePosition);
+      window.addEventListener('resize', calculatePosition);
+
+      return () => {
+        window.removeEventListener('scroll', calculatePosition);
+        window.removeEventListener('resize', calculatePosition);
+      };
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -871,20 +913,34 @@ const AddUserPopover: React.FC<AddUserPopoverProps> = ({
 
   if (!isOpen) return null;
 
+  const getPositionClasses = () => {
+    const baseClasses = "absolute right-0 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-[70]";
+    
+    if (position === 'top') {
+      return `${baseClasses} bottom-full mb-2`;
+    } else {
+      return `${baseClasses} top-full mt-2`;
+    }
+  };
+
+
   return (
     <div 
       ref={popoverRef}
-      className="absolute top-full right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-60"
+      className={getPositionClasses()}
+      style={{ maxHeight: '600px' }}
     >
-      <div className="p-4">
-        <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-col h-full max-h-[600px]">
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 pb-3 border-b border-gray-100">
           <h3 className="text-sm font-semibold text-gray-900">Añadir Usuario</h3>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        <div className="mb-3">
+        {/* Search */}
+        <div className="p-4 pb-3">
           <div className="relative">
             <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
             <input
@@ -897,51 +953,64 @@ const AddUserPopover: React.FC<AddUserPopoverProps> = ({
           </div>
         </div>
 
-        <div className="mb-4 overflow-y-auto max-h-40">
+        {/* User List with improved scrolling */}
+        <div className="flex-1 overflow-y-auto px-4 pb-3" style={{ maxHeight: '300px' }}>
           {filteredUsers.length > 0 ? (
-            filteredUsers.map(user => (
-              <div 
-                key={user.id}
-                onClick={() => setSelectedUser(user.id)}
-                className={`flex items-center space-x-3 p-2 rounded-lg cursor-pointer hover:bg-gray-100 ${selectedUser === user.id ? 'bg-gray-100' : ''}`}
-              >
-                <div className="h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center">
-                  <span className="text-sm font-medium text-gray-600">
-                    {user.nombre.charAt(0).toUpperCase()}
-                  </span>
+            <div className="space-y-1">
+              {filteredUsers.map(user => (
+                <div 
+                  key={user.id}
+                  onClick={() => setSelectedUser(user.id)}
+                  className={`flex items-center space-x-3 p-2 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors ${
+                    selectedUser === user.id ? 'bg-blue-50 border border-blue-200' : ''
+                  }`}
+                >
+                  <div className="h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0">
+                    <span className="text-sm font-medium text-gray-600">
+                      {user.nombre.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium text-gray-900 truncate">{user.nombre}</div>
+                    <div className="text-xs text-gray-500 truncate">{user.email}</div>
+                  </div>
+                  {selectedUser === user.id && (
+                    <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></div>
+                  )}
                 </div>
-                <div>
-                  <div className="text-sm font-medium text-gray-900">{user.nombre}</div>
-                  <div className="text-xs text-gray-500">{user.email}</div>
-                </div>
-              </div>
-            ))
+              ))}
+            </div>
           ) : (
-            <p className="text-sm text-gray-500 text-center py-4">No se encontraron usuarios</p>
+            <div className="flex items-center justify-center py-8">
+              <p className="text-sm text-gray-500 text-center">No se encontraron usuarios</p>
+            </div>
           )}
         </div>
 
-        <div className="mb-4">
-          <select
-            value={selectedRole}
-            onChange={(e) => setSelectedRole(e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="">Seleccionar rol...</option>
-            {roleOptions.map(role => (
-              <option key={role.id} value={role.id}>{role.name}</option>
-            ))}
-          </select>
-        </div>
+        {/* Role Selection and Add Button */}
+        <div className="p-4 pt-3 border-t border-gray-100 space-y-3">
+          <div>
+            <select
+              value={selectedRole}
+              onChange={(e) => setSelectedRole(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="">Seleccionar rol...</option>
+              {roleOptions.map(role => (
+                <option key={role.id} value={role.id}>{role.name}</option>
+              ))}
+            </select>
+          </div>
 
-        <button
-          onClick={handleAdd}
-          disabled={!selectedUser || !selectedRole}
-          className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
-        >
-          <UserCheck className="w-4 h-4" />
-          <span>Añadir</span>
-        </button>
+          <button
+            onClick={handleAdd}
+            disabled={!selectedUser || !selectedRole}
+            className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+          >
+            <UserCheck className="w-4 h-4" />
+            <span>Añadir</span>
+          </button>
+        </div>
       </div>
     </div>
   );

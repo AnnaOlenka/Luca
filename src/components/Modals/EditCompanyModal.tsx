@@ -20,7 +20,6 @@ const EditCompanyModal: React.FC<EditCompanyModalProps> = ({ empresa, isOpen, on
   const [originalFormData, setOriginalFormData] = useState<any>({});
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [credentialsError, setCredentialsError] = useState<string>('');
-  const [isValidatingCredentials, setIsValidatingCredentials] = useState<boolean>(false);
   const [credentialsStatus, setCredentialsStatus] = useState<'valid' | 'invalid' | 'checking' | 'idle'>('idle');
   const [validationTimeout, setValidationTimeout] = useState<NodeJS.Timeout | null>(null);
  const [validationErrors, setValidationErrors] = useState<{[key: string]: string}>({});
@@ -190,7 +189,7 @@ const EditCompanyModal: React.FC<EditCompanyModalProps> = ({ empresa, isOpen, on
     }
     
     // 2. Clave SOL válida = 25%
-    if (credStatus === 'valid' || (!credentialsError && data.usuarioSol && data.claveSol)) {
+    if (credStatus === 'valid') {
       percentage += 25;
     }
     
@@ -249,8 +248,11 @@ const EditCompanyModal: React.FC<EditCompanyModalProps> = ({ empresa, isOpen, on
         contadorTelefono: empresa.contadorTelefono || ''
       };
       
-      // Calcular completitud inicial
-      const initialCompletitud = calculateCompletitud(initialData, 'idle');
+      // Obtener el estado de credenciales persistido
+      const persistedCredStatus = empresa.credentialsStatus || 'idle';
+      
+      // Calcular completitud inicial usando el estado persistido
+      const initialCompletitud = calculateCompletitud(initialData, persistedCredStatus);
       const dataWithCompletitud = { ...initialData, completitud: initialCompletitud };
       
       setFormData(dataWithCompletitud);
@@ -258,25 +260,26 @@ const EditCompanyModal: React.FC<EditCompanyModalProps> = ({ empresa, isOpen, on
       setActiveTab('personas');
       setSuccessMessage({show: false, message: '', tab: ''});
       
-      // Verificar si las credenciales son inválidas desde el inicio
-      const hasInvalidCredentials = empresa.credentialsStatus === 'invalid' || 
-        (empresa.usuarioSol && empresa.claveSol && !empresa.credentialsValid);
-      
       console.log('🚀 Inicializando modal para empresa:', empresa.nombre);
       console.log('🔑 Estado credenciales empresa:', {
         credentialsStatus: empresa.credentialsStatus,
         credentialsValid: empresa.credentialsValid,
         usuarioSol: empresa.usuarioSol,
         claveSol: empresa.claveSol,
-        hasInvalidCredentials
+        persistedCredStatus
       });
       
-      if (hasInvalidCredentials) {
-        console.log('🔴 Estableciendo credenciales como inválidas');
+      // Establecer el estado de credenciales basado en el estado persistido
+      if (persistedCredStatus === 'invalid') {
+        console.log('🔴 Estableciendo credenciales como inválidas (persistido)');
         setCredentialsError('Credenciales inválidas, urgente: actualice sus credenciales');
         setCredentialsStatus('invalid');
+      } else if (persistedCredStatus === 'valid') {
+        console.log('🟢 Estableciendo credenciales como válidas (persistido)');
+        setCredentialsError('');
+        setCredentialsStatus('valid');
       } else {
-        console.log('🟢 Credenciales están OK, limpiando estado');
+        console.log('⚪ Credenciales en estado idle');
         setCredentialsError('');
         setCredentialsStatus('idle');
       }
@@ -428,62 +431,6 @@ const EditCompanyModal: React.FC<EditCompanyModalProps> = ({ empresa, isOpen, on
     onClose();
   };
   
-  const validateCredentials = async () => {
-    if (!formData.usuarioSol || !formData.claveSol) {
-      setCredentialsError('Usuario y clave SOL son requeridos');
-      return;
-    }
-    
-    setIsValidatingCredentials(true);
-    setCredentialsError('');
-    
-    try {
-      // Simular validación con la API
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Simular algunos casos de fallo
-      const failingUsers = ['USUARIOMAL', 'INVALID01', 'EXPIRED99'];
-      if (failingUsers.includes(formData.usuarioSol.toUpperCase()) || formData.claveSol === 'wrongpass') {
-        setCredentialsError('Credenciales inválidas, urgente: actualice sus credenciales');
-        setCredentialsStatus('invalid');
-        
-        // Persistir el estado inválido en la empresa (SOLO para validación manual del botón)
-        const updatedFormData = { ...formData, credentialsStatus: 'invalid', credentialsValid: false };
-        setFormData(updatedFormData);
-        setOriginalFormData(JSON.parse(JSON.stringify(updatedFormData)));
-      } else {
-        setCredentialsError('');
-        setCredentialsStatus('valid');
-        
-        // Persistir el estado válido en la empresa
-        const newCompletitud = calculateCompletitud(formData, 'valid');
-        const updatedFormData = { ...formData, completitud: newCompletitud, credentialsStatus: 'valid', credentialsValid: true };
-        setFormData(updatedFormData);
-        
-        // Actualizar personas asignadas
-        updatePersonasData(updatedFormData);
-        
-        // IMPORTANTE: Solo actualizar el estado original cuando es una validación manual (botón)
-        // Para validación en tiempo real, solo actualizar formData, no persistir automáticamente
-        setOriginalFormData(JSON.parse(JSON.stringify(updatedFormData)));
-        
-        setSuccessMessage({show: true, message: 'Credenciales validadas correctamente', tab: 'credenciales'});
-        setTimeout(() => {
-          setSuccessMessage({show: false, message: '', tab: ''});
-        }, 3000);
-      }
-    } catch (error) {
-      setCredentialsError('Error al validar credenciales');
-      setCredentialsStatus('invalid');
-      
-      // Persistir estado de error (SOLO para validación manual del botón)
-      const updatedFormData = { ...formData, credentialsStatus: 'invalid', credentialsValid: false };
-      setFormData(updatedFormData);
-      setOriginalFormData(JSON.parse(JSON.stringify(updatedFormData)));
-    } finally {
-      setIsValidatingCredentials(false);
-    }
-  };
   
   const validateCredentialsRealTime = async (usuario: string, clave: string) => {
     console.log('🔍 validateCredentialsRealTime llamada con:', { usuario, clave });
@@ -492,6 +439,11 @@ const EditCompanyModal: React.FC<EditCompanyModalProps> = ({ empresa, isOpen, on
       console.log('❌ Falta usuario o clave, limpiando estado');
       setCredentialsStatus('idle');
       setCredentialsError('');
+      
+      // Actualizar formData para reflejar cambio en la barra de progreso (temporal, no persistido)
+      const newCompletitud = calculateCompletitud(formData, 'idle');
+      const updatedFormData = { ...formData, completitud: newCompletitud, credentialsStatus: 'idle', credentialsValid: false };
+      setFormData(updatedFormData);
       return;
     }
     
@@ -503,14 +455,16 @@ const EditCompanyModal: React.FC<EditCompanyModalProps> = ({ empresa, isOpen, on
       // Simular validación en tiempo real (más rápida)
       await new Promise(resolve => setTimeout(resolve, 300));
       
-      // Simular algunos casos de fallo
-      const failingUsers = ['USUARIOMAL', 'INVALID01', 'EXPIRED99'];
-      const isInvalid = failingUsers.includes(usuario.toUpperCase()) || clave === 'wrongpass';
+      // Solo estos usuarios/claves son inválidos
+      const isInvalidUser = usuario.toUpperCase() === 'USUARIOMAL';
+      const isInvalidPassword = clave === 'CLAVEMAL';
+      const isInvalid = isInvalidUser || isInvalidPassword;
       
       console.log('🧪 Validación result:', { 
         usuario: usuario.toUpperCase(), 
         clave, 
-        failingUsers, 
+        isInvalidUser,
+        isInvalidPassword,
         isInvalid 
       });
       
@@ -518,10 +472,20 @@ const EditCompanyModal: React.FC<EditCompanyModalProps> = ({ empresa, isOpen, on
         console.log('❌ Credenciales inválidas');
         setCredentialsError('Credenciales inválidas, urgente: actualice sus credenciales');
         setCredentialsStatus('invalid');
+        
+        // Actualizar formData para reflejar cambio en la barra de progreso (temporal, no persistido)
+        const newCompletitud = calculateCompletitud(formData, 'invalid');
+        const updatedFormData = { ...formData, completitud: newCompletitud, credentialsStatus: 'invalid', credentialsValid: false };
+        setFormData(updatedFormData);
       } else {
         console.log('✅ Credenciales VÁLIDAS - limpiando error');
         setCredentialsError('');
         setCredentialsStatus('valid');
+        
+        // Actualizar formData para reflejar cambio en la barra de progreso (temporal, no persistido)
+        const newCompletitud = calculateCompletitud(formData, 'valid');
+        const updatedFormData = { ...formData, completitud: newCompletitud, credentialsStatus: 'valid', credentialsValid: true };
+        setFormData(updatedFormData);
       }
     } catch (error) {
       console.log('💥 Error en validación:', error);
@@ -1464,19 +1428,6 @@ const EditCompanyModal: React.FC<EditCompanyModalProps> = ({ empresa, isOpen, on
                         <X className="w-4 h-4 text-red-600" />
                       </div>
                     )}
-                    <button 
-                      type="button" 
-                      onClick={validateCredentials}
-                      disabled={isValidatingCredentials}
-                      className="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1"
-                    >
-                      {isValidatingCredentials ? (
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      ) : (
-                        <span>🔄</span>
-                      )}
-                      <span>{isValidatingCredentials ? 'Validando...' : 'Validar'}</span>
-                    </button>
                   </div>
                 </div>
                 <div>

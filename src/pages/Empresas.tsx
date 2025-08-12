@@ -19,7 +19,7 @@ import {
   Calendar,
   ArrowUp,
   ArrowDown,
-  User,
+  User as UserIcon,
   Mail,
   Settings,
   UserMinus,
@@ -49,6 +49,21 @@ interface Empresa {
   claveSol?: string;
   credentialsStatus?: 'valid' | 'invalid' | 'checking' | 'idle';
   credentialsValid?: boolean;
+  // Datos de contacto del representante legal
+  representanteNombres?: string;
+  representanteDni?: string;
+  representanteEmail?: string;
+  representanteTelefono?: string;
+  // Datos de contacto del administrador
+  adminNombre?: string;
+  adminDni?: string;
+  adminEmail?: string;
+  adminTelefono?: string;
+  // Datos de contacto del contador
+  contadorNombre?: string;
+  contadorDni?: string;
+  contadorEmail?: string;
+  contadorTelefono?: string;
   personas?: Array<{
     id: number;
     nombre: string;
@@ -74,6 +89,16 @@ interface Empresa {
     diasRestantes: number;
     vencido: boolean;
   };
+}
+
+interface User {
+  id: string;
+  nombre: string;
+  email: string;
+  telefono?: string;
+  documento: string;
+  avatar?: string;
+  role?: string;
 }
 
 // Popover para persona individual
@@ -216,7 +241,7 @@ const PersonaPopover: React.FC<{
       }}
       className=" border-0 outline-none w-full flex items-center space-x-3 px-3 py-2 text-xs text-gray-700 hover:bg-gray-50 transition-colors"
     >
-      <User className="w-4 h-4 text-gray-400" />
+      <UserIcon className="w-4 h-4 text-gray-400" />
       <span>Ver perfil completo</span>
     </button>
     
@@ -1122,9 +1147,10 @@ const Empresas: React.FC<EmpresasProps> = ({ onNavigate }) => {
     claveSol: ''
   });
   const [formErrors, setFormErrors] = useState<{[key: string]: string}>({});
+// Modificar la línea existente
   const [validationState, setValidationState] = useState({
-    ruc: null as 'valid' | 'invalid' | 'duplicate' | 'inactive' | 'validating' | null,
-    credentials: null as 'valid' | 'invalid' | 'validating' | null
+    ruc: null as 'valid' | 'invalid' | 'duplicate' | 'inactive' | 'validating' | 'error_conexion' | null,
+    credentials: null as 'valid' | 'invalid' | 'validating' | 'error_conexion' | null
   });
   const [businessName, setBusinessName] = useState('');
   const [sunatInfo, setSunatInfo] = useState({ status: '', condition: '' });
@@ -1196,12 +1222,57 @@ const Empresas: React.FC<EmpresasProps> = ({ onNavigate }) => {
     }
   ];
 
-  // Usuarios asignados por defecto
-  const mockAssignedUsers = [
-    { ...mockAvailableUsers[0], role: 'gerente_apoderado' },
-    { ...mockAvailableUsers[1], role: 'contador_senior' },
-    { ...mockAvailableUsers[2], role: 'contador' }
-  ];
+  // Función para crear usuarios asignados desde datos de personas de la empresa
+  const getAssignedUsersFromEmpresa = (empresa: Empresa): User[] => {
+    const assignedUsers: User[] = [];
+    
+    
+    // Representante Legal
+    if (empresa.representanteNombres) {
+      assignedUsers.push({
+        id: `${empresa.id}-representante`,
+        nombre: empresa.representanteNombres,
+        email: empresa.representanteEmail || '',
+        telefono: empresa.representanteTelefono || '',
+        documento: empresa.representanteDni || '',
+        role: 'gerente_apoderado'
+      });
+    }
+    
+    // Administrador
+    if (empresa.adminNombre) {
+      assignedUsers.push({
+        id: `${empresa.id}-admin`,
+        nombre: empresa.adminNombre,
+        email: empresa.adminEmail || '',
+        telefono: empresa.adminTelefono || '',
+        documento: empresa.adminDni || '',
+        role: 'admin_sistema'
+      });
+    }
+    
+    // Contador
+    if (empresa.contadorNombre) {
+      assignedUsers.push({
+        id: `${empresa.id}-contador`,
+        nombre: empresa.contadorNombre,
+        email: empresa.contadorEmail || '',
+        telefono: empresa.contadorTelefono || '',
+        documento: empresa.contadorDni || '',
+        role: 'contador_senior'
+      });
+    }
+    
+    return assignedUsers;
+  };
+
+  // Usuarios asignados dinámicos basados en la empresa seleccionada
+  const getAssignedUsers = () => {
+    if (empresaForPermissions) {
+      return getAssignedUsersFromEmpresa(empresaForPermissions);
+    }
+    return [];
+  };
 
   // Función para abrir modal de permisos
   const handleOpenPermissionsModal = (empresa: Empresa) => {
@@ -1209,11 +1280,68 @@ const Empresas: React.FC<EmpresasProps> = ({ onNavigate }) => {
     setIsPermissionsModalOpen(true);
   };
 
-  // Función para guardar permisos
-  const handleSavePermissions = async (users: any[]): Promise<void> => {
+  // Función para guardar permisos y sincronizar con datos de empresa
+  const handleSavePermissions = async (users: User[]): Promise<void> => {
     return new Promise((resolve) => {
       setTimeout(() => {
         console.log('Permisos guardados para empresa:', empresaForPermissions?.nombre, users);
+        
+        // Sincronizar cambios de vuelta a la empresa
+        if (empresaForPermissions) {
+          const updatedEmpresa = { ...empresaForPermissions };
+          
+          // Actualizar datos basados en roles de usuarios
+          users.forEach(user => {
+            if (user.role === 'gerente_apoderado') {
+              updatedEmpresa.representanteNombres = user.nombre;
+              updatedEmpresa.representanteEmail = user.email;
+              updatedEmpresa.representanteTelefono = user.telefono;
+              updatedEmpresa.representanteDni = user.documento;
+            } else if (user.role === 'admin_sistema') {
+              updatedEmpresa.adminNombre = user.nombre;
+              updatedEmpresa.adminEmail = user.email;
+              updatedEmpresa.adminTelefono = user.telefono;
+              updatedEmpresa.adminDni = user.documento;
+            } else if (user.role === 'contador_senior' || user.role === 'contador') {
+              updatedEmpresa.contadorNombre = user.nombre;
+              updatedEmpresa.contadorEmail = user.email;
+              updatedEmpresa.contadorTelefono = user.telefono;
+              updatedEmpresa.contadorDni = user.documento;
+            }
+          });
+          
+          // Recalcular completitud basada en nuevos datos de contacto
+          let newCompletitud = 0;
+          
+          // 1. Empresa creada (datos básicos) = 25%
+          if (updatedEmpresa.nombre && updatedEmpresa.ruc) {
+            newCompletitud += 25;
+          }
+          
+          // 2. Clave SOL válida = 25%
+          if (updatedEmpresa.credentialsStatus === 'valid') {
+            newCompletitud += 25;
+          }
+          
+          // 3. Datos completos del representante legal = 25%
+          if (updatedEmpresa.representanteNombres && updatedEmpresa.representanteDni && 
+              updatedEmpresa.representanteEmail && updatedEmpresa.representanteTelefono) {
+            newCompletitud += 25;
+          }
+          
+          // 4. Datos completos del administrador = 25%
+          if (updatedEmpresa.adminNombre && updatedEmpresa.adminDni && 
+              updatedEmpresa.adminEmail && updatedEmpresa.adminTelefono) {
+            newCompletitud += 25;
+          }
+          
+          updatedEmpresa.completitud = newCompletitud;
+          
+          // Aquí normalmente actualizarías el estado global de empresas
+          // Por ahora solo logueamos los cambios
+          console.log('Empresa actualizada con nuevos datos de contacto:', updatedEmpresa);
+        }
+        
         resolve();
       }, 1500);
     });
@@ -1226,6 +1354,179 @@ const getCompletitudColor = (completitud: number) => {
   if (completitud <= 75) return '#f97316'; // orange-500
   return '#22c55e'; // green-500
 };
+
+// Agregar después de getCompletitudColor
+const getDescriptiveStatusMessages = () => {
+  const { ruc, usuarioSol, claveSol } = newCompanyForm;
+  
+  const hasRuc = ruc.trim().length > 0;
+  const hasValidRuc = hasRuc && ruc.trim().length === 11 && /^\d+$/.test(ruc.trim());
+  const hasUser = usuarioSol.trim().length > 0;
+  const hasPassword = claveSol.trim().length > 0;
+  
+  // Verificar estados específicos
+  const rucValid = validationState.ruc === 'valid' || validationState.ruc === 'inactive';
+  const rucInvalid = (hasRuc && !hasValidRuc) || validationState.ruc === 'invalid' || validationState.ruc === 'duplicate';
+  const credentialsInvalid = validationState.credentials === 'invalid';
+  
+  // Verificar si hay campos vacíos
+  const rucEmpty = !hasRuc;
+  const userEmpty = !hasUser;
+  const passwordEmpty = !hasPassword;
+  
+  const messages = [];
+  
+  // CASO ESPECIAL: Error de conexión - pueden ser múltiples etiquetas
+  const hasRucConnectionError = validationState.ruc === 'error_conexion';
+  const hasCredentialsConnectionError = validationState.credentials === 'error_conexion';
+  
+  // Caso: RUC válido + Error de conexión en credenciales
+  if (rucValid && hasCredentialsConnectionError) {
+    messages.push({ text: 'Validado: RUC válido', type: 'verified' });
+    messages.push({ text: 'En Proceso: Error de conexión en credenciales', type: 'error' });
+    return messages;
+  }
+  
+  // Caso: Error de conexión en RUC (puede tener credenciales incompletas también)
+  if (hasRucConnectionError) {
+    // Error de conexión en RUC
+    messages.push({ text: 'En Proceso: Error de conexión en RUC', type: 'error' });
+    
+    // Agregar etiquetas de campos incompletos junto con error de conexión en RUC
+    if (userEmpty && passwordEmpty) {
+      messages.push({ text: 'Incompleto: Credenciales vacías', type: 'incomplete' });
+    } else if (userEmpty) {
+      messages.push({ text: 'Incompleto: Usuario vacío', type: 'incomplete' });
+    } else if (passwordEmpty) {
+      messages.push({ text: 'Incompleto: Contraseña vacía', type: 'incomplete' });
+    }
+    
+    return messages;
+  }
+  
+  // Caso especial: RUC válido pero credenciales incompletas
+  if (rucValid && (userEmpty || passwordEmpty)) {
+    // Agregar etiqueta de RUC válido
+    messages.push({ text: 'RUC válido', type: 'verified' });
+    
+    // Agregar etiqueta de incompleto para credenciales
+    if (userEmpty && passwordEmpty) {
+      messages.push({ text: 'Incompleto: Credenciales vacías', type: 'incomplete' });
+    } else if (userEmpty) {
+      messages.push({ text: 'Incompleto: Usuario vacío', type: 'incomplete' });
+    } else if (passwordEmpty) {
+      messages.push({ text: 'Incompleto: Contraseña vacía', type: 'incomplete' });
+    }
+    
+    return messages;
+  }
+  
+  // Caso especial: RUC válido pero credenciales inválidas
+  if (rucValid && credentialsInvalid) {
+    // Agregar etiqueta de RUC válido
+    messages.push({ text: 'RUC válido', type: 'verified' });
+    
+    // Agregar etiqueta de credenciales inválidas
+    messages.push({ text: 'Inválido: Credenciales inválidas', type: 'invalid' });
+    
+    return messages;
+  }
+  
+  // Caso: Campos inválidos Y campos vacíos (múltiples etiquetas)
+  const hasInvalidFields = rucInvalid || credentialsInvalid;
+  const hasEmptyFields = rucEmpty || userEmpty || passwordEmpty;
+  
+  if (hasInvalidFields && hasEmptyFields) {
+    // Mensaje de inválidos
+    if (rucInvalid && credentialsInvalid) {
+      messages.push({ text: 'Inválido: RUC y credenciales inválidas', type: 'invalid' });
+    } else if (rucInvalid) {
+      messages.push({ text: 'Inválido: RUC inválido', type: 'invalid' });
+    } else if (credentialsInvalid) {
+      messages.push({ text: 'Inválido: Credenciales inválidas', type: 'invalid' });
+    }
+    
+    // Mensaje de vacíos
+    if (rucEmpty && userEmpty && passwordEmpty) {
+      messages.push({ text: 'Incompleto: RUC y credenciales vacías', type: 'incomplete' });
+    } else if (rucEmpty && userEmpty) {
+      messages.push({ text: 'Incompleto: RUC y usuario vacíos', type: 'incomplete' });
+    } else if (rucEmpty && passwordEmpty) {
+      messages.push({ text: 'Incompleto: RUC y contraseña vacías', type: 'incomplete' });
+    } else if (userEmpty && passwordEmpty) {
+      messages.push({ text: 'Incompleto: Credenciales vacías', type: 'incomplete' });
+    } else if (rucEmpty) {
+      messages.push({ text: 'Incompleto: RUC vacío', type: 'incomplete' });
+    } else if (userEmpty) {
+      messages.push({ text: 'Incompleto: Usuario vacío', type: 'incomplete' });
+    } else if (passwordEmpty) {
+      messages.push({ text: 'Incompleto: Contraseña vacía', type: 'incomplete' });
+    }
+    
+    return messages;
+  }
+  
+  // Estados de validación en proceso
+  if (validationState.ruc === 'validating' || validationState.credentials === 'validating') {
+    return [{ text: 'Validando...', type: 'validating' }];
+  }
+  
+  // Todo válido
+  if (rucValid && validationState.credentials === 'valid') {
+    const rucType = validationState.ruc === 'inactive' ? 'RUC inactivo pero verificado' : 'RUC y credenciales validadas';
+    return [{ text: `Validado: ${rucType}`, type: 'verified' }];
+  }
+  
+  // Casos de invalidez únicamente
+  if (hasInvalidFields && !hasEmptyFields) {
+    if (rucInvalid && credentialsInvalid) {
+      return [{ text: 'Inválido: RUC y credenciales inválidas', type: 'invalid' }];
+    } else if (rucInvalid) {
+      return [{ text: 'Inválido: RUC inválido', type: 'invalid' }];
+    } else if (credentialsInvalid) {
+      return [{ text: 'Inválido: Credenciales inválidas', type: 'invalid' }];
+    }
+  }
+  
+  // Casos de campos incompletos únicamente
+  if (hasEmptyFields && !hasInvalidFields) {
+    if (rucEmpty && userEmpty && passwordEmpty) {
+      return [{ text: 'Incompleto: RUC y credenciales vacías', type: 'incomplete' }];
+    } else if (rucEmpty && userEmpty) {
+      return [{ text: 'Incompleto: RUC y usuario vacíos', type: 'incomplete' }];
+    } else if (rucEmpty && passwordEmpty) {
+      return [{ text: 'Incompleto: RUC y contraseña vacías', type: 'incomplete' }];
+    } else if (userEmpty && passwordEmpty) {
+      return [{ text: 'Incompleto: Credenciales vacías', type: 'incomplete' }];
+    } else if (rucEmpty) {
+      return [{ text: 'Incompleto: RUC vacío', type: 'incomplete' }];
+    } else if (userEmpty) {
+      return [{ text: 'Incompleto: Usuario vacío', type: 'incomplete' }];
+    } else if (passwordEmpty) {
+      return [{ text: 'Incompleto: Contraseña vacía', type: 'incomplete' }];
+    }
+  }
+  
+  return [{ text: '', type: 'default' }];
+};
+
+const getStatusColor = (type: string) => {
+  switch (type) {
+    case 'verified':
+      return 'text-green-600 bg-green-50';
+    case 'validating':
+      return 'text-blue-600 bg-blue-50';
+    case 'invalid':
+      return 'text-red-600 bg-red-50';
+    case 'incomplete':
+      return 'text-yellow-600 bg-yellow-50';
+    case 'error':
+      return 'text-orange-600 bg-orange-50';
+    default:
+      return 'text-gray-600 bg-gray-50';
+  }
+};
+
   // Filter empresas based on search term and estado
   const filteredEmpresas = empresas.filter(empresa => {
     const matchesSearch = empresa.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -1391,14 +1692,18 @@ const getCompletitudColor = (completitud: number) => {
     setSunatInfo({ status: '', condition: '' });
   };
 
+  // Reemplazar la función validateRuc existente
   const validateRuc = (ruc: string) => {
-    // Check for duplicates in existing companies
+    // Simular error de conexión ocasionalmente
+    if (Math.random() < 0.15) { // 15% de probabilidad
+      return 'error_conexion';
+    }
+
     const isDuplicate = empresasList.some(company => company.ruc === ruc);
     if (isDuplicate) {
       return 'duplicate';
     }
 
-    // Find RUC in valid data
     const rucData = validCredentialsData.validRucs.find(r => r.ruc === ruc);
     
     if (!rucData) {
@@ -1412,7 +1717,13 @@ const getCompletitudColor = (completitud: number) => {
     return 'valid';
   };
 
+    // Reemplazar la función validateCredentials existente
   const validateCredentials = (solUser: string, solPassword: string) => {
+    // Simular error de conexión ocasionalmente
+    if (Math.random() < 0.12) { // 12% de probabilidad
+      return 'error_conexion';
+    }
+
     const validCred = validCredentialsData.validCredentials.find(
       cred => cred.solUser === solUser && cred.solPassword === solPassword
     );
@@ -1467,47 +1778,55 @@ const getCompletitudColor = (completitud: number) => {
         setFormErrors(prev => ({ ...prev, ruc: 'Validando RUC...' }));
         
         // Simulate validation delay
-        setTimeout(() => {
-          const rucValidation = validateRuc(value);
-          setValidationState(prev => ({ ...prev, ruc: rucValidation }));
-          
-          if (rucValidation === 'valid' || rucValidation === 'inactive') {
-            const rucData = validCredentialsData.validRucs.find(r => r.ruc === value);
-            setBusinessName(rucData?.businessName || '');
-            setSunatInfo({
-              status: rucData?.sunatStatus || '',
-              condition: rucData?.sunatCondition || ''
-            });
-            setFormErrors(prev => ({ ...prev, ruc: '' }));
-          } else if (rucValidation === 'duplicate') {
-            setFormErrors(prev => ({ ...prev, ruc: 'Este RUC ya está registrado' }));
-          } else if (rucValidation === 'invalid') {
-            setFormErrors(prev => ({ ...prev, ruc: 'RUC no encontrado en SUNAT' }));
-          }
-          
-          // Auto-validate credentials if they exist and RUC is valid
-          if ((rucValidation === 'valid' || rucValidation === 'inactive') && 
-              newCompanyForm.usuarioSol.trim() && newCompanyForm.claveSol.trim()) {
-            setTimeout(() => {
-              const credValidation = validateCredentials(newCompanyForm.usuarioSol, newCompanyForm.claveSol);
-              setValidationState(prev => ({ ...prev, credentials: credValidation }));
-              
-              if (credValidation === 'invalid') {
-                setFormErrors(prev => ({ 
-                  ...prev, 
-                  usuarioSol: 'Credenciales incorrectas',
-                  claveSol: 'Credenciales incorrectas'
-                }));
-              } else {
-                setFormErrors(prev => ({ 
-                  ...prev, 
-                  usuarioSol: '',
-                  claveSol: ''
-                }));
-              }
-            }, 1000);
-          }
-        }, 1500);
+       setTimeout(() => {
+        const rucValidation = validateRuc(value);
+        setValidationState(prev => ({ ...prev, ruc: rucValidation }));
+        
+        if (rucValidation === 'valid' || rucValidation === 'inactive') {
+          const rucData = validCredentialsData.validRucs.find(r => r.ruc === value);
+          setBusinessName(rucData?.businessName || '');
+          setSunatInfo({
+            status: rucData?.sunatStatus || '',
+            condition: rucData?.sunatCondition || ''
+          });
+          setFormErrors(prev => ({ ...prev, ruc: '' }));
+        } else if (rucValidation === 'duplicate') {
+          setFormErrors(prev => ({ ...prev, ruc: 'Este RUC ya está registrado' }));
+        } else if (rucValidation === 'invalid') {
+          setFormErrors(prev => ({ ...prev, ruc: 'RUC no encontrado en SUNAT' }));
+        } else if (rucValidation === 'error_conexion') {
+          setFormErrors(prev => ({ ...prev, ruc: 'Error de conexión con SUNAT' }));
+        }
+        
+        // Auto-validate credentials solo si RUC es válido o inactivo (NO si hay error de conexión)
+        if ((rucValidation === 'valid' || rucValidation === 'inactive') && 
+            newCompanyForm.usuarioSol.trim() && newCompanyForm.claveSol.trim()) {
+          setTimeout(() => {
+            const credValidation = validateCredentials(newCompanyForm.usuarioSol, newCompanyForm.claveSol);
+            setValidationState(prev => ({ ...prev, credentials: credValidation }));
+            
+            if (credValidation === 'invalid') {
+              setFormErrors(prev => ({ 
+                ...prev, 
+                usuarioSol: 'Credenciales incorrectas',
+                claveSol: 'Credenciales incorrectas'
+              }));
+            } else if (credValidation === 'error_conexion') {
+              setFormErrors(prev => ({ 
+                ...prev, 
+                usuarioSol: 'Error de conexión',
+                claveSol: 'Error de conexión'
+              }));
+            } else {
+              setFormErrors(prev => ({ 
+                ...prev, 
+                usuarioSol: '',
+                claveSol: ''
+              }));
+            }
+          }, 1000);
+        }
+      }, 1500);
       } else {
         setValidationState(prev => ({ ...prev, ruc: null }));
         setBusinessName('');
@@ -1560,6 +1879,12 @@ const getCompletitudColor = (completitud: number) => {
               ...prev, 
               usuarioSol: 'Credenciales incorrectas',
               claveSol: 'Credenciales incorrectas'
+            }));
+          } else if (credValidation === 'error_conexion') {
+            setFormErrors(prev => ({ 
+              ...prev, 
+              usuarioSol: 'Error de conexión',
+              claveSol: 'Error de conexión'
             }));
           } else {
             setFormErrors(prev => ({ 
@@ -1648,24 +1973,18 @@ const getCompletitudColor = (completitud: number) => {
                     <h3 className="text-lg font-semibold text-gray-900">Agrega nueva empresa</h3>
                     
                     {/* Estado badge */}
-                    {validationState.ruc === 'validating' || validationState.credentials === 'validating' ? (
-                      <span className="text-xs text-blue-600 font-medium bg-blue-50 px-2 py-1 rounded-full flex items-center space-x-1">
-                        <div className="w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                        <span>Validando...</span>
-                      </span>
-                    ) : (validationState.ruc === 'invalid' || validationState.ruc === 'duplicate' || validationState.credentials === 'invalid') ? (
-                      <span className="text-xs text-red-600 font-medium bg-red-50 px-2 py-1 rounded-full">
-                        No válido
-                      </span>
-                    ) : (!newCompanyForm.ruc.trim() || !newCompanyForm.usuarioSol.trim() || !newCompanyForm.claveSol.trim()) ? (
-                      <span className="text-xs text-yellow-600 font-medium bg-yellow-50 px-2 py-1 rounded-full">
-                        Incompleto
-                      </span>
-                    ) : (validationState.ruc === 'valid' || validationState.ruc === 'inactive') && validationState.credentials === 'valid' ? (
-                      <span className="text-xs text-green-600 font-medium bg-green-50 px-2 py-1 rounded-full">
-                        {validationState.ruc === 'inactive' ? 'Verificada (Inactiva)' : 'Verificada'}
-                      </span>
-                    ) : null}
+                    <div className="flex flex-col items-end space-y-1">
+                      {getDescriptiveStatusMessages().map((message, index) => (
+                        message.text && (
+                          <span 
+                            key={index}
+                            className={`text-xs font-medium px-2 py-1 rounded-full ${getStatusColor(message.type)}`}
+                          >
+                            {message.text}
+                          </span>
+                        )
+                      ))}
+                    </div>
                   </div>
                   
                   <button
@@ -1687,11 +2006,12 @@ const getCompletitudColor = (completitud: number) => {
                         type="text"
                         value={newCompanyForm.ruc}
                         onChange={(e) => handleFormInputChange('ruc', e.target.value.replace(/\D/g, '').slice(0, 11))}
-                        className={`w-full px-3 py-2 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                        className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                           validationState.ruc === 'invalid' || validationState.ruc === 'duplicate' ? 'border-red-500' :
                           validationState.ruc === 'valid' ? 'border-green-500' :
                           validationState.ruc === 'inactive' ? 'border-yellow-500' :
-                          validationState.ruc === 'validating' ? 'border-blue-500' : 'border-gray-300'
+                          validationState.ruc === 'validating' ? 'border-blue-500' : 
+                          validationState.ruc === 'error_conexion' ? 'border-orange-500' : 'border-gray-300'
                         }`}
                         placeholder="20123456789"
                         maxLength={11}
@@ -1713,6 +2033,11 @@ const getCompletitudColor = (completitud: number) => {
                         {(validationState.ruc === 'invalid' || validationState.ruc === 'duplicate') && (
                           <div className="w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
                             <span className="text-white text-xs">✕</span>
+                          </div>
+                        )}
+                        {validationState.ruc === 'error_conexion' && (
+                          <div className="w-4 h-4 bg-orange-500 rounded-full flex items-center justify-center">
+                            <span className="text-white text-xs">!</span>
                           </div>
                         )}
                       </div>
@@ -1759,7 +2084,8 @@ const getCompletitudColor = (completitud: number) => {
                             className={`w-full px-3 py-2 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm ${
                               validationState.credentials === 'invalid' ? 'border-red-500' :
                               validationState.credentials === 'valid' ? 'border-green-500' :
-                              validationState.credentials === 'validating' ? 'border-blue-500' : 'border-gray-300'
+                              validationState.credentials === 'validating' ? 'border-blue-500' : 
+                              validationState.credentials === 'error_conexion' ? 'border-orange-500' : 'border-gray-300'
                             }`}
                             placeholder="USUARIO01"
                           />
@@ -1775,6 +2101,11 @@ const getCompletitudColor = (completitud: number) => {
                             {validationState.credentials === 'invalid' && (
                               <div className="w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
                                 <span className="text-white text-xs">✕</span>
+                              </div>
+                            )}
+                            {validationState.credentials === 'error_conexion' && (
+                              <div className="w-4 h-4 bg-orange-500 rounded-full flex items-center justify-center">
+                                <span className="text-white text-xs">!</span>
                               </div>
                             )}
                           </div>
@@ -2148,6 +2479,7 @@ const getCompletitudColor = (completitud: number) => {
         isOpen={isImportModalOpen}
         onClose={closeImportModal}
         onImportSuccess={handleImportSuccess}
+        existingRucs={empresasList.map(empresa => empresa.ruc)}
       />
 
       {/* Delete Confirmation Modal */}
@@ -2185,7 +2517,7 @@ const getCompletitudColor = (completitud: number) => {
             ruc: empresaForPermissions.ruc
           }}
           availableUsers={mockAvailableUsers}
-          assignedUsers={mockAssignedUsers}
+          assignedUsers={getAssignedUsers()}
           onSave={handleSavePermissions}
         />
       )}
