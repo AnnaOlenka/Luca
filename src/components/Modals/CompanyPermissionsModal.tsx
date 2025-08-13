@@ -475,9 +475,10 @@ const CompanyPermissionsModal: React.FC<CompanyPermissionsModalProps> = ({
     setErrors([]);
   };
 
-  const handleAddUser = (user: User, role: string) => {
-    const newUser = { ...user, role };
-    setAssignedUsers(prev => [...prev, newUser]);
+  const handleAddUsers = (users: User[]) => {
+    // Añadir usuarios sin rol asignado (se asignará en la tabla)
+    const newUsers = users.map(user => ({ ...user, role: '' }));
+    setAssignedUsers(prev => [...prev, ...newUsers]);
     setHasChanges(true);
     setErrors([]);
     setShowAddUserModal(false);
@@ -648,7 +649,7 @@ const CompanyPermissionsModal: React.FC<CompanyPermissionsModalProps> = ({
                           onClose={() => setShowAddUserModal(false)}
                           availableUsers={unassignedUsers}
                           roleOptions={roleOptions}
-                          onAddUser={handleAddUser}
+                          onAddUsers={handleAddUsers}
                         />
                       )}
                     </div>
@@ -928,7 +929,7 @@ interface AddUserPopoverProps {
   onClose: () => void;
   availableUsers: User[];
   roleOptions: RoleOption[];
-  onAddUser: (user: User, role: string) => void;
+  onAddUsers: (users: User[]) => void;
 }
 
 const AddUserPopover: React.FC<AddUserPopoverProps> = ({
@@ -936,10 +937,9 @@ const AddUserPopover: React.FC<AddUserPopoverProps> = ({
   onClose,
   availableUsers,
   roleOptions,
-  onAddUser
+  onAddUsers
 }) => {
-  const [selectedUser, setSelectedUser] = useState<string>('');
-  const [selectedRole, setSelectedRole] = useState<string>('');
+  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [position, setPosition] = useState<'bottom' | 'top'>('bottom');
   const popoverRef = useRef<HTMLDivElement>(null);
@@ -950,12 +950,29 @@ const AddUserPopover: React.FC<AddUserPopoverProps> = ({
   );
 
   const handleAdd = () => {
-    const user = availableUsers.find(u => u.id === selectedUser);
-    if (user && selectedRole) {
-      onAddUser(user, selectedRole);
-      setSelectedUser('');
-      setSelectedRole('');
+    const users = availableUsers.filter(u => selectedUsers.includes(u.id));
+    if (users.length > 0) {
+      onAddUsers(users);
+      setSelectedUsers([]);
       setSearchTerm('');
+    }
+  };
+
+  const handleUserToggle = (userId: string) => {
+    setSelectedUsers(prev => {
+      if (prev.includes(userId)) {
+        return prev.filter(id => id !== userId);
+      } else {
+        return [...prev, userId];
+      }
+    });
+  };
+
+  const handleSelectAll = () => {
+    if (selectedUsers.length === filteredUsers.length) {
+      setSelectedUsers([]);
+    } else {
+      setSelectedUsers(filteredUsers.map(u => u.id));
     }
   };
 
@@ -1039,14 +1056,19 @@ const AddUserPopover: React.FC<AddUserPopoverProps> = ({
       <div className="flex flex-col h-full max-h-[600px]">
         {/* Header */}
         <div className="flex items-center justify-between p-4 pb-3 border-b border-gray-100">
-          <h3 className="text-sm font-semibold text-gray-900">Añadir Usuario</h3>
+          <div>
+            <h3 className="text-sm font-semibold text-gray-900">Añadir Usuarios</h3>
+            {selectedUsers.length > 0 && (
+              <p className="text-xs text-blue-600 mt-1">{selectedUsers.length} usuario{selectedUsers.length !== 1 ? 's' : ''} seleccionado{selectedUsers.length !== 1 ? 's' : ''}</p>
+            )}
+          </div>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Search */}
-        <div className="p-4 pb-3">
+        <div className="p-4 pb-3 space-y-3">
           <div className="relative">
             <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
             <input
@@ -1057,6 +1079,21 @@ const AddUserPopover: React.FC<AddUserPopoverProps> = ({
               className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
+          
+          {/* Seleccionar Todo */}
+          {filteredUsers.length > 0 && (
+            <div className="flex items-center justify-between">
+              <button
+                onClick={handleSelectAll}
+                className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+              >
+                {selectedUsers.length === filteredUsers.length ? 'Deseleccionar Todo' : 'Seleccionar Todo'}
+              </button>
+              <span className="text-xs text-gray-500">
+                {filteredUsers.length} usuario{filteredUsers.length !== 1 ? 's' : ''} disponible{filteredUsers.length !== 1 ? 's' : ''}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* User List with improved scrolling */}
@@ -1066,11 +1103,18 @@ const AddUserPopover: React.FC<AddUserPopoverProps> = ({
               {filteredUsers.map(user => (
                 <div 
                   key={user.id}
-                  onClick={() => setSelectedUser(user.id)}
+                  onClick={() => handleUserToggle(user.id)}
                   className={`flex items-center space-x-3 p-2 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors ${
-                    selectedUser === user.id ? 'bg-blue-50 border border-blue-200' : ''
+                    selectedUsers.includes(user.id) ? 'bg-blue-50 border border-blue-200' : ''
                   }`}
                 >
+                  <input
+                    type="checkbox"
+                    checked={selectedUsers.includes(user.id)}
+                    onChange={() => handleUserToggle(user.id)}
+                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-2 flex-shrink-0"
+                    onClick={(e) => e.stopPropagation()}
+                  />
                   <div className="h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0">
                     <span className="text-sm font-medium text-gray-600">
                       {user.nombre.charAt(0).toUpperCase()}
@@ -1080,9 +1124,6 @@ const AddUserPopover: React.FC<AddUserPopoverProps> = ({
                     <div className="text-sm font-medium text-gray-900 truncate">{user.nombre}</div>
                     <div className="text-xs text-gray-500 truncate">{user.email}</div>
                   </div>
-                  {selectedUser === user.id && (
-                    <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></div>
-                  )}
                 </div>
               ))}
             </div>
@@ -1093,28 +1134,17 @@ const AddUserPopover: React.FC<AddUserPopoverProps> = ({
           )}
         </div>
 
-        {/* Role Selection and Add Button */}
-        <div className="p-4 pt-3 border-t border-gray-100 space-y-3">
-          <div>
-            <select
-              value={selectedRole}
-              onChange={(e) => setSelectedRole(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="">Seleccionar rol...</option>
-              {roleOptions.map(role => (
-                <option key={role.id} value={role.id}>{role.name}</option>
-              ))}
-            </select>
-          </div>
-
+        {/* Add Button */}
+        <div className="p-4 pt-3 border-t border-gray-100">
           <button
             onClick={handleAdd}
-            disabled={!selectedUser || !selectedRole}
+            disabled={selectedUsers.length === 0}
             className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
           >
             <UserCheck className="w-4 h-4" />
-            <span>Añadir</span>
+            <span>
+              Añadir {selectedUsers.length > 0 ? `(${selectedUsers.length})` : ''} Usuario{selectedUsers.length !== 1 ? 's' : ''}
+            </span>
           </button>
         </div>
       </div>
