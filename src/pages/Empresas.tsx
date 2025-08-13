@@ -5,6 +5,7 @@ import ImportCsvModal from '../components/Modals/ImportCsvModal';
 import DeleteConfirmModal from '../components/Modals/DeleteConfirmModal';
 import EditCompanyModal from '../components/Modals/EditCompanyModal';
 import CompanyPermissionsModal from '../components/Modals/CompanyPermissionsModal';
+import ModalMarcas from '../components/Modals/ModalMarcas';
 import { 
   Building2, 
   Search, 
@@ -27,10 +28,12 @@ import {
   AlertTriangle,
   ExternalLink,
   Bell,
-  CheckCircle
+  CheckCircle,
+  Award
 } from 'lucide-react';
 import empresasData from '../data/empresasData.json';
 import validCredentialsData from '../data/validCredentials.json';
+
 
 interface EmpresasProps {
   onNavigate?: (module: string) => void;
@@ -100,6 +103,93 @@ interface User {
   avatar?: string;
   role?: string;
 }
+
+// Función para sincronizar User[] con personas[] y datos de contacto
+const syncUsersWithEmpresa = (users: User[], empresa: Empresa): Empresa => {
+  // Convertir User[] a personas[]
+  const personas = users.map(user => ({
+    id: parseInt(user.id),
+    nombre: user.nombre,
+    iniciales: user.nombre.split(' ').map(n => n[0]).join('').toUpperCase(),
+    cargo: user.role || 'Sin rol',
+    estado: 'activo' as const,
+    email: user.email,
+    telefono: user.telefono,
+    avatar: user.avatar
+  }));
+
+  // Sincronizar con campos específicos de contacto según el rol
+  const updatedEmpresa = { ...empresa, personas };
+
+  users.forEach(user => {
+    switch (user.role) {
+      case 'Gerente/Apoderado':
+      case 'Representante Legal':
+        updatedEmpresa.representanteNombres = user.nombre;
+        updatedEmpresa.representanteDni = user.documento;
+        updatedEmpresa.representanteEmail = user.email;
+        updatedEmpresa.representanteTelefono = user.telefono;
+        break;
+      case 'Admin Sistema':
+      case 'Administrador':
+        updatedEmpresa.adminNombre = user.nombre;
+        updatedEmpresa.adminDni = user.documento;
+        updatedEmpresa.adminEmail = user.email;
+        updatedEmpresa.adminTelefono = user.telefono;
+        break;
+      case 'Contador Senior':
+      case 'Contador Junior':
+      case 'Contador':
+        updatedEmpresa.contadorNombre = user.nombre;
+        updatedEmpresa.contadorDni = user.documento;
+        updatedEmpresa.contadorEmail = user.email;
+        updatedEmpresa.contadorTelefono = user.telefono;
+        break;
+    }
+  });
+
+  return updatedEmpresa;
+};
+
+// Función para convertir datos de contacto a User[]
+const convertContactDataToUsers = (empresa: Empresa): User[] => {
+  const users: User[] = [];
+
+  if (empresa.representanteNombres && empresa.representanteDni) {
+    users.push({
+      id: `rep_${empresa.id}`,
+      nombre: empresa.representanteNombres,
+      email: empresa.representanteEmail || '',
+      telefono: empresa.representanteTelefono,
+      documento: empresa.representanteDni,
+      role: 'Representante Legal'
+    });
+  }
+
+  if (empresa.adminNombre && empresa.adminDni) {
+    users.push({
+      id: `admin_${empresa.id}`,
+      nombre: empresa.adminNombre,
+      email: empresa.adminEmail || '',
+      telefono: empresa.adminTelefono,
+      documento: empresa.adminDni,
+      role: 'Administrador'
+    });
+  }
+
+  if (empresa.contadorNombre && empresa.contadorDni) {
+    users.push({
+      id: `cont_${empresa.id}`,
+      nombre: empresa.contadorNombre,
+      email: empresa.contadorEmail || '',
+      telefono: empresa.contadorTelefono,
+      documento: empresa.contadorDni,
+      role: 'Contador'
+    });
+  }
+
+  return users;
+};
 
 // Popover para persona individual
 const PersonaPopover: React.FC<{
@@ -1135,6 +1225,7 @@ const Empresas: React.FC<EmpresasProps> = ({ onNavigate }) => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isPermissionsModalOpen, setIsPermissionsModalOpen] = useState(false);
+  const [isMarcasModalOpen, setIsMarcasModalOpen] = useState(false);
   const [selectedEmpresa, setSelectedEmpresa] = useState<Empresa | null>(null);
   const [empresaToDelete, setEmpresaToDelete] = useState<Empresa | null>(null);
   const [empresaToEdit, setEmpresaToEdit] = useState<Empresa | null>(null);
@@ -1288,27 +1379,14 @@ const Empresas: React.FC<EmpresasProps> = ({ onNavigate }) => {
         
         // Sincronizar cambios de vuelta a la empresa
         if (empresaForPermissions) {
-          const updatedEmpresa = { ...empresaForPermissions };
+          const updatedEmpresa = syncUsersWithEmpresa(users, empresaForPermissions);
           
-          // Actualizar datos basados en roles de usuarios
-          users.forEach(user => {
-            if (user.role === 'gerente_apoderado') {
-              updatedEmpresa.representanteNombres = user.nombre;
-              updatedEmpresa.representanteEmail = user.email;
-              updatedEmpresa.representanteTelefono = user.telefono;
-              updatedEmpresa.representanteDni = user.documento;
-            } else if (user.role === 'admin_sistema') {
-              updatedEmpresa.adminNombre = user.nombre;
-              updatedEmpresa.adminEmail = user.email;
-              updatedEmpresa.adminTelefono = user.telefono;
-              updatedEmpresa.adminDni = user.documento;
-            } else if (user.role === 'contador_senior' || user.role === 'contador') {
-              updatedEmpresa.contadorNombre = user.nombre;
-              updatedEmpresa.contadorEmail = user.email;
-              updatedEmpresa.contadorTelefono = user.telefono;
-              updatedEmpresa.contadorDni = user.documento;
-            }
-          });
+          // Actualizar la empresa en el estado global
+          setEmpresasList(prevList => 
+            prevList.map(empresa => 
+              empresa.id === updatedEmpresa.id ? updatedEmpresa : empresa
+            )
+          );
           
           // Recalcular completitud basada en nuevos datos de contacto
           let newCompletitud = 0;
@@ -1592,6 +1670,13 @@ const getStatusColor = (type: string) => {
           setIsRucModalOpen(true);
         }
         break;
+      case 'marcas':
+        const empresaMarcas = empresas.find(e => e.id === empresaId);
+        if (empresaMarcas) {
+          setSelectedEmpresa(empresaMarcas);
+          setIsMarcasModalOpen(true);
+        }
+        break;
       case 'editar':
         const empresaToEdit = empresas.find(e => e.id === empresaId);
         if (empresaToEdit) {
@@ -1615,6 +1700,12 @@ const getStatusColor = (type: string) => {
     setIsRucModalOpen(false);
     setSelectedEmpresa(null);
   };
+
+  const closeMarcasModal = () => {
+    setIsMarcasModalOpen(false);
+    setSelectedEmpresa(null);
+  };
+
 
   const handleImportCsv = () => {
     setIsImportModalOpen(true);
@@ -1664,9 +1755,13 @@ const getStatusColor = (type: string) => {
       usuarioSol: updatedEmpresa.usuarioSol
     });
     
+    // Sincronizar datos de contacto con personas[] array
+    const usersFromContactData = convertContactDataToUsers(updatedEmpresa);
+    const fullyUpdatedEmpresa = syncUsersWithEmpresa(usersFromContactData, updatedEmpresa);
+    
     setEmpresasList(prevList =>
       prevList.map(empresa =>
-        empresa.id === updatedEmpresa.id ? updatedEmpresa : empresa
+        empresa.id === fullyUpdatedEmpresa.id ? fullyUpdatedEmpresa : empresa
       )
     );
     closeEditModal();
@@ -2432,6 +2527,16 @@ const getStatusColor = (type: string) => {
 
                       <button
                         onClick={() =>
+                          handleAction('marcas', empresa.id, empresa.nombre)
+                        }
+                        className="flex items-center space-x-3 w-full px-4 py-3 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-600 border-t border-gray-100 transition-colors"
+                      >
+                        <Award className="w-4 h-4" />
+                        <span>Marcas</span>
+                      </button>
+
+                      <button
+                        onClick={() =>
                           handleAction('editar', empresa.id, empresa.nombre)
                         }
                         className="flex items-center space-x-3 w-full px-4 py-3 text-sm text-gray-700 hover:bg-yellow-50 hover:text-yellow-600 border-t border-gray-100 transition-colors"
@@ -2531,6 +2636,13 @@ const getStatusColor = (type: string) => {
           onSave={handleSavePermissions}
         />
       )}
+
+      {/* Marcas Modal */}
+      <ModalMarcas
+        isOpen={isMarcasModalOpen}
+        onClose={closeMarcasModal}
+        empresa={selectedEmpresa}
+      />
     </DashboardLayout>
   );
 };

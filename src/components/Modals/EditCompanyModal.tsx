@@ -11,9 +11,6 @@ interface EditCompanyModalProps {
 const EditCompanyModal: React.FC<EditCompanyModalProps> = ({ empresa, isOpen, onClose, onSave }) => {
   const [activeTab, setActiveTab] = useState('personas');
   const [formData, setFormData] = useState<any>({});
-  const [expandedMarca, setExpandedMarca] = useState<string | null>(null);
-  const [showDeleteModal, setShowDeleteModal] = useState<{show: boolean, marca: any}>({show: false, marca: null});
-  const [marcasData, setMarcasData] = useState<any[]>([]);
   const [expandedPersona, setExpandedPersona] = useState<string | null>(null);
   const [personasData, setPersonasData] = useState<any[]>([]);
   const [successMessage, setSuccessMessage] = useState<{show: boolean, message: string, tab: string}>({show: false, message: '', tab: ''});
@@ -327,39 +324,6 @@ const EditCompanyModal: React.FC<EditCompanyModalProps> = ({ empresa, isOpen, on
       setCredentialsStatus('idle');
     }
     
-    // Simular datos de marcas registradas
-    setMarcasData([
-      {
-        id: '1',
-        nombreMarca: 'CONSTRUCTORA DELTA',
-        numeroRegistro: '00123456',
-        fechaInscripcion: '15/03/2020',
-        vigencia: '15/03/2030',
-        titularRegistrado: empresa.nombre || 'CONSTRUCTORA DELTA S.A.',
-        tipoInterno: 'Comercial',
-        estadoRegistro: 'Activo'
-      },
-      {
-        id: '2',
-        nombreMarca: 'DELTA BUILD',
-        numeroRegistro: '00234567',
-        fechaInscripcion: '22/08/2021',
-        vigencia: '22/08/2031',
-        titularRegistrado: empresa.nombre || 'CONSTRUCTORA DELTA S.A.',
-        tipoInterno: 'Servicio',
-        estadoRegistro: 'Activo'
-      },
-      {
-        id: '3',
-        nombreMarca: 'DELTA HOMES',
-        numeroRegistro: '00345678',
-        fechaInscripcion: '10/12/2019',
-        vigencia: '10/12/2029',
-        titularRegistrado: empresa.nombre || 'CONSTRUCTORA DELTA S.A.',
-        tipoInterno: 'Comercial',
-        estadoRegistro: 'Por Renovar'
-      }
-    ]);
     
     // Sincronizar datos de personas y roles con formData
     updatePersonasData(dataWithCompletitud);
@@ -403,8 +367,7 @@ useEffect(() => {
   const tabs = [
     { id: 'credenciales', label: 'Credenciales SUNAT', icon: FileText },
     { id: 'personas', label: 'Contacto', icon: User },
-    { id: 'comercial', label: 'Información Comercial', icon: Briefcase },
-    { id: 'marcas', label: 'Marcas Registradas', icon: Award }
+    { id: 'comercial', label: 'Información Comercial', icon: Briefcase }
   ];
 
   const handleInputChange = (field: string, value: any) => {
@@ -688,13 +651,6 @@ const validateCredentialsRealTime = async (usuario: string, clave: string) => {
     }, 3000);
   };
   
-  const handleMarcaSave = (marcaId: string) => {
-    setSuccessMessage({show: true, message: 'Se han guardado los cambios correctamente', tab: 'marcas'});
-    setExpandedMarca(null);
-    setTimeout(() => {
-      setSuccessMessage({show: false, message: '', tab: ''});
-    }, 3000);
-  };
 
   const closeOtherSections = (openSection: string) => {
     setFormData({
@@ -1602,238 +1558,6 @@ const validateCredentialsRealTime = async (usuario: string, clave: string) => {
           </div>
         );
 
-      case 'marcas':
-        return (
-          <div className="h-full flex flex-col">
-            <div className="bg-orange-50 border border-orange-200 rounded-lg p-2 mb-4">
-              <h3 className="text-lg font-medium text-orange-900 mb-1 flex items-center">
-                <Award className="w-5 h-5 mr-2 text-orange-600" />
-                Marcas Registradas en INDECOPI
-              </h3>
-            </div>
-
-            <div className="flex-1 overflow-y-auto">
-              <div className="bg-white border rounded-lg">
-                <table className="w-full text-sm">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="p-3 text-center font-medium text-gray-700">Nombre Marca</th>
-                      <th className="p-3 text-center font-medium text-gray-700">Tipo</th>
-                      <th className="p-3 text-center font-medium text-gray-700">N° Registro</th>
-                      <th className="p-3 text-center font-medium text-gray-700">Vigencia</th>
-                      <th className="p-3 text-center font-medium text-gray-700">Estado</th>
-                      <th className="p-3 text-center font-medium text-gray-700">Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {marcasData.map((marca) => (
-                      <React.Fragment key={marca.id}>
-                        <tr className="border-t hover:bg-gray-50">
-                          <td className="p-3 font-medium text-gray-900">{marca.nombreMarca}</td>
-                          <td className="p-3 text-gray-600">{marca.tipoInterno}</td>
-                          <td className="p-3 font-mono text-gray-600">{marca.numeroRegistro}</td>
-                          <td className="p-3 text-gray-600">{marca.vigencia}</td>
-                          <td className="p-3">
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              marca.estadoRegistro === 'Activo' ? 'bg-green-100 text-green-800' :
-                              marca.estadoRegistro === 'Por Renovar' ? 'bg-yellow-100 text-yellow-800' :
-                              'bg-red-100 text-red-800'
-                            }`}>
-                              {marca.estadoRegistro}
-                            </span>
-                          </td>
-                          <td className="p-3">
-                            <div className="flex items-center justify-center space-x-2">
-                              <button
-                                onClick={() => setExpandedMarca(expandedMarca === marca.id ? null : marca.id)}
-                                className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs flex items-center space-x-1"
-                              >
-                                <Edit3 className="w-3 h-3" />
-                                <span>Editar</span>
-                                {expandedMarca === marca.id ? 
-                                  <ChevronUp className="w-3 h-3" /> : 
-                                  <ChevronDown className="w-3 h-3" />
-                                }
-                              </button>
-                              <button
-                                onClick={() => setShowDeleteModal({show: true, marca})}
-                                className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-xs flex items-center space-x-1"
-                              >
-                                <Trash2 className="w-3 h-3" />
-                                <span>Eliminar</span>
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                        
-                        {/* Panel expandible de edición */}
-                        {expandedMarca === marca.id && (
-                          <tr className="border-t bg-blue-50">
-                            <td colSpan={6} className="p-4">
-                              <div className="bg-white border border-blue-200 rounded-lg p-4">
-                                <h4 className="text-sm font-medium text-blue-900 mb-3">Editar Marca: {marca.nombreMarca}</h4>
-                                <div className="grid grid-cols-2 gap-4">
-                                  <div>
-                                    <label className="block text-xs font-medium text-gray-700 mb-1">Nombre Marca</label>
-                                    <input
-                                      type="text"
-                                      value={marca.nombreMarca}
-                                      onChange={(e) => {
-                                        const updatedMarcas = marcasData.map(m => 
-                                          m.id === marca.id ? {...m, nombreMarca: e.target.value} : m
-                                        );
-                                        setMarcasData(updatedMarcas);
-                                      }}
-                                      className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-blue-500"
-                                    />
-                                  </div>
-                                  <div>
-                                    <label className="block text-xs font-medium text-gray-700 mb-1">Tipo Interno</label>
-                                    <select
-                                      value={marca.tipoInterno}
-                                      onChange={(e) => {
-                                        const updatedMarcas = marcasData.map(m => 
-                                          m.id === marca.id ? {...m, tipoInterno: e.target.value} : m
-                                        );
-                                        setMarcasData(updatedMarcas);
-                                      }}
-                                      className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-blue-500"
-                                    >
-                                      <option value="Comercial">Comercial</option>
-                                      <option value="Servicio">Servicio</option>
-                                      <option value="Industrial">Industrial</option>
-                                      <option value="Mixta">Mixta</option>
-                                    </select>
-                                  </div>
-                                  <div>
-                                    <label className="block text-xs font-medium text-gray-700 mb-1">N° Registro INDECOPI</label>
-                                    <input
-                                      type="text"
-                                      value={marca.numeroRegistro}
-                                      className="w-full px-2 py-1 border border-gray-300 rounded text-sm bg-gray-50"
-                                      readOnly
-                                    />
-                                  </div>
-                                  <div>
-                                    <label className="block text-xs font-medium text-gray-700 mb-1">Fecha Inscripción</label>
-                                    <input
-                                      type="text"
-                                      value={marca.fechaInscripcion}
-                                      className="w-full px-2 py-1 border border-gray-300 rounded text-sm bg-gray-50"
-                                      readOnly
-                                    />
-                                  </div>
-                                  <div>
-                                    <label className="block text-xs font-medium text-gray-700 mb-1">Vigencia</label>
-                                    <input
-                                      type="text"
-                                      value={marca.vigencia}
-                                      className="w-full px-2 py-1 border border-gray-300 rounded text-sm bg-gray-50"
-                                      readOnly
-                                    />
-                                  </div>
-                                  <div>
-                                    <label className="block text-xs font-medium text-gray-700 mb-1">Estado Registro</label>
-                                    <input
-                                      type="text"
-                                      value={marca.estadoRegistro}
-                                      className="w-full px-2 py-1 border border-gray-300 rounded text-sm bg-gray-50"
-                                      readOnly
-                                    />
-                                  </div>
-                                  <div className="col-span-2">
-                                    <label className="block text-xs font-medium text-gray-700 mb-1">Titular Registrado</label>
-                                    <input
-                                      type="text"
-                                      value={marca.titularRegistrado}
-                                      className="w-full px-2 py-1 border border-gray-300 rounded text-sm bg-gray-50"
-                                      readOnly
-                                    />
-                                  </div>
-                                </div>
-                                <div className="flex justify-end space-x-2 mt-4">
-                                  <button
-                                    onClick={() => setExpandedMarca(null)}
-                                    className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded text-sm"
-                                  >
-                                    Cancelar
-                                  </button>
-                                  <button
-                                    onClick={() => handleMarcaSave(marca.id)}
-                                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm flex items-center space-x-1"
-                                  >
-                                    <Save className="w-3 h-3" />
-                                    <span>Guardar Cambios</span>
-                                  </button>
-                                </div>
-                              </div>
-                            </td>
-                          </tr>
-                        )}
-                      </React.Fragment>
-                    ))}
-                  </tbody>
-                </table>
-                
-                {marcasData.length === 0 && (
-                  <div className="p-8 text-center text-gray-500">
-                    <Award className="w-12 h-12 mx-auto mb-2 text-gray-300" />
-                    <p>No hay marcas registradas asociadas a esta empresa</p>
-                  </div>
-                )}
-              </div>
-            </div>
-            
-            {/* Modal de confirmación de eliminación */}
-            {showDeleteModal.show && (
-              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                <div className="bg-white rounded-lg p-6 w-96 mx-4">
-                  <div className="flex items-center space-x-3 mb-4">
-                    <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-                      <Trash2 className="w-5 h-5 text-red-600" />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-medium text-gray-900">Eliminar Marca</h3>
-                      <p className="text-sm text-gray-500">Esta acción no se puede deshacer</p>
-                    </div>
-                  </div>
-                  <p className="text-gray-700 mb-6">
-                    ¿Seguro que deseas eliminar la marca <strong>'{showDeleteModal.marca?.nombreMarca}'</strong>?
-                  </p>
-                  <div className="flex justify-end space-x-3">
-                    <button
-                      onClick={() => setShowDeleteModal({show: false, marca: null})}
-                      className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded"
-                    >
-                      Cancelar
-                    </button>
-                    <button
-                      onClick={() => {
-                        const updatedMarcas = marcasData.filter(m => m.id !== showDeleteModal.marca?.id);
-                        setMarcasData(updatedMarcas);
-                        setShowDeleteModal({show: false, marca: null});
-                        alert('Marca eliminada correctamente');
-                      }}
-                      className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-                    >
-                      Confirmar
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-            
-            {/* Mensaje de éxito */}
-            {successMessage.show && successMessage.tab === 'marcas' && (
-              <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-                <div className="flex items-center">
-                  <CheckCircle className="w-4 h-4 text-green-600 mr-2" />
-                  <span className="text-sm text-green-800">{successMessage.message}</span>
-                </div>
-              </div>
-            )}
-          </div>
-        );
 
       default:
         return null;
@@ -1927,13 +1651,13 @@ const validateCredentialsRealTime = async (usuario: string, clave: string) => {
             Cancelar
           </button>
           {/* Solo mostrar botón Guardar en tabs que no tienen guardado individual */}
-          {(activeTab === 'comercial' || activeTab === 'credenciales') && (
+          {activeTab === 'comercial' && (
             <button
               onClick={handleSave}
               className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center text-sm"
             >
               <Save className="w-4 h-4 mr-2" />
-              <span>{activeTab === 'credenciales' ? 'Actualizar Credenciales' : 'Guardar Cambios'}</span>
+              <span>Guardar Cambios</span>
             </button>
           )}
         </div>

@@ -47,7 +47,10 @@ const GeneralPermissionsEditor: React.FC<GeneralPermissionsEditorProps> = ({
   onCancel
 }) => {
   const [selectedPermissions, setSelectedPermissions] = useState(currentPermissions.split(', ').filter(Boolean));
+  const [position, setPosition] = useState<'bottom' | 'top'>('bottom');
+  const [maxHeight, setMaxHeight] = useState(350);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const triggerElementRef = useRef<HTMLElement | null>(null);
   
   const permissionOptions = [
     'all',
@@ -74,6 +77,16 @@ const GeneralPermissionsEditor: React.FC<GeneralPermissionsEditorProps> = ({
     });
   };
 
+  const handleSelectAll = () => {
+    if (selectedPermissions.length === permissionOptions.length) {
+      // Si todos están seleccionados, deseleccionar todos
+      setSelectedPermissions([]);
+    } else {
+      // Si no todos están seleccionados, seleccionar todos
+      setSelectedPermissions([...permissionOptions]);
+    }
+  };
+
   const handleSaveClick = () => {
     onSave(selectedPermissions.join(', '));
   };
@@ -82,6 +95,59 @@ const GeneralPermissionsEditor: React.FC<GeneralPermissionsEditorProps> = ({
     onCancel();
   };
 
+  // Mejorada detección de posición y altura dinámica
+  useEffect(() => {
+    const calculatePositionAndSize = () => {
+      // Encontrar el elemento trigger (la celda que contiene este editor)
+      const triggerElement = document.querySelector('[data-editing-permissions="true"]') as HTMLElement;
+      if (!triggerElement) return;
+
+      triggerElementRef.current = triggerElement;
+      
+      const triggerRect = triggerElement.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      const viewportWidth = window.innerWidth;
+      
+      // Calcular espacios disponibles
+      const spaceBelow = viewportHeight - triggerRect.bottom - 20; // 20px de margen
+      const spaceAbove = triggerRect.top - 20; // 20px de margen
+      const spaceLeft = triggerRect.left;
+      const spaceRight = viewportWidth - triggerRect.right;
+      
+      // Altura mínima del dropdown (header + 3 items + footer)
+      const minHeight = 120 + 3 * 40 + 60; // ~300px
+      
+      // Determinar posición vertical
+      let newPosition: 'bottom' | 'top' = 'bottom';
+      let availableHeight = spaceBelow;
+      
+      if (spaceBelow < minHeight && spaceAbove > spaceBelow) {
+        newPosition = 'top';
+        availableHeight = spaceAbove;
+      }
+      
+      // Calcular altura máxima permitida
+      const headerFooterHeight = 120; // Header + Footer
+      const maxListHeight = Math.max(160, availableHeight - headerFooterHeight); // Mínimo 4 items
+      const calculatedMaxHeight = Math.min(450, headerFooterHeight + maxListHeight);
+      
+      setPosition(newPosition);
+      setMaxHeight(calculatedMaxHeight);
+    };
+
+    // Ejecutar cálculo inicial
+    setTimeout(calculatePositionAndSize, 10);
+    
+    // Agregar listeners para recálculo
+    window.addEventListener('scroll', calculatePositionAndSize);
+    window.addEventListener('resize', calculatePositionAndSize);
+
+    return () => {
+      window.removeEventListener('scroll', calculatePositionAndSize);
+      window.removeEventListener('resize', calculatePositionAndSize);
+    };
+  }, []);
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -89,44 +155,109 @@ const GeneralPermissionsEditor: React.FC<GeneralPermissionsEditorProps> = ({
       }
     };
 
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onCancel();
+      }
+    };
+
     document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
     };
   }, [onCancel]);
+
+  const allSelected = selectedPermissions.length === permissionOptions.length;
+  const someSelected = selectedPermissions.length > 0 && selectedPermissions.length < permissionOptions.length;
+  
+  // Calcular altura de la lista de opciones
+  const listMaxHeight = Math.max(120, maxHeight - 120); // Restar header + footer
 
   return (
     <div
       ref={dropdownRef}
-      // Estilos críticos para la superposición
-      className="absolute top-0 left-0 w-max min-w-[200px] bg-white border border-gray-200 rounded-lg shadow-lg z-50 p-4"
+      className={`fixed bg-white border border-gray-200 rounded-lg shadow-2xl z-[70] overflow-hidden`}
+      style={{ 
+        width: '320px',
+        maxHeight: `${maxHeight}px`,
+        [position === 'top' ? 'bottom' : 'top']: position === 'top' 
+          ? `${window.innerHeight - (triggerElementRef.current?.getBoundingClientRect().top || 0) + 8}px`
+          : `${(triggerElementRef.current?.getBoundingClientRect().bottom || 0) + 8}px`,
+        left: `${Math.max(10, (triggerElementRef.current?.getBoundingClientRect().left || 0))}px`,
+      }}
     >
-      <div className="flex flex-col space-y-2 max-h-60 overflow-y-auto">
-        {permissionOptions.map(permission => (
-          <label key={permission} className="flex items-center space-x-2 text-sm text-gray-800">
+      {/* Header con Seleccionar Todo */}
+      <div className="bg-gray-50 border-b border-gray-200 px-4 py-3 flex-shrink-0">
+        <label className="flex items-center space-x-3 cursor-pointer">
+          <div className="relative">
             <input
               type="checkbox"
-              checked={selectedPermissions.includes(permission)}
-              onChange={() => handleCheckboxChange(permission)}
-              className="text-blue-600 rounded focus:ring-blue-500"
+              checked={allSelected}
+              ref={(input) => {
+                if (input) input.indeterminate = someSelected;
+              }}
+              onChange={handleSelectAll}
+              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
             />
-            <span>{permission}</span>
-          </label>
-        ))}
+          </div>
+          <span className="text-sm font-medium text-gray-900">
+            {allSelected ? 'Deseleccionar Todo' : 'Seleccionar Todo'}
+          </span>
+          <span className="text-xs text-gray-500 ml-auto">
+            ({selectedPermissions.length}/{permissionOptions.length})
+          </span>
+        </label>
       </div>
-      <div className="flex justify-between space-x-2 mt-4 border-t pt-4">
-        <button
-          onClick={handleCancelClick}
-          className="px-3 py-1 text-sm text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
-        >
-          Cancelar
-        </button>
-        <button
-          onClick={handleSaveClick}
-          className="px-3 py-1 text-sm text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          Guardar
-        </button>
+
+      {/* Lista de opciones con scroll dinámico */}
+      <div 
+        className="overflow-y-auto overflow-x-hidden"
+        style={{ maxHeight: `${listMaxHeight}px` }}
+      >
+        <div className="py-1">
+          {permissionOptions.map((permission, index) => (
+            <label 
+              key={permission} 
+              className="flex items-center space-x-3 px-4 py-2.5 hover:bg-blue-50 cursor-pointer transition-colors"
+            >
+              <input
+                type="checkbox"
+                checked={selectedPermissions.includes(permission)}
+                onChange={() => handleCheckboxChange(permission)}
+                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+              />
+              <span className="text-sm text-gray-700 select-none">
+                {permission}
+              </span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      {/* Footer con botones */}
+      <div className="border-t border-gray-200 bg-gray-50 px-4 py-3 flex-shrink-0">
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-gray-500">
+            {selectedPermissions.length} seleccionado{selectedPermissions.length !== 1 ? 's' : ''}
+          </span>
+          <div className="flex space-x-2">
+            <button
+              onClick={handleCancelClick}
+              className="px-3 py-1.5 text-xs text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={handleSaveClick}
+              className="px-3 py-1.5 text-xs text-white bg-blue-600 border border-blue-600 rounded-md hover:bg-blue-700 transition-colors"
+            >
+              Aplicar
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -414,7 +545,7 @@ const CompanyPermissionsModal: React.FC<CompanyPermissionsModalProps> = ({
       <div className="fixed inset-0 bg-black bg-opacity-50" onClick={onClose} />
       
       <div className="flex min-h-screen items-center justify-center p-4">
-        <div className="relative bg-white rounded-lg shadow-xl w-full max-w-4xl min-h-[75vh] max-h-[90vh] overflow-hidden">
+        <div className="relative bg-white rounded-lg shadow-xl w-full max-w-4xl min-h-[75vh] max-h-[90vh] overflow-hidden flex flex-col">
           
           <div className="bg-white border-b border-gray-200 px-6 py-4">
             <div className="flex items-center justify-between">
@@ -461,6 +592,8 @@ const CompanyPermissionsModal: React.FC<CompanyPermissionsModalProps> = ({
             </div>
           </div>
 
+          {/* Contenedor principal con flex-1 */}
+          <div className="flex-1 flex flex-col">
           {activeTab === 'users' && (
             <>
               <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
@@ -669,18 +802,6 @@ const CompanyPermissionsModal: React.FC<CompanyPermissionsModalProps> = ({
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Permisos Generales
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Recepción Documentos
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Presentar SUNAT
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Configuración Sistema
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Procesamiento Contable
-                      </th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
@@ -717,7 +838,10 @@ const CompanyPermissionsModal: React.FC<CompanyPermissionsModalProps> = ({
                           {/* ========================================================= */}
                           {/* APLICACIÓN DE LA CORRECCIÓN A LA CELDA DE PERMISOS */}
                           {/* ========================================================= */}
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 relative">
+                          <td 
+                            className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 relative"
+                            data-editing-permissions={editingGeneralPermissions === role.id ? "true" : "false"}
+                          >
                             {editingGeneralPermissions === role.id ? (
                               <GeneralPermissionsEditor
                                 currentPermissions={roleConfig?.generalAccess || ''}
@@ -742,18 +866,6 @@ const CompanyPermissionsModal: React.FC<CompanyPermissionsModalProps> = ({
                               </div>
                             )}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            {getAccessBadge(roleConfig?.specificAccess.recepcion_documentos)}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            {getAccessBadge(roleConfig?.specificAccess.presentar_sunat)}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            {getAccessBadge(roleConfig?.specificAccess.configuracion_sistema)}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            {getAccessBadge(roleConfig?.specificAccess.procesamiento_contable)}
-                          </td>
                         </tr>
                       );
                     })}
@@ -762,57 +874,51 @@ const CompanyPermissionsModal: React.FC<CompanyPermissionsModalProps> = ({
               </div>
             </div>
           )}
-
-          <div className="bg-gray-50 px-6 py-4 border-t border-gray-200">
-            <div className="flex items-center justify-between">
-              <div className="text-sm text-gray-500">
-                <div className="flex items-center space-x-4">
-                  {activeTab === 'users' ? (
-                    <>
-                      <span>
-                        Requerido: <strong>Gerente/Apoderado</strong>
-                      </span>
-                      {hasChanges && (
-                        <span className="text-amber-600 font-medium">• Cambios no guardados</span>
-                      )}
-                    </>
-                  ) : (
-                    <span>
-                      Configuración de permisos por rol • Editable
-                    </span>
-                  )}
-                </div>
+          </div>
+        
+        {/* Footer fijo del modal */}
+        <div className="bg-gray-50 px-6 py-4 border-t border-gray-200">
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-gray-500">
+              <div className="flex items-center space-x-4">
+                <span>
+                  Requerido: <strong>Gerente/Apoderado</strong>
+                </span>
+                {hasChanges && (
+                  <span className="text-amber-600 font-medium">• Cambios no guardados</span>
+                )}
               </div>
-              <div className="flex space-x-3">
-                <button
-                  onClick={onClose}
-                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors"
-                  disabled={isSaving}
-                >
-                  Cancelar
-                </button>
-                <button
-                  onClick={handleSave}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
-                  disabled={isSaving || !hasChanges}
-                >
-                  {isSaving ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      <span>Guardando...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Save className="w-4 h-4" />
-                      <span>Guardar Cambios</span>
-                    </>
-                  )}
-                </button>
-              </div>
+            </div>
+            <div className="flex space-x-3">
+              <button
+                onClick={onClose}
+                className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors"
+                disabled={isSaving}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleSave}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                disabled={isSaving || !hasChanges}
+              >
+                {isSaving ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>Guardando...</span>
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4" />
+                    <span>Guardar Cambios</span>
+                  </>
+                )}
+              </button>
             </div>
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 };

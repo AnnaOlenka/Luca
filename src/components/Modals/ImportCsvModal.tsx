@@ -277,6 +277,12 @@ const ImportCsvModal: React.FC<ImportCsvModalProps> = ({ isOpen, onClose, onImpo
     usuario: '',
     claveSol: ''
   });
+  const [editingErrors, setEditingErrors] = useState({
+  ruc: '',
+  usuario: '',
+  claveSol: ''
+});
+
 
   if (!isOpen) return null;
 
@@ -588,6 +594,22 @@ const ImportCsvModal: React.FC<ImportCsvModalProps> = ({ isOpen, onClose, onImpo
   };
 
   const handleSaveEdit = (companyId: string) => {
+    // AÑADIR ESTA VALIDACIÓN ANTES DE LA LÓGICA EXISTENTE:
+      const ruc = editingForm.ruc.trim();
+      const usuario = editingForm.usuario.trim();
+      const claveSol = editingForm.claveSol.trim();
+
+      // Validar que todos los campos sean obligatorios
+      if (!ruc || !usuario || !claveSol) {
+        alert('Todos los campos son obligatorios');
+        return;
+      }
+
+      // Validar formato del RUC (11 dígitos numéricos)
+      if (ruc.length !== 11 || !/^\d+$/.test(ruc)) {
+        alert('El RUC debe tener exactamente 11 dígitos numéricos');
+        return;
+      }
     const updatedResults = verificationResults.map(company => {
       if (company.id === companyId) {
         return {
@@ -615,6 +637,29 @@ const ImportCsvModal: React.FC<ImportCsvModalProps> = ({ isOpen, onClose, onImpo
   const handleCancelEdit = () => {
     setEditingCompanyId(null);
   };
+
+  const validateEditingField = (field: string, value: string) => {
+  let error = '';
+  
+  if (!value.trim()) {
+    error = 'Este campo es obligatorio';
+  } else if (field === 'ruc') {
+    if (value.length !== 11) {
+      error = 'El RUC debe tener exactamente 11 dígitos';
+    } else if (!/^\d+$/.test(value)) {
+      error = 'El RUC solo debe contener números';
+    }
+  }
+  
+  setEditingErrors(prev => ({
+    ...prev,
+    [field]: error
+  }));
+  
+  return error === '';
+};
+
+
 
   const handleDelete = (companyId: string) => {
     const updatedResults = verificationResults.filter(company => company.id !== companyId);
@@ -1002,32 +1047,75 @@ const ImportCsvModal: React.FC<ImportCsvModalProps> = ({ isOpen, onClose, onImpo
                                       <h5 className="text-md font-semibold mb-3">Editar credenciales para {company.ruc}</h5>
                                       <div className="flex flex-col space-y-3">
                                         <div>
-                                          <label className="block text-sm font-medium text-gray-700 mb-1">RUC</label>
+                                          <label className="block text-sm font-medium text-gray-700 mb-1">RUC *</label>
                                           <input
                                             type="text"
                                             value={editingForm.ruc}
-                                            onChange={(e) => setEditingForm({...editingForm, ruc: e.target.value})}
-                                            className="w-full border-gray-300 rounded-md shadow-sm text-sm"
+                                            onChange={(e) => {
+                                              const value = e.target.value.replace(/\D/g, '');
+                                              if (value.length <= 11) {
+                                                setEditingForm({...editingForm, ruc: value});
+                                                validateEditingField('ruc', value);
+                                              }
+                                            }}
+                                            onBlur={(e) => validateEditingField('ruc', e.target.value)}
+                                            className={`w-full rounded-md shadow-sm text-sm ${
+                                              editingErrors.ruc 
+                                                ? 'border-red-300 focus:border-red-500 focus:ring-red-500' 
+                                                : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
+                                            }`}
+                                            placeholder="11 dígitos numéricos"
+                                            maxLength={11}
                                           />
+                                          {editingErrors.ruc && (
+                                            <p className="mt-1 text-sm text-red-600">{editingErrors.ruc}</p>
+                                          )}
                                         </div>
+                                        
                                         <div>
-                                          <label className="block text-sm font-medium text-gray-700 mb-1">Usuario SOL</label>
+                                          <label className="block text-sm font-medium text-gray-700 mb-1">Usuario SOL *</label>
                                           <input
                                             type="text"
                                             value={editingForm.usuario}
-                                            onChange={(e) => setEditingForm({...editingForm, usuario: e.target.value})}
-                                            className="w-full border-gray-300 rounded-md shadow-sm text-sm"
+                                            onChange={(e) => {
+                                              setEditingForm({...editingForm, usuario: e.target.value});
+                                              validateEditingField('usuario', e.target.value);
+                                            }}
+                                            onBlur={(e) => validateEditingField('usuario', e.target.value)}
+                                            className={`w-full rounded-md shadow-sm text-sm ${
+                                              editingErrors.usuario 
+                                                ? 'border-red-300 focus:border-red-500 focus:ring-red-500' 
+                                                : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
+                                            }`}
+                                            placeholder="Usuario SOL"
                                           />
+                                          {editingErrors.usuario && (
+                                            <p className="mt-1 text-sm text-red-600">{editingErrors.usuario}</p>
+                                          )}
                                         </div>
+                                        
                                         <div>
-                                          <label className="block text-sm font-medium text-gray-700 mb-1">Clave SOL</label>
+                                          <label className="block text-sm font-medium text-gray-700 mb-1">Clave SOL *</label>
                                           <input
                                             type="password"
                                             value={editingForm.claveSol}
-                                            onChange={(e) => setEditingForm({...editingForm, claveSol: e.target.value})}
-                                            className="w-full border-gray-300 rounded-md shadow-sm text-sm"
+                                            onChange={(e) => {
+                                              setEditingForm({...editingForm, claveSol: e.target.value});
+                                              validateEditingField('claveSol', e.target.value);
+                                            }}
+                                            onBlur={(e) => validateEditingField('claveSol', e.target.value)}
+                                            className={`w-full rounded-md shadow-sm text-sm ${
+                                              editingErrors.claveSol 
+                                                ? 'border-red-300 focus:border-red-500 focus:ring-red-500' 
+                                                : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
+                                            }`}
+                                            placeholder="Clave SOL"
                                           />
+                                          {editingErrors.claveSol && (
+                                            <p className="mt-1 text-sm text-red-600">{editingErrors.claveSol}</p>
+                                          )}
                                         </div>
+
                                         <div className="flex justify-end space-x-2 mt-4">
                                           <button
                                             onClick={handleCancelEdit}
@@ -1035,13 +1123,22 @@ const ImportCsvModal: React.FC<ImportCsvModalProps> = ({ isOpen, onClose, onImpo
                                           >
                                             Cancelar
                                           </button>
-                                          <button
-                                            onClick={() => handleSaveEdit(company.id)}
-                                            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 flex items-center space-x-2"
-                                          >
-                                            <Save className="w-4 h-4" />
-                                            <span>Guardar</span>
-                                          </button>
+                                            <button
+                                              onClick={() => handleSaveEdit(company.id)}
+                                              disabled={
+                                                !editingForm.ruc.trim() || 
+                                                !editingForm.usuario.trim() || 
+                                                !editingForm.claveSol.trim() || 
+                                                editingForm.ruc.length !== 11 ||
+                                                !!editingErrors.ruc || 
+                                                !!editingErrors.usuario || 
+                                                !!editingErrors.claveSol
+                                              }
+                                              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                                            >
+                                              <Save className="w-4 h-4" />
+                                              <span>Guardar</span>
+                                            </button>
                                         </div>
                                       </div>
                                     </div>
