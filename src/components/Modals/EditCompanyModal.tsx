@@ -6,9 +6,10 @@ interface EditCompanyModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (updatedEmpresa: any) => void;
+  onProgressUpdate?: (empresaId: string, completitud: number) => void;
 }
 
-const EditCompanyModal: React.FC<EditCompanyModalProps> = ({ empresa, isOpen, onClose, onSave }) => {
+const EditCompanyModal: React.FC<EditCompanyModalProps> = ({ empresa, isOpen, onClose, onSave, onProgressUpdate }) => {
   const [activeTab, setActiveTab] = useState('personas');
   const [formData, setFormData] = useState<any>({});
   const [expandedPersona, setExpandedPersona] = useState<string | null>(null);
@@ -65,8 +66,17 @@ const EditCompanyModal: React.FC<EditCompanyModalProps> = ({ empresa, isOpen, on
       return 'Teléfono no debe contener solo símbolos';
     }
     
-    const phoneRegex = /^\d+$/;
-    return phoneRegex.test(phone) ? '' : 'Teléfono debe contener solo números';
+    // Verificar que contenga solo números
+    if (!/^\d+$/.test(phone)) {
+      return 'Teléfono debe contener solo números';
+    }
+    
+    // Verificar que tenga exactamente 9 dígitos
+    if (phone.length !== 9) {
+      return 'Teléfono debe tener exactamente 9 dígitos';
+    }
+    
+    return '';
   };
 
   const validateName = (name: string): string => {
@@ -205,7 +215,7 @@ const EditCompanyModal: React.FC<EditCompanyModalProps> = ({ empresa, isOpen, on
     return percentage;
   };
 
-  const calculateCompletitudRealTime = (data: any, credStatus: string) => {
+  const calculateCompletitudRealTime = (data: any, credStatus: string, validationErrors: {[key: string]: string} = {}) => {
   // Esta función calcula pero NO modifica el estado
   let percentage = 0;
   
@@ -220,12 +230,22 @@ const EditCompanyModal: React.FC<EditCompanyModalProps> = ({ empresa, isOpen, on
   }
   
   // 3. Datos completos del representante legal = 25%
-  if (data.representanteNombres && data.representanteDni && data.representanteEmail && data.representanteTelefono) {
+  // Verificar que todos los campos estén presentes Y sin errores de validación
+  const representanteFields = ['representanteNombres', 'representanteDni', 'representanteEmail', 'representanteTelefono'];
+  const representanteComplete = representanteFields.every(field => 
+    data[field] && !validationErrors[field]
+  );
+  if (representanteComplete) {
     percentage += 25;
   }
   
   // 4. Datos completos del administrador = 25%
-  if (data.adminNombre && data.adminDni && data.adminEmail && data.adminTelefono) {
+  // Verificar que todos los campos estén presentes Y sin errores de validación
+  const adminFields = ['adminNombre', 'adminDni', 'adminEmail', 'adminTelefono'];
+  const adminComplete = adminFields.every(field => 
+    data[field] && !validationErrors[field]
+  );
+  if (adminComplete) {
     percentage += 25;
   }
   
@@ -333,14 +353,19 @@ const EditCompanyModal: React.FC<EditCompanyModalProps> = ({ empresa, isOpen, on
 useEffect(() => {
   // Calcular completitud en tiempo real para mostrar en la UI
   // pero sin modificar formData hasta que se guarde
-  const currentCompletitud = calculateCompletitudRealTime(formData, credentialsStatus);
+  const currentCompletitud = calculateCompletitudRealTime(formData, credentialsStatus, validationErrors);
   
   // Solo actualizar la visualización si estamos en el modal
   if (isOpen) {
     // Actualizar solo para mostrar, no para persistir
     console.log('📊 Completitud calculada en tiempo real:', currentCompletitud);
+    
+    // Actualizar la barra de progreso en tiempo real en la tabla principal
+    if (onProgressUpdate && empresa?.id) {
+      onProgressUpdate(empresa.id, currentCompletitud);
+    }
   }
-}, [formData, credentialsStatus, isOpen]);
+}, [formData, credentialsStatus, validationErrors, isOpen, onProgressUpdate, empresa?.id]);
 
   
   useEffect(() => {
@@ -1580,11 +1605,11 @@ const validateCredentialsRealTime = async (usuario: string, clave: string) => {
                     <div className="bg-blue-500 rounded-full h-2 w-32">
                       <div 
                         className="bg-white rounded-full h-2 transition-all duration-300" 
-                        style={{ width: `${calculateCompletitudRealTime(formData, credentialsStatus)}%` }}
+                        style={{ width: `${calculateCompletitudRealTime(formData, credentialsStatus, validationErrors)}%` }}
                       ></div>
                     </div>
                     <span className="text-blue-100 text-xs">
-                      {calculateCompletitudRealTime(formData, credentialsStatus)}% completo
+                      {calculateCompletitudRealTime(formData, credentialsStatus, validationErrors)}% completo
                     </span>
                   </div>
                 </div>

@@ -557,6 +557,7 @@ const PersonasAsignadas: React.FC<{
   const [isPersonaPopoverOpen, setIsPersonaPopoverOpen] = useState(false);
   const [isListaPopoverOpen, setIsListaPopoverOpen] = useState(false);
   const [popoverPosition, setPopoverPosition] = useState({ top: 0, left: 0 });
+  const [isPositionCalculated, setIsPositionCalculated] = useState(false);
   const clickedElementRef = useRef<HTMLElement | null>(null);
  
 
@@ -564,41 +565,66 @@ const PersonasAsignadas: React.FC<{
   useEffect(() => {
     const recalculatePosition = () => {
       if (clickedElementRef.current && (isPersonaPopoverOpen || isListaPopoverOpen)) {
-        const newPosition = calculatePopoverPosition(clickedElementRef.current);
-        setPopoverPosition(newPosition);
+        // Verificar que el elemento sigue existiendo en el DOM
+        if (document.contains(clickedElementRef.current)) {
+          const newPosition = calculatePopoverPosition(clickedElementRef.current);
+          setPopoverPosition(newPosition);
+          // Asegurar que la posición esté marcada como calculada
+          if (!isPositionCalculated) {
+            setIsPositionCalculated(true);
+          }
+        }
       }
     };
 
     // Listener para cambios en el layout
-    const resizeObserver = new ResizeObserver(recalculatePosition);
+    const resizeObserver = new ResizeObserver(() => {
+      // Usar requestAnimationFrame para mejor rendimiento
+      requestAnimationFrame(recalculatePosition);
+    });
+    
     if (document.body) {
       resizeObserver.observe(document.body);
     }
 
-    // Listener para scroll con throttling
-    let scrollTimeout: NodeJS.Timeout;
+    // Listener para scroll sin throttling para mejor responsividad
     const handleScroll = () => {
-      clearTimeout(scrollTimeout);
-      scrollTimeout = setTimeout(recalculatePosition, 16); // ~60fps
+      requestAnimationFrame(recalculatePosition);
     };
 
-    // Agregar listeners
-    window.addEventListener('scroll', handleScroll, true); // true para capturar en fase de captura
-    document.addEventListener('scroll', handleScroll, true);
+    // Listener para resize de ventana
+    const handleResize = () => {
+      requestAnimationFrame(recalculatePosition);
+    };
+
+    // Agregar listeners a múltiples targets para capturar todos los scrolls
+    window.addEventListener('scroll', handleScroll, { passive: true, capture: true });
+    document.addEventListener('scroll', handleScroll, { passive: true, capture: true });
+    window.addEventListener('resize', handleResize, { passive: true });
+    
+    // También capturar scroll en el contenedor principal si existe
+    const mainContainer = document.querySelector('main, .overflow-auto, .overflow-y-auto');
+    if (mainContainer) {
+      mainContainer.addEventListener('scroll', handleScroll, { passive: true });
+    }
 
     // Cleanup
     return () => {
       resizeObserver.disconnect();
       window.removeEventListener('scroll', handleScroll, true);
       document.removeEventListener('scroll', handleScroll, true);
-      clearTimeout(scrollTimeout);
+      window.removeEventListener('resize', handleResize);
+      if (mainContainer) {
+        mainContainer.removeEventListener('scroll', handleScroll);
+      }
     };
-  }, [isPersonaPopoverOpen, isListaPopoverOpen]);
+  }, [isPersonaPopoverOpen, isListaPopoverOpen, isPositionCalculated]);
 
   // Limpiar referencia cuando se cierren todos los popovers
   useEffect(() => {
     if (!isPersonaPopoverOpen && !isListaPopoverOpen) {
       clickedElementRef.current = null;
+      setIsPositionCalculated(false); // Resetear para la próxima apertura
     }
   }, [isPersonaPopoverOpen, isListaPopoverOpen]);
   
@@ -616,31 +642,43 @@ const PersonasAsignadas: React.FC<{
 
   const calculatePopoverPosition = (element: HTMLElement) => {
     // Validar que el elemento existe y está en el DOM
-    if (!element || !element.getBoundingClientRect) {
+    if (!element || !element.getBoundingClientRect || !document.contains(element)) {
       return { top: 0, left: 0 };
     }
     
     const rect = element.getBoundingClientRect();
-    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
     
-    // Verificar si hay suficiente espacio a la derecha para el popover
+    // Usar las coordenadas directas del viewport para evitar problemas con scroll
     const viewportWidth = window.innerWidth;
-    const popoverWidth = 280; // Ancho estimado del popover
-    const spaceToRight = viewportWidth - rect.right;
+    const viewportHeight = window.innerHeight;
+    const popoverWidth = 280;
+    const popoverHeight = 200; // Altura estimada
     
-    let leftPosition = rect.left + scrollLeft - 50;
+    // Calcular posición vertical
+    let topPosition = rect.bottom + 8; // 8px gap debajo del círculo
     
-    // Si no hay suficiente espacio a la derecha, ajustar hacia la izquierda
-    if (spaceToRight < popoverWidth) {
-      leftPosition = rect.right + scrollLeft - popoverWidth + 10;
+    // Si no hay espacio suficiente abajo, mostrar arriba
+    if (topPosition + popoverHeight > viewportHeight) {
+      topPosition = rect.top - popoverHeight - 8;
+    }
+    
+    // Calcular posición horizontal
+    let leftPosition = rect.left - 50; // Centrar aproximadamente con el círculo
+    
+    // Verificar límites horizontales
+    if (leftPosition + popoverWidth > viewportWidth - 10) {
+      // No cabe a la derecha, mover hacia la izquierda
+      leftPosition = rect.right - popoverWidth + 10;
     }
     
     // Asegurar que no se salga del borde izquierdo
     leftPosition = Math.max(10, leftPosition);
     
+    // Asegurar que no se salga del borde superior
+    topPosition = Math.max(10, topPosition);
+    
     return {
-      top: rect.bottom + scrollTop + 8, // 8px gap debajo del círculo
+      top: topPosition,
       left: leftPosition,
     };
   };
@@ -648,13 +686,20 @@ const PersonasAsignadas: React.FC<{
   const handlePersonaClick = (persona: any, event: React.MouseEvent<HTMLDivElement>) => {
     // Cerrar otros popovers primero
     setIsListaPopoverOpen(false);
+    setIsPositionCalculated(false); // Resetear estado de posición
     
     // Guardar referencia del nuevo elemento clickeado
     clickedElementRef.current = event.currentTarget;
     
-    // Calcular posición inmediatamente
-    const position = calculatePopoverPosition(event.currentTarget);
-    setPopoverPosition(position);
+    // Calcular posición inmediatamente usando requestAnimationFrame para asegurar DOM actualizado
+    requestAnimationFrame(() => {
+      if (clickedElementRef.current) {
+        const position = calculatePopoverPosition(clickedElementRef.current);
+        setPopoverPosition(position);
+        setIsPositionCalculated(true); // Marcar posición como calculada
+      }
+    });
+    
     setSelectedPersona(persona);
     setIsPersonaPopoverOpen(true);
     setShowTooltip(null); // Ocultar tooltip
@@ -664,13 +709,20 @@ const PersonasAsignadas: React.FC<{
     // Cerrar otros popovers primero
     setIsPersonaPopoverOpen(false);
     setSelectedPersona(null);
+    setIsPositionCalculated(false); // Resetear estado de posición
     
     // Guardar referencia del nuevo elemento clickeado
     clickedElementRef.current = event.currentTarget;
     
-    // Calcular posición inmediatamente
-    const position = calculatePopoverPosition(event.currentTarget);
-    setPopoverPosition(position);
+    // Calcular posición inmediatamente usando requestAnimationFrame para asegurar DOM actualizado
+    requestAnimationFrame(() => {
+      if (clickedElementRef.current) {
+        const position = calculatePopoverPosition(clickedElementRef.current);
+        setPopoverPosition(position);
+        setIsPositionCalculated(true); // Marcar posición como calculada
+      }
+    });
+    
     setIsListaPopoverOpen(true);
   };
 
@@ -716,7 +768,7 @@ const PersonasAsignadas: React.FC<{
 
       {/* Popover individual */}
       <PersonaPopover
-        isOpen={isPersonaPopoverOpen}
+        isOpen={isPersonaPopoverOpen && isPositionCalculated}
         onClose={() => {
           setIsPersonaPopoverOpen(false);
           setSelectedPersona(null);
@@ -727,7 +779,7 @@ const PersonasAsignadas: React.FC<{
 
       {/* Popover lista completa */}
       <ListaPersonasPopover
-        isOpen={isListaPopoverOpen}
+        isOpen={isListaPopoverOpen && isPositionCalculated}
         onClose={() => setIsListaPopoverOpen(false)}
         personas={personas}
         position={popoverPosition}
@@ -1076,47 +1128,73 @@ const ProximaObligacion: React.FC<{
 }> = ({ obligacion, empresaId }) => {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [popoverPosition, setPopoverPosition] = useState({ top: 0, left: 0 });
+  const [isPositionCalculated, setIsPositionCalculated] = useState(false);
   const clickedElementRef = useRef<HTMLElement | null>(null);
 
   // Efecto para recalcular posición cuando cambie el layout o haya scroll
   useEffect(() => {
     const recalculatePosition = () => {
       if (clickedElementRef.current && isPopoverOpen) {
-        const newPosition = calculatePopoverPosition(clickedElementRef.current);
-        setPopoverPosition(newPosition);
+        // Verificar que el elemento sigue existiendo en el DOM
+        if (document.contains(clickedElementRef.current)) {
+          const newPosition = calculatePopoverPosition(clickedElementRef.current);
+          setPopoverPosition(newPosition);
+          // Asegurar que la posición esté marcada como calculada
+          if (!isPositionCalculated) {
+            setIsPositionCalculated(true);
+          }
+        }
       }
     };
 
     // Listener para cambios en el layout
-    const resizeObserver = new ResizeObserver(recalculatePosition);
+    const resizeObserver = new ResizeObserver(() => {
+      // Usar requestAnimationFrame para mejor rendimiento
+      requestAnimationFrame(recalculatePosition);
+    });
+    
     if (document.body) {
       resizeObserver.observe(document.body);
     }
 
-    // Listener para scroll con throttling
-    let scrollTimeout: NodeJS.Timeout;
+    // Listener para scroll sin throttling para mejor responsividad
     const handleScroll = () => {
-      clearTimeout(scrollTimeout);
-      scrollTimeout = setTimeout(recalculatePosition, 16); // ~60fps
+      requestAnimationFrame(recalculatePosition);
     };
 
-    // Agregar listeners
-    window.addEventListener('scroll', handleScroll, true); // true para capturar en fase de captura
-    document.addEventListener('scroll', handleScroll, true);
+    // Listener para resize de ventana
+    const handleResize = () => {
+      requestAnimationFrame(recalculatePosition);
+    };
+
+    // Agregar listeners a múltiples targets para capturar todos los scrolls
+    window.addEventListener('scroll', handleScroll, { passive: true, capture: true });
+    document.addEventListener('scroll', handleScroll, { passive: true, capture: true });
+    window.addEventListener('resize', handleResize, { passive: true });
+    
+    // También capturar scroll en el contenedor principal si existe
+    const mainContainer = document.querySelector('main, .overflow-auto, .overflow-y-auto');
+    if (mainContainer) {
+      mainContainer.addEventListener('scroll', handleScroll, { passive: true });
+    }
 
     // Cleanup
     return () => {
       resizeObserver.disconnect();
       window.removeEventListener('scroll', handleScroll, true);
       document.removeEventListener('scroll', handleScroll, true);
-      clearTimeout(scrollTimeout);
+      window.removeEventListener('resize', handleResize);
+      if (mainContainer) {
+        mainContainer.removeEventListener('scroll', handleScroll);
+      }
     };
-  }, [isPopoverOpen]);
+  }, [isPopoverOpen, isPositionCalculated]);
 
   // Limpiar referencia cuando se cierre el popover
   useEffect(() => {
     if (!isPopoverOpen) {
       clickedElementRef.current = null;
+      setIsPositionCalculated(false); // Resetear para la próxima apertura
     }
   }, [isPopoverOpen]);
 
@@ -1184,12 +1262,21 @@ const ProximaObligacion: React.FC<{
   };
 
   const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    // Resetear estado de posición
+    setIsPositionCalculated(false);
+    
     // Guardar referencia del nuevo elemento clickeado (limpiar referencia anterior)
     clickedElementRef.current = event.currentTarget;
     
-    // Calcular posición inmediatamente
-    const position = calculatePopoverPosition(event.currentTarget);
-    setPopoverPosition(position);
+    // Calcular posición usando requestAnimationFrame para asegurar DOM actualizado
+    requestAnimationFrame(() => {
+      if (clickedElementRef.current) {
+        const position = calculatePopoverPosition(clickedElementRef.current);
+        setPopoverPosition(position);
+        setIsPositionCalculated(true); // Marcar posición como calculada
+      }
+    });
+    
     setIsPopoverOpen(true);
   };
 
@@ -1231,6 +1318,9 @@ const Empresas: React.FC<EmpresasProps> = ({ onNavigate }) => {
   const [empresaToEdit, setEmpresaToEdit] = useState<Empresa | null>(null);
   const [empresaForPermissions, setEmpresaForPermissions] = useState<Empresa | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  
+  // Estado para persistir permisos por empresa
+  const [empresaPermissions, setEmpresaPermissions] = useState<{[empresaId: string]: {assignedUsers: User[], rolePermissions: any[]}}>({}); 
   const [showAddForm, setShowAddForm] = useState(false);
   const [newCompanyForm, setNewCompanyForm] = useState({
     ruc: '',
@@ -1314,47 +1404,55 @@ const Empresas: React.FC<EmpresasProps> = ({ onNavigate }) => {
   ];
 
   // Función para crear usuarios asignados desde datos de personas de la empresa
+  // Obtener usuarios que ya tienen roles asignados en el sistema de permisos
+  // (inicialmente vacío, se llenan cuando el usuario asigna roles manualmente)
   const getAssignedUsersFromEmpresa = (empresa: Empresa): User[] => {
-    const assignedUsers: User[] = [];
+    // Retornar usuarios asignados persistidos para esta empresa
+    const persistedData = empresaPermissions[empresa.id];
+    return persistedData ? persistedData.assignedUsers : [];
+  };
+
+  // Obtener usuarios disponibles para asignar roles (del tab de contacto)
+  const getAvailableUsersFromEmpresa = (empresa: Empresa): User[] => {
+    const availableUsers: User[] = [];
     
-    
-    // Representante Legal
-    if (empresa.representanteNombres) {
-      assignedUsers.push({
+    // Representante Legal (disponible para asignar roles)
+    if (empresa.representanteNombres && empresa.representanteDni) {
+      availableUsers.push({
         id: `${empresa.id}-representante`,
         nombre: empresa.representanteNombres,
         email: empresa.representanteEmail || '',
         telefono: empresa.representanteTelefono || '',
-        documento: empresa.representanteDni || '',
-        role: 'gerente_apoderado'
+        documento: empresa.representanteDni,
+        role: '' // Sin rol asignado inicialmente
       });
     }
     
-    // Administrador
-    if (empresa.adminNombre) {
-      assignedUsers.push({
+    // Administrador (disponible para asignar roles)
+    if (empresa.adminNombre && empresa.adminDni) {
+      availableUsers.push({
         id: `${empresa.id}-admin`,
         nombre: empresa.adminNombre,
         email: empresa.adminEmail || '',
         telefono: empresa.adminTelefono || '',
-        documento: empresa.adminDni || '',
-        role: 'admin_sistema'
+        documento: empresa.adminDni,
+        role: '' // Sin rol asignado inicialmente
       });
     }
     
-    // Contador
-    if (empresa.contadorNombre) {
-      assignedUsers.push({
+    // Contador (disponible para asignar roles)  
+    if (empresa.contadorNombre && empresa.contadorDni) {
+      availableUsers.push({
         id: `${empresa.id}-contador`,
         nombre: empresa.contadorNombre,
         email: empresa.contadorEmail || '',
         telefono: empresa.contadorTelefono || '',
-        documento: empresa.contadorDni || '',
-        role: 'contador_senior'
+        documento: empresa.contadorDni,
+        role: '' // Sin rol asignado inicialmente
       });
     }
     
-    return assignedUsers;
+    return availableUsers;
   };
 
   // Usuarios asignados dinámicos basados en la empresa seleccionada
@@ -1372,57 +1470,39 @@ const Empresas: React.FC<EmpresasProps> = ({ onNavigate }) => {
   };
 
   // Función para guardar permisos y sincronizar con datos de empresa
-  const handleSavePermissions = async (users: User[]): Promise<void> => {
+  const handleSavePermissions = async (users: User[], rolePermissions: any[]): Promise<void> => {
     return new Promise((resolve) => {
       setTimeout(() => {
-        console.log('Permisos guardados para empresa:', empresaForPermissions?.nombre, users);
-        
-        // Sincronizar cambios de vuelta a la empresa
         if (empresaForPermissions) {
-          const updatedEmpresa = syncUsersWithEmpresa(users, empresaForPermissions);
+          console.log('Permisos de cuenta guardados para empresa:', empresaForPermissions.nombre, {users, rolePermissions});
           
-          // Actualizar la empresa en el estado global
-          setEmpresasList(prevList => 
-            prevList.map(empresa => 
-              empresa.id === updatedEmpresa.id ? updatedEmpresa : empresa
-            )
-          );
+          // Persistir los datos en el estado
+          setEmpresaPermissions(prev => ({
+            ...prev,
+            [empresaForPermissions.id]: {
+              assignedUsers: users,
+              rolePermissions: rolePermissions
+            }
+          }));
           
-          // Recalcular completitud basada en nuevos datos de contacto
-          let newCompletitud = 0;
-          
-          // 1. Empresa creada (datos básicos) = 25%
-          if (updatedEmpresa.nombre && updatedEmpresa.ruc) {
-            newCompletitud += 25;
-          }
-          
-          // 2. Clave SOL válida = 25%
-          if (updatedEmpresa.credentialsStatus === 'valid') {
-            newCompletitud += 25;
-          }
-          
-          // 3. Datos completos del representante legal = 25%
-          if (updatedEmpresa.representanteNombres && updatedEmpresa.representanteDni && 
-              updatedEmpresa.representanteEmail && updatedEmpresa.representanteTelefono) {
-            newCompletitud += 25;
-          }
-          
-          // 4. Datos completos del administrador = 25%
-          if (updatedEmpresa.adminNombre && updatedEmpresa.adminDni && 
-              updatedEmpresa.adminEmail && updatedEmpresa.adminTelefono) {
-            newCompletitud += 25;
-          }
-          
-          updatedEmpresa.completitud = newCompletitud;
-          
-          // Aquí normalmente actualizarías el estado global de empresas
-          // Por ahora solo logueamos los cambios
-          console.log('Empresa actualizada con nuevos datos de contacto:', updatedEmpresa);
+          // NOTA: Los permisos/roles de cuenta NO se sincronizan con datos de contacto
+          // Son conceptos separados: roles de cuenta vs información de contacto de la empresa
         }
         
         resolve();
       }, 1500);
     });
+  };
+
+  // Función para actualizar progreso en tiempo real
+  const handleProgressUpdate = (empresaId: string, completitud: number) => {
+    setEmpresasList(prevEmpresas => 
+      prevEmpresas.map(empresa => 
+        empresa.id === empresaId 
+          ? { ...empresa, completitud: completitud }
+          : empresa
+      )
+    );
   };
 
 // Agregar esta función aquí:
@@ -2615,6 +2695,7 @@ const getStatusColor = (type: string) => {
           isOpen={isEditModalOpen}
           onClose={closeEditModal}
           onSave={handleEditSave}
+          onProgressUpdate={handleProgressUpdate}
         />
       )}
 
@@ -2631,8 +2712,9 @@ const getStatusColor = (type: string) => {
             nombre: empresaForPermissions.nombre,
             ruc: empresaForPermissions.ruc
           }}
-          availableUsers={mockAvailableUsers}
+          availableUsers={empresaForPermissions ? [...mockAvailableUsers, ...getAvailableUsersFromEmpresa(empresaForPermissions)] : mockAvailableUsers}
           assignedUsers={getAssignedUsers()}
+          savedRolePermissions={empresaPermissions[empresaForPermissions.id]?.rolePermissions}
           onSave={handleSavePermissions}
         />
       )}

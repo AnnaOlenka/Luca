@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Users, AlertCircle, Save, UserPlus, Search, Trash2, UserCheck, Crown, Calculator, Plus, ChevronDown, Settings, FileText, User as UserIcon, Edit } from 'lucide-react';
+import { X, Users, AlertCircle, Save, UserPlus, Search, Trash2, UserCheck, Crown, Calculator, Plus, ChevronDown, Settings, FileText, User as UserIcon, Edit, CheckCircle } from 'lucide-react';
 
 interface User {
   id: string;
@@ -29,7 +29,8 @@ interface CompanyPermissionsModalProps {
   };
   availableUsers: User[];
   assignedUsers: User[];
-  onSave: (users: User[]) => Promise<void>;
+  savedRolePermissions?: any[];
+  onSave: (users: User[], rolePermissions: any[]) => Promise<void>;
 }
 
 // =========================================================
@@ -95,58 +96,33 @@ const GeneralPermissionsEditor: React.FC<GeneralPermissionsEditorProps> = ({
     onCancel();
   };
 
-  // Mejorada detección de posición y altura dinámica
+  // Estado para forzar re-render cuando cambie la posición
+  const [triggerRect, setTriggerRect] = useState<DOMRect | null>(null);
+
+  // Configuración y cálculo de posición al montar y cuando cambie el trigger
   useEffect(() => {
-    const calculatePositionAndSize = () => {
-      // Encontrar el elemento trigger (la celda que contiene este editor)
-      const triggerElement = document.querySelector('[data-editing-permissions="true"]') as HTMLElement;
-      if (!triggerElement) return;
-
-      triggerElementRef.current = triggerElement;
-      
-      const triggerRect = triggerElement.getBoundingClientRect();
-      const viewportHeight = window.innerHeight;
-      const viewportWidth = window.innerWidth;
-      
-      // Calcular espacios disponibles
-      const spaceBelow = viewportHeight - triggerRect.bottom - 20; // 20px de margen
-      const spaceAbove = triggerRect.top - 20; // 20px de margen
-      const spaceLeft = triggerRect.left;
-      const spaceRight = viewportWidth - triggerRect.right;
-      
-      // Altura mínima del dropdown (header + 3 items + footer)
-      const minHeight = 120 + 3 * 40 + 60; // ~300px
-      
-      // Determinar posición vertical
-      let newPosition: 'bottom' | 'top' = 'bottom';
-      let availableHeight = spaceBelow;
-      
-      if (spaceBelow < minHeight && spaceAbove > spaceBelow) {
-        newPosition = 'top';
-        availableHeight = spaceAbove;
-      }
-      
-      // Calcular altura máxima permitida
-      const headerFooterHeight = 120; // Header + Footer
-      const maxListHeight = Math.max(160, availableHeight - headerFooterHeight); // Mínimo 4 items
-      const calculatedMaxHeight = Math.min(450, headerFooterHeight + maxListHeight);
-      
-      setPosition(newPosition);
-      setMaxHeight(calculatedMaxHeight);
-    };
-
-    // Ejecutar cálculo inicial
-    setTimeout(calculatePositionAndSize, 10);
+    setMaxHeight(350);
+    setPosition('bottom');
     
-    // Agregar listeners para recálculo
-    window.addEventListener('scroll', calculatePositionAndSize);
-    window.addEventListener('resize', calculatePositionAndSize);
-
-    return () => {
-      window.removeEventListener('scroll', calculatePositionAndSize);
-      window.removeEventListener('resize', calculatePositionAndSize);
+    const findAndSetTriggerRect = () => {
+      const triggerElement = document.querySelector('[data-editing-permissions="true"]') as HTMLElement;
+      
+      if (triggerElement) {
+        const rect = triggerElement.getBoundingClientRect();
+        console.log('🎯 Found trigger element, rect:', rect, 'Text:', triggerElement.textContent);
+        setTriggerRect(rect);
+      } else {
+        console.log('❌ Trigger element not found');
+        setTriggerRect(null);
+      }
     };
-  }, []);
+
+    // Ejecutar inmediatamente y luego en el siguiente frame para asegurar el DOM
+    findAndSetTriggerRect();
+    requestAnimationFrame(() => {
+      findAndSetTriggerRect();
+    });
+  }, []); // Se ejecuta solo al montar porque este componente se crea/destruye cada vez
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -176,17 +152,52 @@ const GeneralPermissionsEditor: React.FC<GeneralPermissionsEditorProps> = ({
   // Calcular altura de la lista de opciones
   const listMaxHeight = Math.max(120, maxHeight - 120); // Restar header + footer
 
+  // Posición basada en el estado triggerRect con visibilidad controlada
+  const getDropdownStyle = () => {
+    console.log('🎨 Getting dropdown style, triggerRect:', triggerRect);
+    
+    if (!triggerRect) {
+      console.log('⚠️ No triggerRect available, hiding dropdown');
+      return {
+        width: '320px',
+        maxHeight: '350px',
+        top: '280px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        backgroundColor: 'white',
+        opacity: 0, // Ocultar hasta tener la posición correcta
+        visibility: 'hidden' as const, // Doble seguridad para evitar el flash
+      };
+    }
+    
+    // Posición vertical dinámica basada en la fila
+    const verticalPosition = triggerRect.bottom + 8;
+    
+    console.log('🎯 Final position calculated:', {
+      top: verticalPosition,
+      triggerBottom: triggerRect.bottom,
+      triggerRect
+    });
+
+    return {
+      width: '320px',
+      maxHeight: '350px',
+      top: `${verticalPosition}px`, // Dinámico según la fila
+      left: '50%', // Centrado horizontalmente (funciona bien)
+      transform: 'translateX(-50%)',
+      backgroundColor: 'white',
+      opacity: 1,
+      visibility: 'visible' as const, // Mostrar solo cuando tengamos la posición correcta
+    };
+  };
+
   return (
     <div
       ref={dropdownRef}
-      className={`fixed bg-white border border-gray-200 rounded-lg shadow-2xl z-[70] overflow-hidden`}
-      style={{ 
-        width: '320px',
-        maxHeight: `${maxHeight}px`,
-        [position === 'top' ? 'bottom' : 'top']: position === 'top' 
-          ? `${window.innerHeight - (triggerElementRef.current?.getBoundingClientRect().top || 0) + 8}px`
-          : `${(triggerElementRef.current?.getBoundingClientRect().bottom || 0) + 8}px`,
-        left: `${Math.max(10, (triggerElementRef.current?.getBoundingClientRect().left || 0))}px`,
+      className={`fixed bg-white border border-gray-200 rounded-lg shadow-2xl overflow-hidden transition-opacity duration-150`}
+      style={{
+        ...getDropdownStyle(),
+        zIndex: 9999, // Z-index muy alto para estar por encima del modal
       }}
     >
       {/* Header con Seleccionar Todo */}
@@ -274,6 +285,7 @@ const CompanyPermissionsModal: React.FC<CompanyPermissionsModalProps> = ({
   empresa,
   availableUsers,
   assignedUsers: initialAssignedUsers,
+  savedRolePermissions,
   onSave
 }) => {
   const [assignedUsers, setAssignedUsers] = useState<User[]>(initialAssignedUsers);
@@ -286,6 +298,8 @@ const CompanyPermissionsModal: React.FC<CompanyPermissionsModalProps> = ({
   const [editingRole, setEditingRole] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('users');
   const [editingGeneralPermissions, setEditingGeneralPermissions] = useState<string | null>(null);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
   const roleOptions: RoleOption[] = [
     {
@@ -293,7 +307,7 @@ const CompanyPermissionsModal: React.FC<CompanyPermissionsModalProps> = ({
       name: 'Gerente/Apoderado',
       color: 'yellow',
       icon: <Crown className="w-4 h-4" />,
-      required: true
+      required: false
     },
     {
       id: 'admin_sistema',
@@ -428,13 +442,36 @@ const CompanyPermissionsModal: React.FC<CompanyPermissionsModalProps> = ({
     }
   ];
 
-  const [rolePermissions, setRolePermissions] = useState(initialRolePermissions);
+  const [rolePermissions, setRolePermissions] = useState(savedRolePermissions || initialRolePermissions);
 
   useEffect(() => {
-    setAssignedUsers(initialAssignedUsers);
-    setHasChanges(false);
-    setErrors([]);
-  }, [initialAssignedUsers, isOpen]);
+    if (isOpen) {
+      setAssignedUsers(initialAssignedUsers);
+      setRolePermissions(savedRolePermissions || initialRolePermissions); // Usar permisos recibidos o por defecto
+      setHasChanges(false);
+      setErrors([]);
+      setShowSuccessMessage(false); // Solo ocultar cuando se abre el modal
+    }
+  }, [isOpen]); // Solo depender de isOpen para evitar reseteos prematuros
+
+  // Efecto separado para actualizar datos cuando cambian las props sin afectar el mensaje
+  useEffect(() => {
+    if (isOpen) {
+      setAssignedUsers(initialAssignedUsers);
+      setRolePermissions(savedRolePermissions || initialRolePermissions);
+    }
+  }, [initialAssignedUsers, savedRolePermissions]);
+
+  // Función para actualizar permisos generales de un rol
+  const updateRoleGeneralPermissions = (roleId: string, newPermissions: string) => {
+    setRolePermissions(prev => prev.map(roleConfig => 
+      roleConfig.roleId === roleId 
+        ? { ...roleConfig, generalAccess: newPermissions }
+        : roleConfig
+    ));
+    setHasChanges(true);
+    setEditingGeneralPermissions(null);
+  };
 
   const validateUsers = (): string[] => {
     const validationErrors: string[] = [];
@@ -448,14 +485,7 @@ const CompanyPermissionsModal: React.FC<CompanyPermissionsModalProps> = ({
       }
     });
 
-    const uniqueRoles = ['gerente_apoderado'];
-    uniqueRoles.forEach(roleId => {
-      const usersWithRole = assignedUsers.filter(user => user.role === roleId);
-      if (usersWithRole.length > 1) {
-        const roleName = roleOptions.find(r => r.id === roleId)?.name;
-        validationErrors.push(`Solo puede haber un usuario con el rol ${roleName}`);
-      }
-    });
+    // Removido: Ya no hay roles únicos obligatorios
 
     return validationErrors;
   };
@@ -493,12 +523,34 @@ const CompanyPermissionsModal: React.FC<CompanyPermissionsModalProps> = ({
     }
 
     setIsSaving(true);
+    setErrors([]);
+    
     try {
-      await onSave(assignedUsers);
+      // Preparar datos para guardar (usuarios asignados + permisos por rol)
+      const dataToSave = {
+        assignedUsers: assignedUsers,
+        rolePermissions: rolePermissions,
+        empresa: empresa
+      };
+      
+      console.log('💾 Guardando cambios completos:', dataToSave);
+      
+      // Guardar ambos: usuarios asignados y permisos por rol
+      await onSave(assignedUsers, rolePermissions);
+      
+      // Mostrar mensaje de éxito
+      setSuccessMessage('Cambios guardados correctamente');
+      setShowSuccessMessage(true);
       setHasChanges(false);
-      onClose();
+      
+      // Ocultar mensaje después de 4 segundos
+      setTimeout(() => {
+        setShowSuccessMessage(false);
+      }, 4000);
+      
     } catch (error) {
       setErrors(['Error al guardar los cambios. Inténtelo nuevamente.']);
+      console.error('Error guardando permisos:', error);
     } finally {
       setIsSaving(false);
     }
@@ -844,19 +896,7 @@ const CompanyPermissionsModal: React.FC<CompanyPermissionsModalProps> = ({
                             data-editing-permissions={editingGeneralPermissions === role.id ? "true" : "false"}
                           >
                             {editingGeneralPermissions === role.id ? (
-                              <GeneralPermissionsEditor
-                                currentPermissions={roleConfig?.generalAccess || ''}
-                                onSave={(newPermissions) => {
-                                  setRolePermissions(prev => prev.map(r => 
-                                    r.roleId === role.id 
-                                      ? { ...r, generalAccess: newPermissions }
-                                      : r
-                                  ));
-                                  setEditingGeneralPermissions(null);
-                                  setHasChanges(true);
-                                }}
-                                onCancel={() => setEditingGeneralPermissions(null)}
-                              />
+                              <div className="text-blue-600 font-medium">Editando...</div>
                             ) : (
                               <div 
                                 className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 rounded px-2 py-1"
@@ -876,6 +916,23 @@ const CompanyPermissionsModal: React.FC<CompanyPermissionsModalProps> = ({
             </div>
           )}
           </div>
+        
+        {/* Mensaje de éxito */}
+        {showSuccessMessage && (
+          <div className="mx-6 mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <CheckCircle className="w-4 h-4 text-green-600 mr-2" />
+                <span className="text-sm text-green-800">{successMessage}</span>
+              </div>
+              <button
+                onClick={() => setShowSuccessMessage(false)}
+                className="text-green-400 hover:text-green-600 ml-2"
+              >
+              </button>
+            </div>
+          </div>
+        )}
         
         {/* Footer fijo del modal */}
         <div className="bg-gray-50 px-6 py-4 border-t border-gray-200">
@@ -920,6 +977,15 @@ const CompanyPermissionsModal: React.FC<CompanyPermissionsModalProps> = ({
         </div>
       </div>
     </div>
+    
+    {/* GeneralPermissionsEditor como overlay */}
+    {editingGeneralPermissions && (
+      <GeneralPermissionsEditor
+        currentPermissions={rolePermissions.find(r => r.roleId === editingGeneralPermissions)?.generalAccess || ''}
+        onSave={(newPermissions) => updateRoleGeneralPermissions(editingGeneralPermissions, newPermissions)}
+        onCancel={() => setEditingGeneralPermissions(null)}
+      />
+    )}
     </div>
   );
 };
