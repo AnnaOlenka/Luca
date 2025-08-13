@@ -1694,10 +1694,6 @@ const getStatusColor = (type: string) => {
 
   // Reemplazar la función validateRuc existente
   const validateRuc = (ruc: string) => {
-    // Simular error de conexión ocasionalmente
-    if (Math.random() < 0.15) { // 15% de probabilidad
-      return 'error_conexion';
-    }
 
     const isDuplicate = empresasList.some(company => company.ruc === ruc);
     if (isDuplicate) {
@@ -1710,6 +1706,10 @@ const getStatusColor = (type: string) => {
       return 'invalid';
     }
 
+    if (rucData.status === 'error_conexion') {
+      return 'error_conexion';
+    }
+
     if (rucData.status === 'inactive' || rucData.status === 'suspended') {
       return 'inactive';
     }
@@ -1717,18 +1717,28 @@ const getStatusColor = (type: string) => {
     return 'valid';
   };
 
-    // Reemplazar la función validateCredentials existente
   const validateCredentials = (solUser: string, solPassword: string) => {
-    // Simular error de conexión ocasionalmente
-    if (Math.random() < 0.12) { // 12% de probabilidad
-      return 'error_conexion';
-    }
-
     const validCred = validCredentialsData.validCredentials.find(
       cred => cred.solUser === solUser && cred.solPassword === solPassword
     );
     
-    return validCred ? 'valid' : 'invalid';
+    if (!validCred) {
+      return 'invalid';
+    }
+
+    // Credenciales específicas que siempre devuelven error de conexión
+    const errorConnectionCredentials = ['CONEXION01', 'TIMEOUT07'];
+    if (errorConnectionCredentials.includes(solUser)) {
+      return 'error_conexion';
+    }
+
+    // También verificar si el RUC asociado tiene error de conexión
+    const rucData = validCredentialsData.validRucs.find(r => r.ruc === newCompanyForm.ruc);
+    if (rucData && rucData.status === 'error_conexion') {
+      return 'error_conexion';
+    }
+
+    return 'valid';
   };
 
   const validateForm = () => {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,useRef } from 'react';
 import { X, Edit3, Save, User, Briefcase, FileText, Shield, Calculator, Users, CheckCircle, Award, Trash2, ChevronDown, ChevronUp, Eye, EyeOff } from 'lucide-react';
 
 interface EditCompanyModalProps {
@@ -23,7 +23,9 @@ const EditCompanyModal: React.FC<EditCompanyModalProps> = ({ empresa, isOpen, on
   const [credentialsStatus, setCredentialsStatus] = useState<'valid' | 'invalid' | 'checking' | 'idle'>('idle');
   const [validationTimeout, setValidationTimeout] = useState<NodeJS.Timeout | null>(null);
  const [validationErrors, setValidationErrors] = useState<{[key: string]: string}>({});
- 
+ const currentCredentials = useRef({ usuarioSol: '', claveSol: '' });
+
+
   // Funciones de validación
   const validateEmail = (email: string): string => {
     if (!email) return '';
@@ -206,6 +208,33 @@ const EditCompanyModal: React.FC<EditCompanyModalProps> = ({ empresa, isOpen, on
     return percentage;
   };
 
+  const calculateCompletitudRealTime = (data: any, credStatus: string) => {
+  // Esta función calcula pero NO modifica el estado
+  let percentage = 0;
+  
+  // 1. Empresa creada (datos básicos) = 25%
+  if (data.nombre && data.ruc) {
+    percentage += 25;
+  }
+  
+  // 2. Clave SOL válida = 25%
+  if (credStatus === 'valid') {
+    percentage += 25;
+  }
+  
+  // 3. Datos completos del representante legal = 25%
+  if (data.representanteNombres && data.representanteDni && data.representanteEmail && data.representanteTelefono) {
+    percentage += 25;
+  }
+  
+  // 4. Datos completos del administrador = 25%
+  if (data.adminNombre && data.adminDni && data.adminEmail && data.adminTelefono) {
+    percentage += 25;
+  }
+  
+  return percentage;
+};
+
   // Función para actualizar las personas asignadas basadas en formData
   const updatePersonasData = (data: any) => {
     setPersonasData([
@@ -237,93 +266,139 @@ const EditCompanyModal: React.FC<EditCompanyModalProps> = ({ empresa, isOpen, on
   };
 
   useEffect(() => {
-    if (empresa && isOpen) {
-      const initialData = { 
-        ...empresa,
-        usuarioSol: empresa.usuarioSol || 'ROCAFUER01',
-        claveSol: empresa.claveSol || 'password123',
-        // Inicializar teléfonos si no existen
-        representanteTelefono: empresa.representanteTelefono || '',
-        adminTelefono: empresa.adminTelefono || '',
-        contadorTelefono: empresa.contadorTelefono || ''
+  if (empresa && isOpen) {
+    const initialData = { 
+      ...empresa,
+      usuarioSol: empresa.usuarioSol || 'ROCAFUER01',
+      claveSol: empresa.claveSol || 'password123',
+      // Inicializar teléfonos si no existen
+      representanteTelefono: empresa.representanteTelefono || '',
+      adminTelefono: empresa.adminTelefono || '',
+      contadorTelefono: empresa.contadorTelefono || ''
+    };
+
+    // Inicializar el ref con los valores actuales
+    currentCredentials.current = {
+      usuarioSol: initialData.usuarioSol,
+      claveSol: initialData.claveSol
+    };
+      
+    // Obtener el estado de credenciales persistido
+    const persistedCredStatus = empresa.credentialsStatus || 'idle';
+    
+    // Usar completitud existente o calcular una inicial
+    const initialCompletitud = empresa.completitud !== undefined 
+      ? empresa.completitud 
+      : calculateCompletitud(initialData, persistedCredStatus);
+    
+    const dataWithCompletitud = { 
+      ...initialData, 
+      completitud: initialCompletitud,
+      credentialsStatus: persistedCredStatus,
+      credentialsValid: persistedCredStatus === 'valid'
+    };
+    
+    setFormData(dataWithCompletitud);
+    setOriginalFormData(JSON.parse(JSON.stringify(dataWithCompletitud)));
+    setActiveTab('personas');
+    setSuccessMessage({show: false, message: '', tab: ''});
+    
+    console.log('🚀 Inicializando modal para empresa:', empresa.nombre);
+    console.log('🔑 Estado credenciales empresa:', {
+      credentialsStatus: empresa.credentialsStatus,
+      credentialsValid: empresa.credentialsValid,
+      usuarioSol: empresa.usuarioSol,
+      claveSol: empresa.claveSol,
+      persistedCredStatus
+    });
+    
+    // Establecer el estado de credenciales basado en el estado persistido
+    if (persistedCredStatus === 'invalid') {
+      console.log('🔴 Estableciendo credenciales como inválidas (persistido)');
+      setCredentialsError('Credenciales inválidas, urgente: actualice sus credenciales');
+      setCredentialsStatus('invalid');
+    } else if (persistedCredStatus === 'valid') {
+      console.log('🟢 Estableciendo credenciales como válidas (persistido)');
+      setCredentialsError('');
+      setCredentialsStatus('valid');
+    } else {
+      console.log('⚪ Credenciales en estado idle');
+      setCredentialsError('');
+      setCredentialsStatus('idle');
+    }
+    
+    // Simular datos de marcas registradas
+    setMarcasData([
+      {
+        id: '1',
+        nombreMarca: 'CONSTRUCTORA DELTA',
+        numeroRegistro: '00123456',
+        fechaInscripcion: '15/03/2020',
+        vigencia: '15/03/2030',
+        titularRegistrado: empresa.nombre || 'CONSTRUCTORA DELTA S.A.',
+        tipoInterno: 'Comercial',
+        estadoRegistro: 'Activo'
+      },
+      {
+        id: '2',
+        nombreMarca: 'DELTA BUILD',
+        numeroRegistro: '00234567',
+        fechaInscripcion: '22/08/2021',
+        vigencia: '22/08/2031',
+        titularRegistrado: empresa.nombre || 'CONSTRUCTORA DELTA S.A.',
+        tipoInterno: 'Servicio',
+        estadoRegistro: 'Activo'
+      },
+      {
+        id: '3',
+        nombreMarca: 'DELTA HOMES',
+        numeroRegistro: '00345678',
+        fechaInscripcion: '10/12/2019',
+        vigencia: '10/12/2029',
+        titularRegistrado: empresa.nombre || 'CONSTRUCTORA DELTA S.A.',
+        tipoInterno: 'Comercial',
+        estadoRegistro: 'Por Renovar'
+      }
+    ]);
+    
+    // Sincronizar datos de personas y roles con formData
+    updatePersonasData(dataWithCompletitud);
+  }
+}, [empresa, isOpen]);
+
+useEffect(() => {
+  // Calcular completitud en tiempo real para mostrar en la UI
+  // pero sin modificar formData hasta que se guarde
+  const currentCompletitud = calculateCompletitudRealTime(formData, credentialsStatus);
+  
+  // Solo actualizar la visualización si estamos en el modal
+  if (isOpen) {
+    // Actualizar solo para mostrar, no para persistir
+    console.log('📊 Completitud calculada en tiempo real:', currentCompletitud);
+  }
+}, [formData, credentialsStatus, isOpen]);
+
+  
+  useEffect(() => {
+    // Validar credenciales automáticamente cuando se abre el tab de credenciales
+    if (activeTab === 'credenciales' && isOpen && formData.usuarioSol && formData.claveSol) {
+      console.log('🔄 Validando automáticamente al entrar al tab de credenciales');
+      
+      // Actualizar el ref con los valores actuales
+      currentCredentials.current = {
+        usuarioSol: formData.usuarioSol,
+        claveSol: formData.claveSol
       };
       
-      // Obtener el estado de credenciales persistido
-      const persistedCredStatus = empresa.credentialsStatus || 'idle';
-      
-      // Calcular completitud inicial usando el estado persistido
-      const initialCompletitud = calculateCompletitud(initialData, persistedCredStatus);
-      const dataWithCompletitud = { ...initialData, completitud: initialCompletitud };
-      
-      setFormData(dataWithCompletitud);
-      setOriginalFormData(JSON.parse(JSON.stringify(dataWithCompletitud))); // Deep copy
-      setActiveTab('personas');
-      setSuccessMessage({show: false, message: '', tab: ''});
-      
-      console.log('🚀 Inicializando modal para empresa:', empresa.nombre);
-      console.log('🔑 Estado credenciales empresa:', {
-        credentialsStatus: empresa.credentialsStatus,
-        credentialsValid: empresa.credentialsValid,
-        usuarioSol: empresa.usuarioSol,
-        claveSol: empresa.claveSol,
-        persistedCredStatus
-      });
-      
-      // Establecer el estado de credenciales basado en el estado persistido
-      if (persistedCredStatus === 'invalid') {
-        console.log('🔴 Estableciendo credenciales como inválidas (persistido)');
-        setCredentialsError('Credenciales inválidas, urgente: actualice sus credenciales');
-        setCredentialsStatus('invalid');
-      } else if (persistedCredStatus === 'valid') {
-        console.log('🟢 Estableciendo credenciales como válidas (persistido)');
-        setCredentialsError('');
-        setCredentialsStatus('valid');
-      } else {
-        console.log('⚪ Credenciales en estado idle');
-        setCredentialsError('');
-        setCredentialsStatus('idle');
-      }
-      
-      // Simular datos de marcas registradas
-      setMarcasData([
-        {
-          id: '1',
-          nombreMarca: 'CONSTRUCTORA DELTA',
-          numeroRegistro: '00123456',
-          fechaInscripcion: '15/03/2020',
-          vigencia: '15/03/2030',
-          titularRegistrado: empresa.nombre || 'CONSTRUCTORA DELTA S.A.',
-          tipoInterno: 'Comercial',
-          estadoRegistro: 'Activo'
-        },
-        {
-          id: '2',
-          nombreMarca: 'DELTA BUILD',
-          numeroRegistro: '00234567',
-          fechaInscripcion: '22/08/2021',
-          vigencia: '22/08/2031',
-          titularRegistrado: empresa.nombre || 'CONSTRUCTORA DELTA S.A.',
-          tipoInterno: 'Servicio',
-          estadoRegistro: 'Activo'
-        },
-        {
-          id: '3',
-          nombreMarca: 'DELTA HOMES',
-          numeroRegistro: '00345678',
-          fechaInscripcion: '10/12/2019',
-          vigencia: '10/12/2029',
-          titularRegistrado: empresa.nombre || 'CONSTRUCTORA DELTA S.A.',
-          tipoInterno: 'Comercial',
-          estadoRegistro: 'Por Renovar'
-        }
-      ]);
-      
-      // Sincronizar datos de personas y roles con formData
-      updatePersonasData(dataWithCompletitud);
+      // Validar automáticamente después de un pequeño delay
+      setTimeout(() => {
+        validateCredentialsRealTime(formData.usuarioSol, formData.claveSol);
+      }, 100);
     }
-  }, [empresa, isOpen]);
+  }, [activeTab, isOpen]); // Ejecutar cuando cambie el tab activo
 
   if (!isOpen || !empresa) return null;
+
 
   const tabs = [
     { id: 'credenciales', label: 'Credenciales SUNAT', icon: FileText },
@@ -365,167 +440,204 @@ const EditCompanyModal: React.FC<EditCompanyModalProps> = ({ empresa, isOpen, on
     setFormData(newFormData);
   };
 
-  const handleSave = async () => {
-    // Verificar si hay cambios
-    const hasChanges = JSON.stringify(formData) !== JSON.stringify(originalFormData);
-    
-    if (!hasChanges) {
-      return; // No hacer nada si no hay cambios
-    }
-    
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    // Calcular nuevo porcentaje de completitud (permitir campos vacíos)
-    const newCompletitud = calculateCompletitud(formData, credentialsStatus);
-    
-    // IMPORTANTE: Cuando es el tab de credenciales, incluir el estado actual de validación
-    let updatedFormData;
-    if (activeTab === 'credenciales') {
-      updatedFormData = { 
-        ...formData, 
-        completitud: newCompletitud,
-        credentialsStatus: credentialsStatus,
-        credentialsValid: credentialsStatus === 'valid'
-      };
-    } else {
-      updatedFormData = { ...formData, completitud: newCompletitud };
-    }
-    setFormData(updatedFormData);
-    
-    // Actualizar personas asignadas
+  // 1. MODIFICAR la función validateCredentialsRealTime
+// Reemplaza toda la función con esta versión:
+
+// 2. MODIFICAR la función handleSave para incluir completitud SOLO al guardar
+// Reemplaza la función con esta versión:
+
+const handleSave = async () => {
+  // Verificar si hay cambios
+  const hasChanges = JSON.stringify(formData) !== JSON.stringify(originalFormData);
+  
+  if (!hasChanges) {
+    return; // No hacer nada si no hay cambios
+  }
+  
+  await new Promise(resolve => setTimeout(resolve, 500));
+  
+  // Calcular nuevo porcentaje de completitud SOLO al guardar
+  const newCompletitud = calculateCompletitud(formData, credentialsStatus);
+  
+  // IMPORTANTE: Cuando es el tab de credenciales, incluir el estado actual de validación
+  let updatedFormData;
+  if (activeTab === 'credenciales') {
+    updatedFormData = { 
+      ...formData, 
+      completitud: newCompletitud,
+      credentialsStatus: credentialsStatus,
+      credentialsValid: credentialsStatus === 'valid'
+    };
+  } else {
+    updatedFormData = { ...formData, completitud: newCompletitud };
+  }
+  setFormData(updatedFormData);
+  
+  // Actualizar personas asignadas solo si no es tab de credenciales
+  if (activeTab !== 'credenciales') {
     updatePersonasData(updatedFormData);
-    
-    // Mostrar mensaje de éxito (siempre mostrar si hay cambios, incluso si son vacíos)
-    const successMsg = activeTab === 'credenciales' ? 'Credenciales actualizadas correctamente' : 'Se han guardado los cambios correctamente';
-    setSuccessMessage({show: true, message: successMsg, tab: activeTab});
-    
-    // Actualizar el estado original con los nuevos datos
-    setOriginalFormData(JSON.parse(JSON.stringify(updatedFormData)));
-    
-    // Si es el tab de credenciales, AHORA SI guardar permanentemente los cambios
-    if (activeTab === 'credenciales') {
-      console.log('💾 Guardando credenciales en empresa padre:', {
-        credentialsStatus: updatedFormData.credentialsStatus,
-        credentialsValid: updatedFormData.credentialsValid,
-        usuarioSol: updatedFormData.usuarioSol,
-        claveSol: updatedFormData.claveSol
-      });
-      onSave(updatedFormData);
-    }
-    
-    // Ocultar mensaje después de 3 segundos
-    setTimeout(() => {
-      setSuccessMessage({show: false, message: '', tab: ''});
-    }, 3000);
-  };
+  }
+  
+  // Mostrar mensaje de éxito
+  const successMsg = activeTab === 'credenciales' ? 'Credenciales actualizadas correctamente' : 'Se han guardado los cambios correctamente';
+  setSuccessMessage({show: true, message: successMsg, tab: activeTab});
+  
+  // Actualizar el estado original con los nuevos datos
+  setOriginalFormData(JSON.parse(JSON.stringify(updatedFormData)));
+  
+  // Si es el tab de credenciales, guardar permanentemente los cambios
+  if (activeTab === 'credenciales') {
+    console.log('💾 Guardando credenciales en empresa padre:', {
+      credentialsStatus: updatedFormData.credentialsStatus,
+      credentialsValid: updatedFormData.credentialsValid,
+      usuarioSol: updatedFormData.usuarioSol,
+      claveSol: updatedFormData.claveSol
+    });
+    onSave(updatedFormData);
+  }
+  
+  // Ocultar mensaje después de 3 segundos
+  setTimeout(() => {
+    setSuccessMessage({show: false, message: '', tab: ''});
+  }, 3000);
+};
   
   // Función para guardar al cerrar el modal si hay cambios pendientes
   const handleModalClose = () => {
-    const hasChanges = JSON.stringify(formData) !== JSON.stringify(originalFormData);
-    if (hasChanges) {
-      // Guardar cambios automáticamente al cerrar
-      const newCompletitud = calculateCompletitud(formData, credentialsStatus);
-      const updatedFormData = { ...formData, completitud: newCompletitud };
-      onSave(updatedFormData);
-    }
-    onClose();
-  };
+  const hasChanges = JSON.stringify(formData) !== JSON.stringify(originalFormData);
   
+  // Crear datos actualizados con el estado actual de credenciales
+  let updatedFormData = { ...formData };
   
-  const validateCredentialsRealTime = async (usuario: string, clave: string) => {
-    console.log('🔍 validateCredentialsRealTime llamada con:', { usuario, clave });
-    
-    if (!usuario || !clave) {
-      console.log('❌ Falta usuario o clave, limpiando estado');
-      setCredentialsStatus('idle');
-      setCredentialsError('');
-      
-      // Actualizar formData para reflejar cambio en la barra de progreso (temporal, no persistido)
-      const newCompletitud = calculateCompletitud(formData, 'idle');
-      const updatedFormData = { ...formData, completitud: newCompletitud, credentialsStatus: 'idle', credentialsValid: false };
-      setFormData(updatedFormData);
-      return;
-    }
-    
-    console.log('⏳ Iniciando validación en tiempo real...');
-    setCredentialsStatus('checking');
-    setCredentialsError('');
-    
-    try {
-      // Simular validación en tiempo real (más rápida)
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      // Solo estos usuarios/claves son inválidos
-      const isInvalidUser = usuario.toUpperCase() === 'USUARIOMAL';
-      const isInvalidPassword = clave === 'CLAVEMAL';
-      const isInvalid = isInvalidUser || isInvalidPassword;
-      
-      console.log('🧪 Validación result:', { 
-        usuario: usuario.toUpperCase(), 
-        clave, 
-        isInvalidUser,
-        isInvalidPassword,
-        isInvalid 
-      });
-      
-      if (isInvalid) {
-        console.log('❌ Credenciales inválidas');
-        setCredentialsError('Credenciales inválidas, urgente: actualice sus credenciales');
-        setCredentialsStatus('invalid');
-        
-        // Actualizar formData para reflejar cambio en la barra de progreso (temporal, no persistido)
-        const newCompletitud = calculateCompletitud(formData, 'invalid');
-        const updatedFormData = { ...formData, completitud: newCompletitud, credentialsStatus: 'invalid', credentialsValid: false };
-        setFormData(updatedFormData);
-      } else {
-        console.log('✅ Credenciales VÁLIDAS - limpiando error');
-        setCredentialsError('');
-        setCredentialsStatus('valid');
-        
-        // Actualizar formData para reflejar cambio en la barra de progreso (temporal, no persistido)
-        const newCompletitud = calculateCompletitud(formData, 'valid');
-        const updatedFormData = { ...formData, completitud: newCompletitud, credentialsStatus: 'valid', credentialsValid: true };
-        setFormData(updatedFormData);
-      }
-    } catch (error) {
-      console.log('💥 Error en validación:', error);
-      setCredentialsError('Error al validar credenciales');
-      setCredentialsStatus('invalid');
-    }
-  };
+  // Si hay cambios O si el estado de credenciales ha cambiado, guardar
+  const credentialsChanged = (
+    originalFormData.credentialsStatus !== credentialsStatus ||
+    originalFormData.usuarioSol !== formData.usuarioSol ||
+    originalFormData.claveSol !== formData.claveSol
+  );
   
-  const handleCredentialChange = (field: 'usuarioSol' | 'claveSol', value: string) => {
-    console.log('📝 handleCredentialChange:', { field, value });
-    console.log('📋 formData antes:', { usuarioSol: formData.usuarioSol, claveSol: formData.claveSol });
+  if (hasChanges || credentialsChanged) {
+    console.log('💾 Guardando cambios al cerrar modal:', {
+      hasChanges,
+      credentialsChanged,
+      currentCredentialsStatus: credentialsStatus
+    });
     
-    handleInputChange(field, value);
+    // Calcular completitud y agregar estado de credenciales
+    const newCompletitud = calculateCompletitud(formData, credentialsStatus);
+    updatedFormData = { 
+      ...updatedFormData, 
+      completitud: newCompletitud,
+      credentialsStatus: credentialsStatus,
+      credentialsValid: credentialsStatus === 'valid'
+    };
     
-    // Cancelar timeout anterior
+    onSave(updatedFormData);
+  }
+  
+  onClose();
+};
+
+const handleTabChange = (newTab: string) => {
+  // Si estamos saliendo del tab de credenciales, limpiar timeout si existe
+  if (activeTab === 'credenciales' && newTab !== 'credenciales') {
+    console.log('🔄 Saliendo del tab de credenciales, limpiando timeout');
     if (validationTimeout) {
       clearTimeout(validationTimeout);
+      setValidationTimeout(null);
     }
+  }
+  
+  setActiveTab(newTab);
+};
+  
+const validateCredentialsRealTime = async (usuario: string, clave: string) => {
+  console.log('🔍 validateCredentialsRealTime llamada con:', { usuario, clave });
+  
+  if (!usuario || !clave) {
+    console.log('❌ Falta usuario o clave, manteniendo estado anterior o poniendo idle');
+    // Si no hay credenciales, mantener idle (no cambiar si ya tenía un estado)
+    if (credentialsStatus !== 'idle') {
+      setCredentialsStatus('idle');
+      setCredentialsError('');
+    }
+    return;
+  }
+  
+  console.log('⏳ Iniciando validación en tiempo real...');
+  setCredentialsStatus('checking');
+  setCredentialsError('');
+  
+  try {
+    // Simular validación en tiempo real (más rápida)
+    await new Promise(resolve => setTimeout(resolve, 300));
     
-    // Configurar nuevo timeout para validación automática
-    const newTimeout = setTimeout(() => {
-      // ARREGLO: Usar el valor actualizado del campo que cambió, no el formData anterior
-      const usuario = field === 'usuarioSol' ? value : formData.usuarioSol;
-      const clave = field === 'claveSol' ? value : formData.claveSol;
-      
-      console.log('⚡ Timeout ejecutado, valores finales:', { usuario, clave });
-      
-      // Validación inmediata si tenemos usuario y clave
-      if (usuario && clave) {
-        validateCredentialsRealTime(usuario, clave);
-      } else {
-        console.log('⚠️ Faltan campos, limpiando estado');
-        // Si falta algún campo, limpiar el estado
-        setCredentialsStatus('idle');
-        setCredentialsError('');
-      }
-    }, 500); // Validar después de 0.5 segundos sin escribir
+    // Solo estos usuarios/claves son inválidos
+    const isInvalidUser = usuario.toUpperCase() === 'USUARIOMAL';
+    const isInvalidPassword = clave === 'CLAVEMAL';
+    const isInvalid = isInvalidUser || isInvalidPassword;
     
-    setValidationTimeout(newTimeout);
+    console.log('🧪 Validación result:', { 
+      usuario: usuario.toUpperCase(), 
+      clave, 
+      isInvalidUser,
+      isInvalidPassword,
+      isInvalid,
+      previousStatus: credentialsStatus
+    });
+    
+    if (isInvalid) {
+      console.log('❌ Credenciales inválidas - marcando como inválidas');
+      setCredentialsError('Credenciales inválidas, urgente: actualice sus credenciales');
+      setCredentialsStatus('invalid');
+    } else {
+      console.log('✅ Credenciales VÁLIDAS - marcando como válidas');
+      setCredentialsError('');
+      setCredentialsStatus('valid');
+    }
+  } catch (error) {
+    console.log('💥 Error en validación:', error);
+    setCredentialsError('Error al validar credenciales');
+    setCredentialsStatus('invalid');
+  }
+};
+  
+  const handleCredentialChange = (field: 'usuarioSol' | 'claveSol', value: string) => {
+  console.log('📝 handleCredentialChange:', { field, value });
+  
+  // Actualizar el ref inmediatamente
+  currentCredentials.current = {
+    ...currentCredentials.current,
+    [field]: value
   };
+  
+  handleInputChange(field, value);
+  
+  // Cancelar timeout anterior
+  if (validationTimeout) {
+    clearTimeout(validationTimeout);
+  }
+  
+  // Configurar nuevo timeout para validación automática
+  const newTimeout = setTimeout(() => {
+    // Usar los valores del ref que se mantienen actualizados
+    const usuario = currentCredentials.current.usuarioSol;
+    const clave = currentCredentials.current.claveSol;
+    
+    console.log('⚡ Timeout ejecutado, valores del ref:', { usuario, clave });
+    
+    // Validación inmediata si tenemos usuario y clave
+    if (usuario && clave) {
+      validateCredentialsRealTime(usuario, clave);
+    } else {
+      console.log('⚠️ Faltan campos, limpiando estado');
+      setCredentialsStatus('idle');
+      setCredentialsError('');
+    }
+  }, 800); // También puedes aumentar a 800ms o 1000ms si quieres más tiempo
+  
+  setValidationTimeout(newTimeout);
+};
   
   const handlePersonaSave = (personaId: string) => {
     // Actualizar los datos de personas en formData
@@ -1738,7 +1850,20 @@ const EditCompanyModal: React.FC<EditCompanyModalProps> = ({ empresa, isOpen, on
               <Edit3 className="w-6 h-6" />
               <div>
                 <h2 className="text-lg font-bold">Editar Empresa</h2>
-                <p className="text-blue-100 text-sm">{empresa.nombre}</p>
+                <div>
+                  <p className="text-blue-100 text-sm">{empresa.nombre}</p>
+                  <div className="flex items-center space-x-2 mt-1">
+                    <div className="bg-blue-500 rounded-full h-2 w-32">
+                      <div 
+                        className="bg-white rounded-full h-2 transition-all duration-300" 
+                        style={{ width: `${calculateCompletitudRealTime(formData, credentialsStatus)}%` }}
+                      ></div>
+                    </div>
+                    <span className="text-blue-100 text-xs">
+                      {calculateCompletitudRealTime(formData, credentialsStatus)}% completo
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
             <button 
@@ -1763,7 +1888,7 @@ const EditCompanyModal: React.FC<EditCompanyModalProps> = ({ empresa, isOpen, on
               return (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
+                  onClick={() => handleTabChange(tab.id)}
                   className={`flex items-center space-x-2 px-4 py-2 text-sm font-medium rounded-md transition-colors flex-1 justify-center relative ${
                     isActive 
                       ? 'bg-white text-blue-600 shadow-sm' 
