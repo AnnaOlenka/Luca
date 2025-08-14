@@ -2275,7 +2275,7 @@ const getStatusColor = (type: string) => {
             {/* Search Bar and Filter */}
             <div className="flex items-center space-x-3 flex-1">
               <div className="relative flex-1 max-w-md">
-                <div className="absolute inset-y-0 left-0 flex items-center pl-3">
+                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                   <Search className="w-4 h-4 text-gray-400" />
                 </div>
                 <input
@@ -2283,10 +2283,10 @@ const getStatusColor = (type: string) => {
                   placeholder="Buscar por nombre o RUC de empresa..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  style={{ paddingLeft: '2.5rem' }}
                 />
               </div>
-              
               {/* Filter */}
               <select 
                 value={filterEstado}
@@ -2366,16 +2366,18 @@ const getStatusColor = (type: string) => {
                         type="text"
                         value={newCompanyForm.ruc}
                         onChange={(e) => handleFormInputChange('ruc', e.target.value.replace(/\D/g, '').slice(0, 11))}
-                        className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                        className={`w-full pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                           validationState.ruc === 'invalid' || validationState.ruc === 'duplicate' ? 'border-red-500' :
                           validationState.ruc === 'valid' ? 'border-green-500' :
                           validationState.ruc === 'inactive' ? 'border-yellow-500' :
-                          validationState.ruc === 'validating' ? 'border-blue-500' : 
+                          validationState.ruc === 'validating' ? 'border-blue-500' :
                           validationState.ruc === 'error_conexion' ? 'border-orange-500' : 'border-gray-300'
                         }`}
+                        style={{ paddingLeft: '1rem' }}
                         placeholder="20123456789"
                         maxLength={11}
                       />
+
                       <div className="absolute inset-y-0 right-0 flex items-center pr-3">
                         {validationState.ruc === 'validating' && (
                           <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>

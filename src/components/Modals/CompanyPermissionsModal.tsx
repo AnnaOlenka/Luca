@@ -658,13 +658,22 @@ const CompanyPermissionsModal: React.FC<CompanyPermissionsModalProps> = ({
                 <div className="flex items-center justify-between ">
                   <div className="flex items-center space-x-4">
                     <div className="relative ">
-                      <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                      <Search 
+                        className="w-5 h-5 text-gray-400" 
+                        style={{
+                          position: 'absolute',
+                          left: '0.75rem',
+                          top: '50%',
+                          transform: 'translateY(-50%)'
+                        }}
+                      />
                       <input
                         type="text"
                         placeholder="Buscar usuarios..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-9 pr-4 py-1 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="pr-4 py-1 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        style={{ paddingLeft: '2.5rem' }}
                       />
                     </div>
 
