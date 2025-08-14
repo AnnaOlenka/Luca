@@ -328,7 +328,7 @@ const EditCompanyModal: React.FC<EditCompanyModalProps> = ({ empresa, isOpen, on
     
     setFormData(dataWithCompletitud);
     setOriginalFormData(JSON.parse(JSON.stringify(dataWithCompletitud)));
-    setActiveTab('personas');
+    setActiveTab('credenciales');
     setSuccessMessage({show: false, message: '', tab: ''});
     
     console.log('🚀 Inicializando modal para empresa:', empresa.nombre);
@@ -1553,19 +1553,6 @@ const validateCredentialsRealTime = async (usuario: string, clave: string) => {
                     </div>
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Régimen Tributario</label>
-                    <select
-                      value={formData.regimenTributario || ''}
-                      onChange={(e) => handleInputChange('regimenTributario', e.target.value)}
-                      className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-orange-500"
-                    >
-                      <option value="">Seleccionar régimen</option>
-                      <option value="GENERAL">Régimen General</option>
-                      <option value="MYPE">Régimen MYPE Tributario</option>
-                      <option value="RUS">Régimen Único Simplificado</option>
-                    </select>
-                  </div>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
                       <label className="block text-xs font-medium text-gray-700 mb-1">% Renta Anual Estimado</label>

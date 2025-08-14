@@ -2759,7 +2759,7 @@ const getStatusColor = (type: string) => {
                       className="fixed inset-0 z-30"
                       onClick={() => setOpenDropdownId(null)}
                     />
-                    <div className="absolute right-0 top-full mt-1 w-58 bg-white border border-gray-200 rounded-lg shadow-xl z-40">
+                    <div className="absolute right-0 top-full mt-1 w-58 bg-white border border-gray-200 rounded-lg shadow-xl z-40" style={{width: '200px'}}>
                       <button
                         onClick={() =>
                           handleAction('permisos', empresa.id, empresa.nombre)
