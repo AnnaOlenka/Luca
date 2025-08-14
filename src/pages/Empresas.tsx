@@ -471,13 +471,22 @@ const ListaPersonasPopover: React.FC<{
 {/* Búsqueda compacta */}
 <div className="px-4 py-1 border-b border-gray-200">
   <div className="relative">
-    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+    <Search 
+      className="text-gray-400 w-4 h-4" 
+      style={{
+        position: 'absolute',
+        left: '0.75rem',
+        top: '50%',
+        transform: 'translateY(-50%)'
+      }}
+    />
     <input
       type="text"
       placeholder="Buscar miembros"
       value={searchTerm}
       onChange={(e) => setSearchTerm(e.target.value)}
-      className="w-full h-4 pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+      className="w-full h-4 pr-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+      style={{ paddingLeft: '2.5rem' }}
     />
   </div>
 </div>
