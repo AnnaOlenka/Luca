@@ -1,5 +1,8 @@
 import React, { useState, useEffect,useRef } from 'react';
 import { X, Edit3, Save, User, Briefcase, FileText, Shield, Calculator, Users, CheckCircle, Award, Trash2, ChevronDown, ChevronUp, Eye, EyeOff } from 'lucide-react';
+import AutoDiscoveryNotification from '../Notifications/AutoDiscoveryNotification';
+import RelatedCompaniesModal from './RelatedCompaniesModal';
+import { discoverRelatedCompanies, shouldTriggerDiscovery, type RelatedCompany } from '../../utils/companyDiscovery';
 
 interface EditCompanyModalProps {
   empresa: any;
@@ -22,6 +25,11 @@ const EditCompanyModal: React.FC<EditCompanyModalProps> = ({ empresa, isOpen, on
   const [validationTimeout, setValidationTimeout] = useState<NodeJS.Timeout | null>(null);
  const [validationErrors, setValidationErrors] = useState<{[key: string]: string}>({});
  const currentCredentials = useRef({ usuarioSol: '', claveSol: '' });
+
+  // Estados para auto-descubrimiento
+  const [showAutoDiscovery, setShowAutoDiscovery] = useState(false);
+  const [relatedCompanies, setRelatedCompanies] = useState<RelatedCompany[]>([]);
+  const [discoveredPersonName, setDiscoveredPersonName] = useState('');
 
 
   // Funciones de validación
@@ -288,8 +296,11 @@ const EditCompanyModal: React.FC<EditCompanyModalProps> = ({ empresa, isOpen, on
       ...empresa,
       usuarioSol: empresa.usuarioSol || 'ROCAFUER01',
       claveSol: empresa.claveSol || 'password123',
-      // Inicializar teléfonos si no existen
-      representanteTelefono: empresa.representanteTelefono || '',
+      // Agregar datos de muestra para Juan Carlos Pérez y inicializar teléfonos
+      representanteNombres: empresa.representanteNombres || 'Juan Carlos Pérez',
+      representanteDni: empresa.representanteDni || '12345678',
+      representanteEmail: empresa.representanteEmail || 'juan.perez@email.com',
+      representanteTelefono: empresa.representanteTelefono || '999123456',
       adminTelefono: empresa.adminTelefono || '',
       contadorTelefono: empresa.contadorTelefono || ''
     };
@@ -627,7 +638,7 @@ const validateCredentialsRealTime = async (usuario: string, clave: string) => {
   setValidationTimeout(newTimeout);
 };
   
-  const handlePersonaSave = (personaId: string) => {
+  const handlePersonaSave = async (personaId: string) => {
     // Actualizar los datos de personas en formData
     const persona = personasData.find(p => p.id === personaId);
     if (persona) {
@@ -667,6 +678,11 @@ const validateCredentialsRealTime = async (usuario: string, clave: string) => {
       
       // Actualizar personas asignadas
       updatePersonasData(updatedFormData);
+
+      // Verificar si el representante/administrador/contador puede tener empresas relacionadas
+      if (persona.nombre && shouldTriggerDiscovery(persona.nombre)) {
+        await triggerAutoDiscovery(persona.nombre);
+      }
     }
     
     setSuccessMessage({show: true, message: 'Se han guardado los cambios correctamente', tab: 'personas'});
@@ -674,6 +690,112 @@ const validateCredentialsRealTime = async (usuario: string, clave: string) => {
     setTimeout(() => {
       setSuccessMessage({show: false, message: '', tab: ''});
     }, 3000);
+  };
+
+  // Funciones para auto-descubrimiento
+  const triggerAutoDiscovery = async (personName: string) => {
+    try {
+      const companies = await discoverRelatedCompanies(personName);
+      
+      if (companies.length > 0) {
+        setRelatedCompanies(companies);
+        setDiscoveredPersonName(personName);
+        setShowAutoDiscovery(true);
+      }
+    } catch (error) {
+      console.error('Error en auto-descubrimiento:', error);
+    }
+  };
+
+  const handleViewRelatedCompaniesDetails = () => {
+    console.log('🔍 Ver Detalles clicked, datos:', {
+      companies: relatedCompanies,
+      personName: discoveredPersonName,
+      empresa: empresa?.nombre
+    });
+    
+    // Cerrar AutoDiscovery y EditCompanyModal
+    setShowAutoDiscovery(false);
+    onClose();
+    
+    // Emitir evento para mostrar RelatedCompaniesModal en Empresas.tsx
+    setTimeout(() => {
+      console.log('📡 Emitiendo evento showRelatedCompaniesModal');
+      window.dispatchEvent(new CustomEvent('showRelatedCompaniesModal', { 
+        detail: { 
+          companies: relatedCompanies,
+          personName: discoveredPersonName,
+          empresa: empresa
+        } 
+      }));
+    }, 200);
+  };
+
+
+  const handleAddRelatedCompanies = (companies: RelatedCompany[]) => {
+    // Agregar las empresas relacionadas como nuevas empresas en el listado
+    const newCompanies = companies.map((company, index) => ({
+      id: company.id,
+      nombre: company.nombre,
+      ruc: company.ruc,
+      estado: "Activo", // Estado por defecto
+      condicion: "Habido", // Condición por defecto
+      completitud: 20, // Completitud básica
+      logo: null,
+      usuarioSol: "",
+      claveSol: "",
+      credentialsStatus: "idle" as const,
+      credentialsValid: false,
+      // Agregar información del representante que desencadenó el descubrimiento
+      discoveredBy: discoveredPersonName,
+      discoveredFrom: empresa.nombre,
+      // Agregar propiedades adicionales requeridas por Empresas.tsx
+      personas: [
+        { 
+          id: 1, 
+          nombre: discoveredPersonName, 
+          iniciales: discoveredPersonName.split(' ').map(n => n[0]).join('').toUpperCase(), 
+          cargo: "Representante Legal", 
+          estado: "activo" as const 
+        }
+      ],
+      tendencia: { 
+        porcentaje: 0, 
+        direccion: "up" as const, 
+        datos: [20, 20, 20, 20, 20, 20]
+      },
+      semaforoTributario: { 
+        estado: "green" as const,
+        texto: "Empresa nueva"
+      },
+      proximaObligacion: { 
+        tipo: "IGV", 
+        mes: "Próximo mes", 
+        diasRestantes: 30, 
+        vencido: false
+      }
+    }));
+
+    // Emitir evento personalizado para notificar a empresas.tsx
+    window.dispatchEvent(new CustomEvent('addDiscoveredCompanies', { 
+      detail: newCompanies 
+    }));
+
+    // Mostrar mensaje de confirmación
+    const companiesText = newCompanies.length === 1 ? 'empresa vinculada' : 'empresas vinculadas';
+    setSuccessMessage({
+      show: true, 
+      message: `Se ha${newCompanies.length === 1 ? '' : 'n'} añadido ${newCompanies.length} ${companiesText}`, 
+      tab: 'personas'
+    });
+
+    // Cerrar modal de AutoDiscovery
+    setShowAutoDiscovery(false);
+
+    // Auto-ocultar mensaje después de 4 segundos
+    setTimeout(() => {
+      setSuccessMessage({show: false, message: '', tab: ''});
+    }, 4000);
   };
   
 
@@ -1687,6 +1809,17 @@ const validateCredentialsRealTime = async (usuario: string, clave: string) => {
           )}
         </div>
       </div>
+
+      {/* Auto-discovery modals */}
+      <AutoDiscoveryNotification
+        isVisible={showAutoDiscovery}
+        personName={discoveredPersonName}
+        relatedCompanies={relatedCompanies}
+        onClose={() => setShowAutoDiscovery(false)}
+        onViewDetails={handleViewRelatedCompaniesDetails}
+        onAddAll={handleAddRelatedCompanies}
+      />
+
     </div>
   );
 };

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, Users, AlertCircle, Save, UserPlus, Search, Trash2, UserCheck, Crown, Calculator, Plus, ChevronDown, Settings, FileText, User as UserIcon, Edit, CheckCircle } from 'lucide-react';
+import RelatedCompaniesModal from './RelatedCompaniesModal';
 
 interface User {
   id: string;
@@ -301,6 +302,8 @@ const CompanyPermissionsModal: React.FC<CompanyPermissionsModalProps> = ({
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
 
+  const [showRelatedCompaniesModal, setShowRelatedCompaniesModal] = useState(false);
+
   const roleOptions: RoleOption[] = [
     {
       id: 'gerente_apoderado',
@@ -505,7 +508,7 @@ const CompanyPermissionsModal: React.FC<CompanyPermissionsModalProps> = ({
     setErrors([]);
   };
 
-  const handleAddUsers = (users: User[]) => {
+  const handleAddUsers = async (users: User[]) => {
     // Añadir usuarios sin rol asignado (se asignará en la tabla)
     const newUsers = users.map(user => ({ ...user, role: '' }));
     setAssignedUsers(prev => [...prev, ...newUsers]);
@@ -513,6 +516,8 @@ const CompanyPermissionsModal: React.FC<CompanyPermissionsModalProps> = ({
     setErrors([]);
     setShowAddUserModal(false);
   };
+
+
 
   const handleSave = async () => {
     const validationErrors = validateUsers();
@@ -986,6 +991,15 @@ const CompanyPermissionsModal: React.FC<CompanyPermissionsModalProps> = ({
         onCancel={() => setEditingGeneralPermissions(null)}
       />
     )}
+
+    <RelatedCompaniesModal
+      isOpen={showRelatedCompaniesModal}
+      onClose={() => setShowRelatedCompaniesModal(false)}
+      personName=""
+      relatedCompanies={[]}
+      onAddSelected={() => {}}
+      onAddAll={() => {}}
+    />
     </div>
   );
 };

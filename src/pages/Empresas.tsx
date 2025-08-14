@@ -6,6 +6,9 @@ import DeleteConfirmModal from '../components/Modals/DeleteConfirmModal';
 import EditCompanyModal from '../components/Modals/EditCompanyModal';
 import CompanyPermissionsModal from '../components/Modals/CompanyPermissionsModal';
 import ModalMarcas from '../components/Modals/ModalMarcas';
+import PerfilEmpresarialModal from '../components/Modals/PerfilEmpresarialModal';
+import RelatedCompaniesModal from '../components/Modals/RelatedCompaniesModal';
+import { type RelatedCompany } from '../utils/companyDiscovery';
 import { 
   Building2, 
   Search, 
@@ -1232,31 +1235,43 @@ const ProximaObligacion: React.FC<{
 
   const calculatePopoverPosition = (element: HTMLElement) => {
     // Validar que el elemento existe y está en el DOM
-    if (!element || !element.getBoundingClientRect) {
+    if (!element || !element.getBoundingClientRect || !document.contains(element)) {
       return { top: 0, left: 0 };
     }
     
     const rect = element.getBoundingClientRect();
-    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
     
-    // Verificar si hay suficiente espacio a la derecha para el popover
+    // Usar las coordenadas directas del viewport para evitar problemas con scroll
     const viewportWidth = window.innerWidth;
-    const popoverWidth = 320; // Ancho estimado del popover de obligación
-    const spaceToRight = viewportWidth - rect.right;
+    const viewportHeight = window.innerHeight;
+    const popoverWidth = 320;
+    const popoverHeight = 300; // Altura estimada
     
-    let leftPosition = rect.left + scrollLeft - 150;
+    // Calcular posición vertical
+    let topPosition = rect.bottom + 8; // 8px gap debajo del elemento
     
-    // Si no hay suficiente espacio a la derecha, ajustar hacia la izquierda
-    if (spaceToRight < popoverWidth) {
-      leftPosition = rect.right + scrollLeft - popoverWidth + 10;
+    // Si no hay espacio suficiente abajo, mostrar arriba
+    if (topPosition + popoverHeight > viewportHeight) {
+      topPosition = rect.top - popoverHeight - 8;
+    }
+    
+    // Calcular posición horizontal
+    let leftPosition = rect.left - 50; // Centrar aproximadamente con el elemento
+    
+    // Verificar límites horizontales
+    if (leftPosition + popoverWidth > viewportWidth - 10) {
+      // No cabe a la derecha, mover hacia la izquierda
+      leftPosition = rect.right - popoverWidth + 10;
     }
     
     // Asegurar que no se salga del borde izquierdo
     leftPosition = Math.max(10, leftPosition);
     
+    // Asegurar que no se salga del borde superior
+    topPosition = Math.max(10, topPosition);
+    
     return {
-      top: rect.bottom + scrollTop + 8,
+      top: topPosition,
       left: leftPosition,
     };
   };
@@ -1296,7 +1311,7 @@ const ProximaObligacion: React.FC<{
       </div>
 
       <ProximaObligacionPopover
-        isOpen={isPopoverOpen}
+        isOpen={isPopoverOpen && isPositionCalculated}
         onClose={() => setIsPopoverOpen(false)}
         obligacion={obligacion}
         position={popoverPosition}
@@ -1313,6 +1328,7 @@ const Empresas: React.FC<EmpresasProps> = ({ onNavigate }) => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isPermissionsModalOpen, setIsPermissionsModalOpen] = useState(false);
   const [isMarcasModalOpen, setIsMarcasModalOpen] = useState(false);
+  const [isPerfilEmpresarialModalOpen, setIsPerfilEmpresarialModalOpen] = useState(false);
   const [selectedEmpresa, setSelectedEmpresa] = useState<Empresa | null>(null);
   const [empresaToDelete, setEmpresaToDelete] = useState<Empresa | null>(null);
   const [empresaToEdit, setEmpresaToEdit] = useState<Empresa | null>(null);
@@ -1335,6 +1351,15 @@ const Empresas: React.FC<EmpresasProps> = ({ onNavigate }) => {
   });
   const [businessName, setBusinessName] = useState('');
   const [sunatInfo, setSunatInfo] = useState({ status: '', condition: '' });
+  
+  // Estados para RelatedCompaniesModal global  
+  const [showRelatedCompaniesModal, setShowRelatedCompaniesModal] = useState(false);
+  const [relatedCompaniesData, setRelatedCompaniesData] = useState<{
+    companies: RelatedCompany[];
+    personName: string;
+    sourceEmpresa: any;
+  }>({ companies: [], personName: '', sourceEmpresa: null });
+  
   const [empresasList, setEmpresasList] = useState<Empresa[]>([
     ...(empresasData.empresas as Empresa[]).map((empresa, index) => ({
       ...empresa,
@@ -1504,6 +1529,146 @@ const Empresas: React.FC<EmpresasProps> = ({ onNavigate }) => {
       )
     );
   };
+
+  // Event listener para agregar empresas descubiertas
+  useEffect(() => {
+    const handleAddDiscoveredCompanies = (event: CustomEvent) => {
+      const newCompanies = event.detail;
+      console.log('Agregando empresas descubiertas:', newCompanies);
+      
+      setEmpresasList(prevList => {
+        // Filtrar empresas que no existan ya en la lista
+        const uniqueCompanies = newCompanies.filter(
+          (newCompany: any) => !prevList.some(existingCompany => existingCompany.ruc === newCompany.ruc)
+        );
+        
+        if (uniqueCompanies.length > 0) {
+          return [...prevList, ...uniqueCompanies];
+        }
+        
+        return prevList;
+      });
+    };
+
+    const handleReopenEditCompanyModal = (event: CustomEvent) => {
+      const { empresa } = event.detail;
+      console.log('Reabriendo EditCompanyModal para:', empresa.nombre);
+      
+      // Reabrir el modal de edición de empresa
+      setEmpresaToEdit(empresa);
+      setIsEditModalOpen(true);
+    };
+
+    const handleShowRelatedCompaniesModal = (event: CustomEvent) => {
+      const { companies, personName, empresa } = event.detail;
+      console.log('📥 Evento recibido - Mostrando RelatedCompaniesModal para:', personName);
+      console.log('📊 Datos recibidos:', { companies: companies.length, personName, empresa: empresa?.nombre });
+      
+      // Configurar datos y mostrar modal
+      setRelatedCompaniesData({
+        companies,
+        personName,
+        sourceEmpresa: empresa
+      });
+      setShowRelatedCompaniesModal(true);
+      
+      console.log('✅ Modal configurado, showRelatedCompaniesModal:', true);
+    };
+
+    window.addEventListener('addDiscoveredCompanies', handleAddDiscoveredCompanies as EventListener);
+    window.addEventListener('reopenEditCompanyModal', handleReopenEditCompanyModal as EventListener);
+    window.addEventListener('showRelatedCompaniesModal', handleShowRelatedCompaniesModal as EventListener);
+    
+    return () => {
+      window.removeEventListener('addDiscoveredCompanies', handleAddDiscoveredCompanies as EventListener);
+      window.removeEventListener('reopenEditCompanyModal', handleReopenEditCompanyModal as EventListener);
+      window.removeEventListener('showRelatedCompaniesModal', handleShowRelatedCompaniesModal as EventListener);
+    };
+  }, []);
+
+  // Funciones para RelatedCompaniesModal
+  const handleCloseRelatedCompaniesModal = () => {
+    setShowRelatedCompaniesModal(false);
+    
+    // Reabrir EditCompanyModal después de cerrar
+    setTimeout(() => {
+      setEmpresaToEdit(relatedCompaniesData.sourceEmpresa);
+      setIsEditModalOpen(true);
+    }, 200);
+  };
+
+  const handleAddRelatedCompanies = (companies: RelatedCompany[]) => {
+    // Agregar las empresas relacionadas como nuevas empresas en el listado
+    const newCompanies = companies.map((company) => ({
+      id: company.id,
+      nombre: company.nombre,
+      ruc: company.ruc,
+      estado: "Activo",
+      condicion: "Habido",
+      completitud: 20,
+      logo: null,
+      usuarioSol: "",
+      claveSol: "",
+      credentialsStatus: "idle" as const,
+      credentialsValid: false,
+      discoveredBy: relatedCompaniesData.personName,
+      discoveredFrom: relatedCompaniesData.sourceEmpresa?.nombre || '',
+      personas: [
+        { 
+          id: 1, 
+          nombre: relatedCompaniesData.personName, 
+          iniciales: relatedCompaniesData.personName.split(' ').map(n => n[0]).join('').toUpperCase(), 
+          cargo: "Representante Legal", 
+          estado: "activo" as const 
+        }
+      ],
+      tendencia: { 
+        porcentaje: 0, 
+        direccion: "up" as const, 
+        datos: [20, 20, 20, 20, 20, 20]
+      },
+      semaforoTributario: { 
+        estado: "green" as const,
+        texto: "Empresa nueva"
+      },
+      proximaObligacion: { 
+        tipo: "IGV", 
+        mes: "Próximo mes", 
+        diasRestantes: 30, 
+        vencido: false
+      }
+    }));
+
+    // Agregar empresas únicas a la lista
+    setEmpresasList(prevList => {
+      const uniqueCompanies = newCompanies.filter(
+        newCompany => !prevList.some(existingCompany => existingCompany.ruc === newCompany.ruc)
+      );
+      
+      if (uniqueCompanies.length > 0) {
+        return [...prevList, ...uniqueCompanies];
+      }
+      
+      return prevList;
+    });
+
+    // Cerrar modal y reabrir EditCompanyModal
+    setShowRelatedCompaniesModal(false);
+    
+    setTimeout(() => {
+      setEmpresaToEdit(relatedCompaniesData.sourceEmpresa);
+      setIsEditModalOpen(true);
+    }, 200);
+  };
+
+  // Debug log para RelatedCompaniesModal
+  useEffect(() => {
+    console.log('🎯 RelatedCompaniesModal state changed:', { 
+      isOpen: showRelatedCompaniesModal, 
+      companies: relatedCompaniesData.companies.length,
+      personName: relatedCompaniesData.personName 
+    });
+  }, [showRelatedCompaniesModal, relatedCompaniesData]);
 
 // Agregar esta función aquí:
 const getCompletitudColor = (completitud: number) => {
@@ -1694,6 +1859,9 @@ const getStatusColor = (type: string) => {
   });
 
   const getEstadoColor = (estado: string) => {
+    if (!estado) {
+      return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
     const estadoLower = estado.toLowerCase().trim();
     switch (estadoLower) {
       case 'activo':
@@ -1755,6 +1923,13 @@ const getStatusColor = (type: string) => {
         if (empresaMarcas) {
           setSelectedEmpresa(empresaMarcas);
           setIsMarcasModalOpen(true);
+        }
+        break;
+      case 'perfil-empresarial':
+        const empresaPerfil = empresas.find(e => e.id === empresaId);
+        if (empresaPerfil) {
+          setSelectedEmpresa(empresaPerfil);
+          setIsPerfilEmpresarialModalOpen(true);
         }
         break;
       case 'editar':
@@ -2617,6 +2792,16 @@ const getStatusColor = (type: string) => {
 
                       <button
                         onClick={() =>
+                          handleAction('perfil-empresarial', empresa.id, empresa.nombre)
+                        }
+                        className="flex items-center space-x-3 w-full px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 border-t border-gray-100 transition-colors"
+                      >
+                        <FileText className="w-4 h-4" />
+                        <span>Perfil Empresarial</span>
+                      </button>
+
+                      <button
+                        onClick={() =>
                           handleAction('editar', empresa.id, empresa.nombre)
                         }
                         className="flex items-center space-x-3 w-full px-4 py-3 text-sm text-gray-700 hover:bg-yellow-50 hover:text-yellow-600 border-t border-gray-100 transition-colors"
@@ -2724,6 +2909,27 @@ const getStatusColor = (type: string) => {
         isOpen={isMarcasModalOpen}
         onClose={closeMarcasModal}
         empresa={selectedEmpresa}
+      />
+
+      {/* Perfil Empresarial Modal */}
+      <PerfilEmpresarialModal
+        isOpen={isPerfilEmpresarialModalOpen}
+        onClose={() => setIsPerfilEmpresarialModalOpen(false)}
+        empresa={selectedEmpresa ? {
+          id: selectedEmpresa.id,
+          nombre: selectedEmpresa.nombre,
+          ruc: selectedEmpresa.ruc
+        } : undefined}
+      />
+
+      {/* RelatedCompaniesModal global */}
+      <RelatedCompaniesModal
+        isOpen={showRelatedCompaniesModal}
+        onClose={handleCloseRelatedCompaniesModal}
+        personName={relatedCompaniesData.personName}
+        relatedCompanies={relatedCompaniesData.companies}
+        onAddSelected={handleAddRelatedCompanies}
+        onAddAll={handleAddRelatedCompanies}
       />
     </DashboardLayout>
   );
