@@ -80,7 +80,7 @@ const TourFloating: React.FC<TourFloatingProps> = ({
     switch (step) {
       case 1:
         return {
-          title: "Enfocar el RUC",
+          title: "Primer paso:",
           message: "Ingrese su RUC, debe contener 11 dígitos",
           showButtons: true,
           showContinue: true
@@ -140,26 +140,41 @@ const TourFloating: React.FC<TourFloatingProps> = ({
       <div 
         className="fixed z-70 animate-fade-in"
         style={{
-          top: step === 1 ? '48%' : 'auto',
-          left: step === 1 ? 'calc(50% + 220px)' : 'auto',
+          top: step === 1 ? `${rucPosition.y}%` : 'auto',
+          left: step === 1 ? `${rucPosition.x + (rucPosition.width / 2 / window.innerWidth * 100) + 2}%` : 'auto',
           transform: step === 1 ? 'translateY(-50%)' : 'none',
           bottom: step !== 1 ? '6px' : 'auto',
           right: step !== 1 ? '24px' : 'auto'
         }}
       >
-        <div className="bg-white rounded-lg shadow-xl border border-gray-200 p-6 max-w-sm">
+        <div className="bg-blue-600 rounded-lg shadow-xl p-6 max-w-sm relative">
+          {/* Triangle pointer - only for step 1 */}
+          {step === 1 && (
+            <div
+              className="absolute transform -translate-y-1/2"
+              style={{
+                top: 'calc(50% + 4px)',
+                left: '-9px',
+                width: 0,
+                height: 0,
+                borderTop: '9px solid transparent',
+                borderBottom: '9px solid transparent',
+                borderRight: '9px solid #2563eb'
+              }}
+            />
+          )}
           {/* Header */}
           <div className="flex items-start justify-between mb-4">
             <div className="flex items-center space-x-2">
               {step === 3 && (
                 <CheckCircle className="w-5 h-5 text-green-500" />
               )}
-              <h3 className="font-semibold text-gray-900">{content.title}</h3>
+              <h3 className="font-semibold text-white">{content.title}</h3>
             </div>
           </div>
 
           {/* Content */}
-          <p className="text-gray-600 text-sm mb-4">
+          <p className="text-white text-sm mb-4">
             {content.message}
           </p>
 
@@ -169,7 +184,7 @@ const TourFloating: React.FC<TourFloatingProps> = ({
               <div
                 key={i}
                 className={`h-1 flex-1 rounded-full ${
-                  i <= step ? 'bg-blue-500' : 'bg-gray-200'
+                  i <= step ? 'bg-white' : 'bg-blue-400'
                 }`}
               />
             ))}
@@ -186,9 +201,8 @@ const TourFloating: React.FC<TourFloatingProps> = ({
                     console.log('Tour Continue clicked');
                     onContinue();
                   }}
-                  className="inline-flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                  className="inline-flex items-center justify-center w-8 h-8 bg-white text-blue-600 rounded-full hover:bg-gray-100 transition-colors"
                 >
-                  <span>Continuar</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
               )}
