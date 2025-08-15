@@ -342,15 +342,15 @@ const useOnboarding = () => {
             
             // Check tour logic
             let newTourState = { ...prevState.tourState };
-            if (newValidCount >= 1 && prevState.tourState.showTourFloating && prevState.tourState.tourStep === 2) {
-              console.log('Tour logic: Company verified, advancing to step 3!', {
+            if (newValidCount >= 1 && prevState.tourState.showTourFloating && (prevState.tourState.tourStep === 2 || prevState.tourState.tourStep === 3)) {
+              console.log('Tour logic: Company verified, advancing to step 4!', {
                 newValidCount,
                 tourStep: prevState.tourState.tourStep,
                 showTourFloating: prevState.tourState.showTourFloating
               });
               newTourState = {
                 ...newTourState,
-                tourStep: 3,
+                tourStep: 4,
                 showTourFloating: true
               };
             }
@@ -460,15 +460,15 @@ const useOnboarding = () => {
             
             // Check tour logic
             let newTourState = { ...prevState.tourState };
-            if (newValidCount >= 1 && prevState.tourState.showTourFloating && prevState.tourState.tourStep === 2) {
-              console.log('Tour logic: Company verified, advancing to step 3!', {
+            if (newValidCount >= 1 && prevState.tourState.showTourFloating && (prevState.tourState.tourStep === 2 || prevState.tourState.tourStep === 3)) {
+              console.log('Tour logic: Company verified, advancing to step 4!', {
                 newValidCount,
                 tourStep: prevState.tourState.tourStep,
                 showTourFloating: prevState.tourState.showTourFloating
               });
               newTourState = {
                 ...newTourState,
-                tourStep: 3,
+                tourStep: 4,
                 showTourFloating: true
               };
             }
@@ -626,23 +626,199 @@ const useOnboarding = () => {
     console.log('handleTourContinue called');
     setState(prev => {
       console.log('Previous tour state:', prev.tourState);
+      let nextStep = prev.tourState.tourStep + 1;
+      
+      // If we're at step 6 and clicking continue, end the tour
+      if (prev.tourState.tourStep === 6) {
+        console.log('Tour completed at step 6, closing tour');
+        // Close the tour instead of advancing to step 7
+        const finalState = {
+          ...prev,
+          tourState: {
+            ...prev.tourState,
+            showTourFloating: false,
+            userClickedContinue: true
+          }
+        };
+        
+        // Mark tour as shown in localStorage
+        localStorage.setItem('luca-tour-shown', 'true');
+        
+        return finalState;
+      }
+      
+      // Special logic for step 3: check if credentials are validated
+      if (prev.tourState.tourStep === 3) {
+        const hasValidatedCompany = prev.companies.some(company => company.isValid);
+        if (hasValidatedCompany) {
+          // If there's a validated company, go to step 4 (congratulations)
+          nextStep = 4;
+          console.log('Step 3: Found validated company, going to step 4');
+        } else {
+          // If no validated company, skip step 4 and go directly to step 5 (add more companies)
+          nextStep = 5;
+          console.log('Step 3: No validated company, skipping to step 5');
+        }
+      }
+      
       const newState = {
         ...prev,
         tourState: {
           ...prev.tourState,
           userClickedContinue: true,
-          tourStep: 2
+          tourStep: nextStep
         }
       };
       console.log('New tour state:', newState.tourState);
       
-      // Focus RUC input after state update
+      // Focus appropriate input after state update based on step
       setTimeout(() => {
-        const rucInput = document.querySelector('input[placeholder*="RUC"]') as HTMLInputElement;
-        if (rucInput) {
-          rucInput.focus();
-          rucInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        let targetInput: HTMLInputElement | null = null;
+        
+        if (nextStep === 2) {
+          // Moving to step 2 - focus RUC input
+          targetInput = document.querySelector('input[placeholder*="RUC"]') as HTMLInputElement;
+        } else if (nextStep === 3) {
+          // Moving to step 3 - focus Contraseña SOL input, but first ensure company is expanded
+          // Look for the first company (should be the one we're working with)
+          const companyAccordions = Array.from(document.querySelectorAll('.border.border-gray-200.rounded-lg'));
+          
+          for (const accordion of companyAccordions) {
+            // Check if this accordion is collapsed (no form fields visible)
+            const hasForm = accordion.querySelector('input[placeholder*="contraseña"]');
+            if (!hasForm) {
+              // This company is collapsed, find its header and click to expand
+              const header = accordion.querySelector('.cursor-pointer') as HTMLElement;
+              if (header) {
+                console.log('Expanding collapsed company for step 3');
+                header.click();
+                break;
+              }
+            }
+          }
+          
+          // Wait for expansion, then focus
+          setTimeout(() => {
+            const targetInput = document.querySelector('input[placeholder*="contraseña"]') as HTMLInputElement;
+            if (targetInput) {
+              targetInput.focus();
+              targetInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          }, 300);
+          return newState; // Return early since we handled the focus manually
+        } else if (nextStep === 4) {
+          // Moving to step 4 - no need to focus input, step 4 focuses on validated company
+          // This will be handled by the TourFloating component automatically
+        } else if (nextStep === 5) {
+          // Moving to step 5 - focus "Agregar Nueva Empresa" button
+          const addButton = Array.from(document.querySelectorAll('button')).find(
+            button => button.textContent?.includes('Agregar Nueva Empresa')
+          ) as HTMLButtonElement;
+          if (addButton) {
+            addButton.focus();
+            addButton.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+          return newState; // Return early since we handled the focus manually
+        } else if (nextStep === 6) {
+          // Moving to step 6 - focus "Ir a la Bandeja" button
+          const bandejaButton = Array.from(document.querySelectorAll('button')).find(
+            button => button.textContent?.includes('Ir a la Bandeja')
+          ) as HTMLButtonElement;
+          if (bandejaButton) {
+            bandejaButton.focus();
+            bandejaButton.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+          return newState; // Return early since we handled the focus manually
         }
+        
+        if (targetInput) {
+          targetInput.focus();
+          targetInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
+      
+      return newState;
+    });
+  }, []);
+
+  const handleTourBack = useCallback(() => {
+    console.log('handleTourBack called');
+    setState(prev => {
+      console.log('Previous tour state:', prev.tourState);
+      let prevStep = Math.max(1, prev.tourState.tourStep - 1);
+      
+      // Special logic for going back from step 5: check if we should go to step 3 or 4
+      if (prev.tourState.tourStep === 5) {
+        const hasValidatedCompany = prev.companies.some(company => company.isValid);
+        if (hasValidatedCompany) {
+          // If there's a validated company, go back to step 4 (congratulations)
+          prevStep = 4;
+          console.log('Back from step 5: Found validated company, going back to step 4');
+        } else {
+          // If no validated company, go back to step 3 (password step)
+          prevStep = 3;
+          console.log('Back from step 5: No validated company, going back to step 3');
+        }
+      }
+      
+      const newState = {
+        ...prev,
+        tourState: {
+          ...prev.tourState,
+          tourStep: prevStep
+        }
+      };
+      console.log('New tour state (back):', newState.tourState);
+      
+      // Focus appropriate element after going back
+      setTimeout(() => {
+        if (prevStep === 1) {
+          // Going back to step 1 - focus RUC input
+          const targetInput = document.querySelector('input[placeholder*="RUC"]') as HTMLInputElement;
+          if (targetInput) {
+            targetInput.focus();
+            targetInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        } else if (prevStep === 2) {
+          // Going back to step 2 - focus Usuario SOL input
+          const targetInput = document.querySelector('input[placeholder*="usuario"]') as HTMLInputElement;
+          if (targetInput) {
+            targetInput.focus();
+            targetInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        } else if (prevStep === 3) {
+          // Going back to step 3 - need to expand the company first, then focus Contraseña SOL input
+          
+          // First, expand any validated company that is collapsed using state management
+          const validatedCompany = prev.companies.find(company => company.isValid && !company.expanded);
+          if (validatedCompany) {
+            console.log('Found collapsed validated company, expanding via state...');
+            // Expand the company via state management
+            setState(prevState => ({
+              ...prevState,
+              companies: prevState.companies.map(company => ({
+                ...company,
+                expanded: company.id === validatedCompany.id ? true : company.expanded
+              })),
+              tourState: {
+                ...prevState.tourState,
+                tourStep: prevStep
+              }
+            }));
+          }
+          
+          // Wait longer for both state update and animation, then focus
+          setTimeout(() => {
+            const targetInput = document.querySelector('input[placeholder*="contraseña"]') as HTMLInputElement;
+            if (targetInput) {
+              targetInput.focus();
+              targetInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            } else {
+              console.log('Contraseña input not found after expansion');
+            }
+          }, 500);
+        }
+        // Add more cases as needed for other steps
       }, 100);
       
       return newState;
@@ -720,6 +896,7 @@ const useOnboarding = () => {
       expandCompany,
       initializeTour,
       handleTourContinue,
+      handleTourBack,
       handleTourSkip,
       handleTourClose,
       clearAllTimers,

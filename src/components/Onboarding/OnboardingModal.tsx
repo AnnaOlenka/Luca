@@ -125,7 +125,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({
       
       {/* Modal */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+        <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl" style={{ height: '600px', minHeight: '600px', maxHeight: '600px', display: 'flex', flexDirection: 'column' }}>
           {/* Modal Header - Fixed */}
           <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
             <div>
@@ -169,11 +169,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({
 
           {/* Scrollable Content */}
           <div className="flex-1 overflow-hidden">
-            <div className={`px-6 py-4 ${
-              state.companies.length > 5 
-                ? 'max-h-96 overflow-y-auto' 
-                : 'h-full overflow-y-auto'
-            }`}>
+            <div className="px-6 py-4 h-96 overflow-y-auto">
               {state.companies.length === 0 ? (
                 /* Empty State */
                 <div className="text-center py-12">
@@ -241,6 +237,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({
         step={state.tourState.tourStep}
         userClickedContinue={state.tourState.userClickedContinue}
         onContinue={actions.handleTourContinue}
+        onBack={actions.handleTourBack}
         onClose={actions.handleTourClose}
       />
         </>

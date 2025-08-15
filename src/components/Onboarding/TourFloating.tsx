@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { ArrowRight, CheckCircle } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle } from 'lucide-react';
 
 interface TourFloatingProps {
   isVisible: boolean;
   step: number;
   userClickedContinue: boolean;
   onContinue: () => void;
+  onBack: () => void;
   onClose: () => void;
 }
 
@@ -14,50 +15,100 @@ const TourFloating: React.FC<TourFloatingProps> = ({
   step,
   userClickedContinue,
   onContinue,
+  onBack,
   onClose
 }) => {
   const [autoCloseTimer, setAutoCloseTimer] = useState<NodeJS.Timeout | null>(null);
   const [rucPosition, setRucPosition] = useState({ x: 50, y: 57, width: 400, height: 100 });
 
-  // Calculate RUC element position dynamically
+  // Calculate element position dynamically for steps 1, 2, 3, 4, 5 and 6
   useEffect(() => {
-    if (step === 1 && isVisible) {
-      const calculateRucPosition = () => {
-        // Look for the specific RUC container div
-        const rucLabel = Array.from(document.querySelectorAll('label')).find(
-          label => label.textContent?.includes('RUC *')
-        );
+    if ((step === 1 || step === 2 || step === 3 || step === 4 || step === 5 || step === 6) && isVisible) {
+      const calculateElementPosition = () => {
+        let targetElement;
         
-        if (rucLabel) {
-          // Find the parent div with class "relative z-[100]"
-          const rucContainer = rucLabel.closest('div.relative');
-          if (rucContainer && rucContainer.classList.contains('z-[100]')) {
-            const rect = rucContainer.getBoundingClientRect();
-            const viewportWidth = window.innerWidth;
-            const viewportHeight = window.innerHeight;
-            
-            setRucPosition({
-              x: ((rect.left + rect.width / 2) / viewportWidth) * 100,
-              y: ((rect.top + rect.height / 2) / viewportHeight) * 100,
-              width: rect.width + 40, // Add some padding
-              height: rect.height + 20
-            });
+        if (step === 1) {
+          // Look for RUC label
+          const rucLabel = Array.from(document.querySelectorAll('label')).find(
+            label => label.textContent?.includes('RUC *')
+          );
+          if (rucLabel) {
+            targetElement = rucLabel.closest('div.relative');
+            if (targetElement && !targetElement.classList.contains('z-[100]')) {
+              targetElement = targetElement.closest('div.relative');
+            }
           }
+        } else if (step === 2) {
+          // Look for Usuario SOL label
+          const userLabel = Array.from(document.querySelectorAll('label')).find(
+            label => label.textContent?.includes('Usuario SOL *')
+          );
+          if (userLabel) {
+            targetElement = userLabel.parentElement;
+          }
+        } else if (step === 3) {
+          // Look for Contraseña SOL label
+          const passwordLabel = Array.from(document.querySelectorAll('label')).find(
+            label => label.textContent?.includes('Contraseña SOL *')
+          );
+          if (passwordLabel) {
+            targetElement = passwordLabel.parentElement;
+          }
+        } else if (step === 4) {
+          // Look for the validation span with "Validado: RUC y credenciales validadas"
+          const validationSpan = Array.from(document.querySelectorAll('span')).find(
+            span => span.textContent?.includes('Validado: RUC y credenciales validadas')
+          );
+          if (validationSpan) {
+            // Find the company accordion item container
+            targetElement = validationSpan.closest('.border.border-gray-200.rounded-lg') || 
+                           validationSpan.closest('.p-4') ||
+                           validationSpan.parentElement;
+          }
+        } else if (step === 5) {
+          // Look for the "Agregar Nueva Empresa" button
+          const addButton = Array.from(document.querySelectorAll('button')).find(
+            button => button.textContent?.includes('Agregar Nueva Empresa')
+          );
+          if (addButton) {
+            targetElement = addButton;
+          }
+        } else if (step === 6) {
+          // Look for the "Ir a la Bandeja" button
+          const bandejaButton = Array.from(document.querySelectorAll('button')).find(
+            button => button.textContent?.includes('Ir a la Bandeja')
+          );
+          if (bandejaButton) {
+            targetElement = bandejaButton;
+          }
+        }
+        
+        if (targetElement) {
+          const rect = targetElement.getBoundingClientRect();
+          const viewportWidth = window.innerWidth;
+          const viewportHeight = window.innerHeight;
+          
+          setRucPosition({
+            x: ((rect.left + rect.width / 2) / viewportWidth) * 100,
+            y: ((rect.top + rect.height / 2) / viewportHeight) * 100,
+            width: rect.width + 40, // Add some padding
+            height: rect.height + 30
+          });
         }
       };
 
       // Calculate position immediately
-      calculateRucPosition();
+      calculateElementPosition();
       
       // Add event listeners for dynamic recalculation
-      const handleResize = () => calculateRucPosition();
-      const handleScroll = () => calculateRucPosition();
+      const handleResize = () => calculateElementPosition();
+      const handleScroll = () => calculateElementPosition();
       
       window.addEventListener('resize', handleResize);
       window.addEventListener('scroll', handleScroll, true); // true for capture phase to catch all scroll events
       
       // Also recalculate after a short delay to ensure DOM is fully rendered
-      const timeoutId = setTimeout(calculateRucPosition, 100);
+      const timeoutId = setTimeout(calculateElementPosition, 100);
       
       // Cleanup function
       return () => {
@@ -75,13 +126,7 @@ const TourFloating: React.FC<TourFloatingProps> = ({
       setAutoCloseTimer(null);
     }
     
-    // Auto close timer for step 3
-    if (step === 3) {
-      const timer = setTimeout(() => {
-        onClose();
-      }, 5000);
-      setAutoCloseTimer(timer);
-    }
+    // No auto close timer needed since step 6 is the final step
     
     // Cleanup function
     return () => {
@@ -104,17 +149,38 @@ const TourFloating: React.FC<TourFloatingProps> = ({
         };
       case 2:
         return {
-          title: "Información necesaria",
-          message: "Para conectar tu empresa necesitamos el RUC y las credenciales SOL. ¡Es muy fácil!",
+          title: "Segundo paso:",
+          message: "Ingrese su usuario SOL",
           showButtons: true,
-          showContinue: false
+          showContinue: true
         };
       case 3:
         return {
-          title: "¡Excelente trabajo!",
-          message: "Has conectado tu primera empresa exitosamente. Ya puedes gestionar todas sus obligaciones tributarias.",
-          showButtons: false,
-          showContinue: false
+          title: "Tercer paso:",
+          message: "Ingrese su contraseña SOL",
+          showButtons: true,
+          showContinue: true
+        };
+      case 4:
+        return {
+          title: "¡Felicidades!",
+          message: "Has registrado correctamente tu primera empresa",
+          showButtons: true,
+          showContinue: true
+        };
+      case 5:
+        return {
+          title: "Quinto paso:",
+          message: "Agrega más empresas, para gestionar múltiples empresas al mismo tiempo",
+          showButtons: true,
+          showContinue: true
+        };
+      case 6:
+        return {
+          title: "Sexto paso:",
+          message: "Después de agregar tus empresas, presiona el botón de ir a bandeja",
+          showButtons: true,
+          showContinue: true
         };
       default:
         return {
@@ -131,7 +197,7 @@ const TourFloating: React.FC<TourFloatingProps> = ({
   return (
     <>
       {/* Single overlay with clip-path cutout - visual only, no interaction blocking */}
-      {step === 1 && (
+      {(step === 1 || step === 2 || step === 3 || step === 4 || step === 5 || step === 6) && (
         <div 
           className="fixed inset-0 z-60 pointer-events-none"
           style={{
@@ -157,16 +223,16 @@ const TourFloating: React.FC<TourFloatingProps> = ({
       <div 
         className="fixed z-70 animate-fade-in"
         style={{
-          top: step === 1 ? `${rucPosition.y}%` : 'auto',
-          left: step === 1 ? `${rucPosition.x + (rucPosition.width / 2 / window.innerWidth * 100) + 2}%` : 'auto',
-          transform: step === 1 ? 'translateY(-50%)' : 'none',
-          bottom: step !== 1 ? '6px' : 'auto',
-          right: step !== 1 ? '24px' : 'auto'
+          top: (step === 1 || step === 2 || step === 3 || step === 4 || step === 5 || step === 6) ? `${rucPosition.y}%` : 'auto',
+          left: (step === 1 || step === 2 || step === 3 || step === 4 || step === 5 || step === 6) ? `${rucPosition.x + (rucPosition.width / 2 / window.innerWidth * 100) + 2}%` : 'auto',
+          transform: (step === 1 || step === 2 || step === 3 || step === 4 || step === 5 || step === 6) ? 'translateY(-50%)' : 'none',
+          bottom: (step !== 1 && step !== 2 && step !== 3 && step !== 4 && step !== 5 && step !== 6) ? '6px' : 'auto',
+          right: (step !== 1 && step !== 2 && step !== 3 && step !== 4 && step !== 5 && step !== 6) ? '24px' : 'auto'
         }}
       >
         <div className="bg-blue-600 rounded-lg shadow-xl p-6 max-w-sm relative">
-          {/* Triangle pointer - only for step 1 */}
-          {step === 1 && (
+          {/* Triangle pointer - only for steps 1, 2, 3, 4, 5 and 6 */}
+          {(step === 1 || step === 2 || step === 3 || step === 4 || step === 5 || step === 6) && (
             <div
               className="absolute transform -translate-y-1/2"
               style={{
@@ -183,9 +249,6 @@ const TourFloating: React.FC<TourFloatingProps> = ({
           {/* Header */}
           <div className="flex items-start justify-between mb-4">
             <div className="flex items-center space-x-2">
-              {step === 3 && (
-                <CheckCircle className="w-5 h-5 text-green-500" />
-              )}
               <h3 className="font-semibold text-white">{content.title}</h3>
             </div>
           </div>
@@ -197,7 +260,7 @@ const TourFloating: React.FC<TourFloatingProps> = ({
 
           {/* Progress indicator */}
           <div className="flex space-x-1 mb-4">
-            {[1, 2, 3].map((i) => (
+            {[1, 2, 3, 4, 5, 6].map((i) => (
               <div
                 key={i}
                 className={`h-1 flex-1 rounded-full ${
@@ -209,7 +272,26 @@ const TourFloating: React.FC<TourFloatingProps> = ({
 
           {/* Buttons */}
           {content.showButtons && (
-            <div className="flex items-center justify-end">
+            <div className="flex items-center justify-between">
+              {/* Back button - only show from step 2 onwards */}
+              {step >= 2 && (
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Tour Back clicked');
+                    onBack();
+                  }}
+                  className="inline-flex items-center justify-center w-8 h-8 bg-white text-blue-600 rounded-full hover:bg-gray-100 transition-colors"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                </button>
+              )}
+              
+              {/* Spacer when no back button */}
+              {step < 2 && <div></div>}
+              
+              {/* Continue button */}
               {content.showContinue && (
                 <button
                   onClick={(e) => {
@@ -226,12 +308,6 @@ const TourFloating: React.FC<TourFloatingProps> = ({
             </div>
           )}
 
-          {/* Auto close indicator for step 3 */}
-          {step === 3 && (
-            <div className="mt-4 pt-4 border-t border-gray-100">
-              
-            </div>
-          )}
         </div>
       </div>
     </>
