@@ -1,7 +1,8 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { X, Plus, Building2 } from 'lucide-react';
 import CompanyAccordionItem from './CompanyAccordionItem';
 import TourFloating from './TourFloating';
+import UserTypeSelectionModal from './UserTypeSelectionModal';
 import useOnboarding from '../../hooks/useOnboarding';
 
 interface OnboardingModalProps {
@@ -16,6 +17,26 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({
   onNavigateToBandeja
 }) => {
   const { state, actions } = useOnboarding();
+  const [showUserTypeSelection, setShowUserTypeSelection] = useState(false);
+  const [hasSelectedUserType, setHasSelectedUserType] = useState(false);
+
+  // Show user type selection modal first when onboarding modal opens
+  useEffect(() => {
+    if (isOpen && !hasSelectedUserType) {
+      setShowUserTypeSelection(true);
+    }
+  }, [isOpen, hasSelectedUserType]);
+
+  const handleUserTypeSelected = (userType: 'contable' | 'contador' | 'empresario') => {
+    console.log('Selected user type:', userType);
+    setHasSelectedUserType(true);
+    setShowUserTypeSelection(false);
+  };
+
+  const handleUserTypeModalClose = () => {
+    setShowUserTypeSelection(false);
+    setHasSelectedUserType(true);
+  };
 
   // Initialize tour when modal opens for first time only (after page load and if modal hasn't been closed)
   useEffect(() => {
@@ -89,8 +110,18 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({
 
   return (
     <>
-      {/* Modal Backdrop */}
-      <div className="fixed inset-0 bg-black bg-opacity-50 z-40" />
+      {/* User Type Selection Modal - Shows first */}
+      <UserTypeSelectionModal
+        isOpen={showUserTypeSelection}
+        onClose={handleUserTypeModalClose}
+        onUserTypeSelected={handleUserTypeSelected}
+      />
+
+      {/* Main Onboarding Modal - Shows after user type selection */}
+      {!showUserTypeSelection && (
+        <>
+          {/* Modal Backdrop */}
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-40" />
       
       {/* Modal */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -209,10 +240,11 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({
         isVisible={state.tourState.showTourFloating}
         step={state.tourState.tourStep}
         userClickedContinue={state.tourState.userClickedContinue}
-        onSkip={actions.handleTourSkip}
         onContinue={actions.handleTourContinue}
         onClose={actions.handleTourClose}
       />
+        </>
+      )}
     </>
   );
 };

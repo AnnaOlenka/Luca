@@ -124,8 +124,14 @@
 .right-0 { right: 0px; }
 .top-0 { top: 0px; }
 .z-40 { z-index: 40; }
+.z-45 { z-index: 45; }
 .z-50 { z-index: 50; }
+.z-60 { z-index: 60; }
+.z-65 { z-index: 65; }
+.z-70 { z-index: 70; }
 .z-\[70\] { z-index: 70; }
+.z-\[100\] { z-index: 100; }
+.z-\[999\] { z-index: 999; }
 
 /* Colores de fondo */
 .bg-white { background-color: #ffffff; }
