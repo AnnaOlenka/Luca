@@ -170,15 +170,15 @@ const TourFloating: React.FC<TourFloatingProps> = ({
         };
       case 5:
         return {
-          title: "Quinto paso:",
-          message: "Agrega más empresas, para gestionar múltiples empresas al mismo tiempo",
+          title: "Agrega otra empresa:",
+          message: "Gestiona múltiples empresas al mismo tiempo",
           showButtons: true,
           showContinue: true
         };
       case 6:
         return {
-          title: "Sexto paso:",
-          message: "Después de agregar tus empresas, presiona el botón de ir a bandeja",
+          title: "Ir a la Bandeja:",
+          message: "Después de agregar tus empresas, redirigete a la bandeja",
           showButtons: true,
           showContinue: true
         };
