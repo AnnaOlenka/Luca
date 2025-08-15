@@ -119,8 +119,18 @@ const TourFloating: React.FC<TourFloatingProps> = ({
           className="fixed inset-0 z-60 pointer-events-none"
           style={{
             background: 'rgba(0, 0, 0, 0.5)',
-            mask: `radial-gradient(ellipse ${rucPosition.width}px ${rucPosition.height}px at ${rucPosition.x}% ${rucPosition.y}%, transparent 50%, black 50%)`,
-            WebkitMask: `radial-gradient(ellipse ${rucPosition.width}px ${rucPosition.height}px at ${rucPosition.x}% ${rucPosition.y}%, transparent 50%, black 50%)`,
+            clipPath: `polygon(
+              0% 0%, 
+              0% 100%, 
+              ${rucPosition.x - (rucPosition.width / 2 / window.innerWidth * 100)}% 100%, 
+              ${rucPosition.x - (rucPosition.width / 2 / window.innerWidth * 100)}% ${rucPosition.y - (rucPosition.height / 2 / window.innerHeight * 100)}%, 
+              ${rucPosition.x + (rucPosition.width / 2 / window.innerWidth * 100)}% ${rucPosition.y - (rucPosition.height / 2 / window.innerHeight * 100)}%, 
+              ${rucPosition.x + (rucPosition.width / 2 / window.innerWidth * 100)}% ${rucPosition.y + (rucPosition.height / 2 / window.innerHeight * 100)}%, 
+              ${rucPosition.x - (rucPosition.width / 2 / window.innerWidth * 100)}% ${rucPosition.y + (rucPosition.height / 2 / window.innerHeight * 100)}%, 
+              ${rucPosition.x - (rucPosition.width / 2 / window.innerWidth * 100)}% 100%, 
+              100% 100%, 
+              100% 0%
+            )`,
             pointerEvents: 'none'
           }}
         />
