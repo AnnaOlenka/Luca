@@ -16,8 +16,20 @@ const PerfilEmpresarialModal: React.FC<PerfilEmpresarialModalProps> = ({ isOpen,
   const [showHistorica, setShowHistorica] = useState(false);
   const [showVariables, setShowVariables] = useState(false);
   const [expandedVariable, setExpandedVariable] = useState<string | null>(null);
-  const [showHistoricalVariables, setShowHistoricalVariables] = useState(false);
+  const [expandedHistoricalRows, setExpandedHistoricalRows] = useState<Set<string>>(new Set());
+
   
+  const toggleHistoricalRow = (rowId: string) => {
+  setExpandedHistoricalRows(prev => {
+    const newSet = new Set(prev);
+    if (newSet.has(rowId)) {
+      newSet.delete(rowId);
+    } else {
+      newSet.add(rowId);
+    }
+    return newSet;
+  });
+};
   // Simulación de datos RUC basados en la empresa seleccionada
   const simulatedRucData = {
     numeroRuc: empresa ? `${empresa.ruc} - ${empresa.nombre}` : "20486774283 - CONSERIN S.A.C.",
@@ -280,6 +292,8 @@ const PerfilEmpresarialModal: React.FC<PerfilEmpresarialModalProps> = ({ isOpen,
       });
     } else if (activeTab === 'score') {
       setShowHistorica(false);
+      setShowVariables(false);
+      setExpandedHistoricalRows(new Set());
     }
   };
 
@@ -525,7 +539,7 @@ const PerfilEmpresarialModal: React.FC<PerfilEmpresarialModalProps> = ({ isOpen,
                     <AlertTriangle size={20} />
                     Restricciones Encontradas
                   </div>
-                  <ul className="space-y-1 max-h-40 overflow-y-auto">
+                  <ul className="space-y-1 max-h-40 overflow-y-auto text-left mt-2">
                     {restricciones.map((restriccion, index) => (
                       <li key={index} className="text-yellow-800 text-sm">
                         • {restriccion}
@@ -682,13 +696,27 @@ const PerfilEmpresarialModal: React.FC<PerfilEmpresarialModalProps> = ({ isOpen,
               {/* Botones Calificación Histórica y Ver Variables */}
               <div className="text-center pt-4 space-x-4">
                 <button
-                  onClick={() => setShowHistorica(!showHistorica)}
+                  onClick={() => {
+                    if (showHistorica) {
+                      setShowHistorica(false);
+                    } else {
+                      setShowVariables(false); // Cierra el otro div si está abierto
+                      setShowHistorica(true);
+                    }
+                  }}
                   className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
                 >
                   {showHistorica ? 'Ocultar Calificación Histórica' : 'Calificación Histórica'}
                 </button>
                 <button
-                  onClick={() => setShowVariables(!showVariables)}
+                  onClick={() => {
+                    if (showVariables) {
+                      setShowVariables(false);
+                    } else {
+                      setShowHistorica(false); // Cierra el otro div si está abierto
+                      setShowVariables(true);
+                    }
+                  }}
                   className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
                 >
                   {showVariables ? 'Ocultar Variables' : 'Ver Variables'}
@@ -735,10 +763,10 @@ const PerfilEmpresarialModal: React.FC<PerfilEmpresarialModalProps> = ({ isOpen,
                             <td className="py-2 px-4 text-gray-600">-</td>
                             <td className="py-2 px-4">
                               <button
-                                onClick={() => setShowHistoricalVariables(!showHistoricalVariables)}
+                                onClick={() => toggleHistoricalRow('I-2025')}
                                 className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-medium transition-colors"
                               >
-                                Ver
+                                {expandedHistoricalRows.has('I-2025') ? 'Ocultar' : 'Ver'}
                               </button>
                             </td>
                           </tr>
@@ -748,12 +776,12 @@ const PerfilEmpresarialModal: React.FC<PerfilEmpresarialModalProps> = ({ isOpen,
                             <td className="py-2 px-4 text-gray-600">Ene. 2024 - Dic. 2024</td>
                             <td className="py-2 px-4 text-gray-600">-</td>
                             <td className="py-2 px-4">
-                              <button
-                                onClick={() => setShowHistoricalVariables(!showHistoricalVariables)}
-                                className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-medium transition-colors"
-                              >
-                                Ver
-                              </button>
+                            <button
+                              onClick={() => toggleHistoricalRow('IV-2024')}
+                              className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-medium transition-colors"
+                            >
+                              {expandedHistoricalRows.has('IV-2024') ? 'Ocultar' : 'Ver'}
+                            </button>
                             </td>
                           </tr>
                           <tr className="border-b border-gray-200">
@@ -763,10 +791,10 @@ const PerfilEmpresarialModal: React.FC<PerfilEmpresarialModalProps> = ({ isOpen,
                             <td className="py-2 px-4 text-gray-600">-</td>
                             <td className="py-2 px-4">
                               <button
-                                onClick={() => setShowHistoricalVariables(!showHistoricalVariables)}
+                                onClick={() => toggleHistoricalRow('III-2024')}
                                 className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-medium transition-colors"
                               >
-                                Ver
+                                {expandedHistoricalRows.has('III-2024') ? 'Ocultar' : 'Ver'}
                               </button>
                             </td>
                           </tr>
@@ -777,10 +805,10 @@ const PerfilEmpresarialModal: React.FC<PerfilEmpresarialModalProps> = ({ isOpen,
                             <td className="py-2 px-4 text-gray-600">-</td>
                             <td className="py-2 px-4">
                               <button
-                                onClick={() => setShowHistoricalVariables(!showHistoricalVariables)}
+                                onClick={() => toggleHistoricalRow('II-2024')}
                                 className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-medium transition-colors"
                               >
-                                Ver
+                                {expandedHistoricalRows.has('II-2024') ? 'Ocultar' : 'Ver'}
                               </button>
                             </td>
                           </tr>
@@ -790,7 +818,7 @@ const PerfilEmpresarialModal: React.FC<PerfilEmpresarialModalProps> = ({ isOpen,
                   </div>
                   
                   {/* Variables expandibles del historial */}
-                  {showHistoricalVariables && (
+                  {expandedHistoricalRows.size > 0 &&(
                     <div className="mt-6 space-y-4">
                       <div className="bg-white border border-gray-300 rounded-lg">
                         <div className="bg-blue-600 text-white px-4 py-2 font-bold text-center rounded-t-lg">
@@ -1000,7 +1028,7 @@ const RegimenInfo: React.FC<{ regimen: string }> = ({ regimen }) => {
 
   return (
     <div className="space-y-2 text-xs">
-      <div className="grid grid-cols-1 gap-1">
+      <div className="grid grid-cols-1 gap-2 text-left mt-2">
         <div><strong>Límite de ingresos:</strong> {regimenInfo.ingresos}</div>
         <div><strong>Límite de compras:</strong> {regimenInfo.compras}</div>
         <div><strong>Activos fijos:</strong> {regimenInfo.activos}</div>
