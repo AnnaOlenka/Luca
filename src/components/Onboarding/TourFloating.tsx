@@ -19,18 +19,19 @@ const TourFloating: React.FC<TourFloatingProps> = ({
   const [autoCloseTimer, setAutoCloseTimer] = useState<NodeJS.Timeout | null>(null);
   const [rucPosition, setRucPosition] = useState({ x: 50, y: 57, width: 400, height: 100 });
 
-  // Calculate RUC element position
+  // Calculate RUC element position dynamically
   useEffect(() => {
     if (step === 1 && isVisible) {
-      const findRucElement = () => {
-        // Look for the RUC div by searching for the label text
+      const calculateRucPosition = () => {
+        // Look for the specific RUC container div
         const rucLabel = Array.from(document.querySelectorAll('label')).find(
           label => label.textContent?.includes('RUC *')
         );
         
         if (rucLabel) {
-          const rucContainer = rucLabel.closest('.relative.z-\\[100\\]') || rucLabel.parentElement;
-          if (rucContainer) {
+          // Find the parent div with class "relative z-[100]"
+          const rucContainer = rucLabel.closest('div.relative');
+          if (rucContainer && rucContainer.classList.contains('z-[100]')) {
             const rect = rucContainer.getBoundingClientRect();
             const viewportWidth = window.innerWidth;
             const viewportHeight = window.innerHeight;
@@ -44,10 +45,26 @@ const TourFloating: React.FC<TourFloatingProps> = ({
           }
         }
       };
+
+      // Calculate position immediately
+      calculateRucPosition();
       
-      // Try immediately and also with a small delay to ensure DOM is ready
-      findRucElement();
-      setTimeout(findRucElement, 100);
+      // Add event listeners for dynamic recalculation
+      const handleResize = () => calculateRucPosition();
+      const handleScroll = () => calculateRucPosition();
+      
+      window.addEventListener('resize', handleResize);
+      window.addEventListener('scroll', handleScroll, true); // true for capture phase to catch all scroll events
+      
+      // Also recalculate after a short delay to ensure DOM is fully rendered
+      const timeoutId = setTimeout(calculateRucPosition, 100);
+      
+      // Cleanup function
+      return () => {
+        window.removeEventListener('resize', handleResize);
+        window.removeEventListener('scroll', handleScroll, true);
+        clearTimeout(timeoutId);
+      };
     }
   }, [step, isVisible]);
 
