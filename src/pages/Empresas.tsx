@@ -71,7 +71,7 @@ interface Empresa {
   contadorEmail?: string;
   contadorTelefono?: string;
   personas?: Array<{
-    id: number;
+    id: number | string;
     nombre: string;
     iniciales: string;
     cargo: string;
@@ -110,8 +110,8 @@ interface User {
 // Función para sincronizar User[] con personas[] y datos de contacto
 const syncUsersWithEmpresa = (users: User[], empresa: Empresa): Empresa => {
   // Convertir User[] a personas[]
-  const personas = users.map(user => ({
-    id: parseInt(user.id),
+  const personas = users.map((user, index) => ({
+    id: user.id.includes('_') ? user.id : parseInt(user.id) || (index + 1),
     nombre: user.nombre,
     iniciales: user.nombre.split(' ').map(n => n[0]).join('').toUpperCase(),
     cargo: user.role || 'Sin rol',
@@ -200,7 +200,9 @@ const PersonaPopover: React.FC<{
   onClose: () => void;
   persona: any | null;
   position: { top: number; left: number };
-}> = ({ isOpen, onClose, persona, position }) => {
+  empresaId?: string;
+  onQuitarPersona?: (empresaId: string, personaId: number | string) => void;
+}> = ({ isOpen, onClose, persona, position, empresaId, onQuitarPersona }) => {
   const popoverRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -351,7 +353,9 @@ const PersonaPopover: React.FC<{
     
     <button
       onClick={() => {
-        alert(`Quitar a ${persona.nombre}`);
+        if (empresaId && persona?.id && onQuitarPersona) {
+          onQuitarPersona(empresaId, persona.id);
+        }
         onClose();
       }}
       className="border-0 outline-none w-full flex items-center space-x-3 px-3 py-2 text-xs text-red-600 hover:bg-red-50  transition-colors"
@@ -371,7 +375,9 @@ const ListaPersonasPopover: React.FC<{
   onClose: () => void;
   personas: any[];
   position: { top: number; left: number };
-}> = ({ isOpen, onClose, personas, position }) => {
+  empresaId?: string;
+  onQuitarPersona?: (empresaId: string, personaId: number | string) => void;
+}> = ({ isOpen, onClose, personas, position, empresaId, onQuitarPersona }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const popoverRef = useRef<HTMLDivElement>(null);
 
@@ -534,8 +540,9 @@ const ListaPersonasPopover: React.FC<{
                   {/* Botón quitar */}
                   <button
                     onClick={() => {
-                      alert(`Quitar a ${persona.nombre}`);
-                      onClose();
+                      if (empresaId && persona?.id && onQuitarPersona) {
+                        onQuitarPersona(empresaId, persona.id);
+                      }
                     }}
                     className="p-0.5 text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors ml-2"
                     title="Quitar asignado"
@@ -562,7 +569,8 @@ const PersonasAsignadas: React.FC<{
   personas?: Empresa['personas'];
   empresaNombre?: string;
   empresaId?: string;
-}> = ({ personas = [], empresaNombre = "Empresa", empresaId }) => {
+  onQuitarPersona?: (empresaId: string, personaId: number | string) => void;
+}> = ({ personas = [], empresaNombre = "Empresa", empresaId, onQuitarPersona }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [showTooltip, setShowTooltip] = useState<number | null>(null);
   const [selectedPersona, setSelectedPersona] = useState<any | null>(null);
@@ -787,6 +795,8 @@ const PersonasAsignadas: React.FC<{
         }}
         persona={selectedPersona}
         position={popoverPosition}
+        empresaId={empresaId}
+        onQuitarPersona={onQuitarPersona}
       />
 
       {/* Popover lista completa */}
@@ -795,6 +805,8 @@ const PersonasAsignadas: React.FC<{
         onClose={() => setIsListaPopoverOpen(false)}
         personas={personas}
         position={popoverPosition}
+        empresaId={empresaId}
+        onQuitarPersona={onQuitarPersona}
       />
     </>
   );
@@ -1536,6 +1548,52 @@ const Empresas: React.FC<EmpresasProps> = ({ onNavigate }) => {
           ? { ...empresa, completitud: completitud }
           : empresa
       )
+    );
+  };
+
+  // Función para quitar persona asignada
+  const handleQuitarPersona = (empresaId: string, personaId: number | string) => {
+    setEmpresasList(prevEmpresas => 
+      prevEmpresas.map(empresa => {
+        if (empresa.id === empresaId) {
+          // Encontrar la persona que se va a quitar para limpiar sus campos de contacto
+          const personaAQuitar = empresa.personas?.find(persona => String(persona.id) === String(personaId));
+          
+          let updatedEmpresa = { ...empresa };
+          
+          // Limpiar campos de contacto según el cargo de la persona
+          if (personaAQuitar) {
+            switch (personaAQuitar.cargo) {
+              case 'Representante Legal':
+                updatedEmpresa.representanteNombres = '';
+                updatedEmpresa.representanteDni = '';
+                updatedEmpresa.representanteEmail = '';
+                updatedEmpresa.representanteTelefono = '';
+                break;
+              case 'Administrador':
+                updatedEmpresa.adminNombre = '';
+                updatedEmpresa.adminDni = '';
+                updatedEmpresa.adminEmail = '';
+                updatedEmpresa.adminTelefono = '';
+                break;
+              case 'Contador':
+                updatedEmpresa.contadorNombre = '';
+                updatedEmpresa.contadorDni = '';
+                updatedEmpresa.contadorEmail = '';
+                updatedEmpresa.contadorTelefono = '';
+                break;
+            }
+          }
+          
+          // Quitar la persona del array de personas
+          updatedEmpresa.personas = empresa.personas?.filter(persona => {
+            return String(persona.id) !== String(personaId);
+          }) || [];
+          
+          return updatedEmpresa;
+        }
+        return empresa;
+      })
     );
   };
 
@@ -2690,7 +2748,8 @@ const getStatusColor = (type: string) => {
               <PersonasAsignadas 
                 personas={empresa.personas}
                 empresaNombre={empresa.nombre} 
-                empresaId={empresa.id} 
+                empresaId={empresa.id}
+                onQuitarPersona={handleQuitarPersona}
               />
             </div>
 
