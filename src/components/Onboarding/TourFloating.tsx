@@ -110,11 +110,70 @@ const TourFloating: React.FC<TourFloatingProps> = ({
       // Also recalculate after a short delay to ensure DOM is fully rendered
       const timeoutId = setTimeout(calculateElementPosition, 100);
       
+      // Set up MutationObserver to detect DOM changes (like validation messages appearing)
+      const observer = new MutationObserver((mutations) => {
+        let shouldRecalculate = false;
+        
+        mutations.forEach((mutation) => {
+          const target = mutation.target as Element;
+          
+          // Only recalculate if changes are in relevant areas
+          const isInOnboardingModal = target.closest('.onboarding-modal') || 
+                                    target.closest('[data-tour-target]') ||
+                                    target.querySelector('label[for*="ruc"]') ||
+                                    target.textContent?.includes('RUC') ||
+                                    target.textContent?.includes('Usuario SOL') ||
+                                    target.textContent?.includes('Contraseña SOL') ||
+                                    target.textContent?.includes('Validado') ||
+                                    target.textContent?.includes('Agregar Nueva Empresa') ||
+                                    target.textContent?.includes('Ir a la Bandeja');
+          
+          // Check if any changes affect the layout (childList changes, attribute changes)
+          if (isInOnboardingModal && (
+            mutation.type === 'childList' || 
+            (mutation.type === 'attributes' && 
+             (mutation.attributeName === 'class' || 
+              mutation.attributeName === 'style' ||
+              mutation.attributeName === 'data-validation-state')))) {
+            shouldRecalculate = true;
+          }
+        });
+        
+        if (shouldRecalculate) {
+          // Debounce the recalculation to avoid excessive calls
+          setTimeout(calculateElementPosition, 50);
+        }
+      });
+      
+      // Start observing the document for changes
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['class', 'style', 'data-validation-state']
+      });
+      
+      // Additional RAF-based position checking for cases where MutationObserver might miss
+      let rafId: number;
+      const checkPosition = () => {
+        calculateElementPosition();
+        rafId = requestAnimationFrame(checkPosition);
+      };
+      
+      // Start position checking only for step 1 (RUC input) where layout changes are most common
+      if (step === 1) {
+        rafId = requestAnimationFrame(checkPosition);
+      }
+      
       // Cleanup function
       return () => {
         window.removeEventListener('resize', handleResize);
         window.removeEventListener('scroll', handleScroll, true);
+        observer.disconnect();
         clearTimeout(timeoutId);
+        if (rafId) {
+          cancelAnimationFrame(rafId);
+        }
       };
     }
   }, [step, isVisible]);
