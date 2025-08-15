@@ -100,6 +100,32 @@ const TourFloating: React.FC<TourFloatingProps> = ({
       // Calculate position immediately
       calculateElementPosition();
       
+      // Auto-focus inputs based on tour step
+      const focusInput = () => {
+        if (step === 2) {
+          // Focus Usuario SOL input
+          const userInput = document.querySelector('input[placeholder*="usuario"], input[placeholder*="Usuario"]') as HTMLInputElement;
+          if (userInput) {
+            setTimeout(() => {
+              userInput.focus();
+              userInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 200);
+          }
+        } else if (step === 3) {
+          // Focus Contraseña SOL input
+          const passwordInput = document.querySelector('input[type="password"], input[placeholder*="contraseña"], input[placeholder*="Contraseña"]') as HTMLInputElement;
+          if (passwordInput) {
+            setTimeout(() => {
+              passwordInput.focus();
+              passwordInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 200);
+          }
+        }
+      };
+      
+      // Execute focus after a delay to ensure DOM is ready
+      setTimeout(focusInput, 300);
+      
       // Add event listeners for dynamic recalculation
       const handleResize = () => calculateElementPosition();
       const handleScroll = () => calculateElementPosition();
