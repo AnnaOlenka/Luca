@@ -8,6 +8,7 @@ interface TourFloatingProps {
   onContinue: () => void;
   onBack: () => void;
   onClose: () => void;
+  onAutoSkipToValidation?: () => void; // Nueva prop para saltar automáticamente
 }
 
 const TourFloating: React.FC<TourFloatingProps> = ({
@@ -16,10 +17,146 @@ const TourFloating: React.FC<TourFloatingProps> = ({
   userClickedContinue,
   onContinue,
   onBack,
-  onClose
+  onClose,
+  onAutoSkipToValidation
 }) => {
   const [autoCloseTimer, setAutoCloseTimer] = useState<NodeJS.Timeout | null>(null);
   const [rucPosition, setRucPosition] = useState({ x: 50, y: 57, width: 400, height: 100 });
+  const [hasDetectedValidation, setHasDetectedValidation] = useState(false);
+
+  // Función para detectar si la empresa está validada
+  const checkValidationStatus = () => {
+    // Buscar específicamente el texto de validación exitosa
+    const validationSpan = Array.from(document.querySelectorAll('span, div, p')).find(
+      element => {
+        const text = element.textContent?.trim();
+        return text?.includes('Validado: RUC y credenciales validadas') ||
+               text === 'Validado: RUC y credenciales validadas' ||
+               (text?.includes('Validado') && text?.includes('credenciales') && text?.includes('validadas'));
+      }
+    );
+    
+    // Buscar iconos de check verdes específicos de validación
+    const greenCheckIcons = document.querySelectorAll('.text-green-500, .text-green-600');
+    const hasValidationWithCheck = Array.from(greenCheckIcons).some(icon => {
+      const parent = icon.closest('div');
+      return parent?.textContent?.includes('Validado') || parent?.textContent?.includes('credenciales');
+    });
+    
+    // Buscar elementos con clases específicas de éxito/validación
+    const successElements = document.querySelectorAll('[class*="success"], [class*="validated"], [data-validation="success"]');
+    
+    // Buscar si hay empresas listadas (indicativo de validación exitosa)
+    const companyElements = Array.from(document.querySelectorAll('*')).filter(el => {
+      const text = el.textContent?.trim();
+      return text?.includes('empresas completamente verificadas') ||
+             text?.includes('empresa completamente verificada') ||
+             (text?.includes('Estado: ACTIVO') && text?.includes('Validado'));
+    });
+    
+    // Verificar si existe el botón "Ir a la Bandeja" (indica que ya hay empresas validadas)
+    const bandejaButton = Array.from(document.querySelectorAll('button')).find(
+      button => button.textContent?.includes('Ir a la Bandeja')
+    );
+    
+    console.log('🔍 Checking validation status:', {
+      validationSpan: !!validationSpan,
+      hasValidationWithCheck,
+      successElements: successElements.length,
+      companyElements: companyElements.length,
+      bandejaButton: !!bandejaButton
+    });
+    
+    return validationSpan || hasValidationWithCheck || successElements.length > 0 || companyElements.length > 0 || bandejaButton;
+  };
+
+  // Effect para detectar validación automática
+  useEffect(() => {
+    if (!isVisible || hasDetectedValidation || step >= 4) return;
+
+    // Solo detectar validación automática en los primeros 3 pasos
+    if (step >= 1 && step <= 3) {
+      const checkAndSkip = () => {
+        const isValidated = checkValidationStatus();
+        console.log('🎯 Auto-validation check:', { step, isValidated, hasDetectedValidation });
+        
+        if (isValidated) {
+          console.log('🎉 Validación detectada automáticamente, saltando al paso 4');
+          setHasDetectedValidation(true);
+          
+          // Llamar a la función de callback para saltar al paso 4
+          if (onAutoSkipToValidation) {
+            setTimeout(() => {
+              onAutoSkipToValidation();
+            }, 800); // Aumentar la pausa para mejor UX
+          }
+        }
+      };
+
+      // Verificar inmediatamente después de un pequeño delay
+      setTimeout(checkAndSkip, 500);
+
+      // Configurar un observer para detectar cambios en el DOM
+      const observer = new MutationObserver((mutations) => {
+        let shouldCheck = false;
+
+        mutations.forEach((mutation) => {
+          const target = mutation.target as Element;
+          
+          // Detectar cambios más específicos que podrían indicar validación
+          const hasValidationContent = target.textContent?.includes('Validado: RUC y credenciales validadas') ||
+                                     target.textContent?.includes('empresas completamente verificadas') ||
+                                     target.textContent?.includes('Estado: ACTIVO') ||
+                                     target.textContent?.includes('Ir a la Bandeja');
+          
+          const hasValidationClasses = target.className?.includes('text-green') ||
+                                     target.className?.includes('success') ||
+                                     target.className?.includes('validated') ||
+                                     target.hasAttribute?.('data-validation-success');
+
+          // Detectar cuando aparecen elementos nuevos (como empresas validadas)
+          const isRelevantMutation = mutation.type === 'childList' && 
+                                   (target.textContent?.includes('Validado') || 
+                                    target.querySelector?.('[class*="text-green"]'));
+
+          if (hasValidationContent || hasValidationClasses || isRelevantMutation) {
+            shouldCheck = true;
+          }
+        });
+
+        if (shouldCheck) {
+          // Debounce para evitar múltiples verificaciones
+          setTimeout(checkAndSkip, 300);
+        }
+      });
+
+      // Observar cambios en todo el documento con más filtros específicos
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['class', 'data-validation-success', 'data-validation-state', 'data-status']
+      });
+
+      // Verificar periódicamente cada 3 segundos como respaldo más agresivo
+      const intervalId = setInterval(() => {
+        console.log('⏰ Periodic validation check at step:', step);
+        checkAndSkip();
+      }, 3000);
+
+      return () => {
+        observer.disconnect();
+        clearInterval(intervalId);
+      };
+    }
+  }, [step, isVisible, hasDetectedValidation, onAutoSkipToValidation]);
+
+  // Reset del estado de detección cuando cambia el paso
+  useEffect(() => {
+    if (step < 4) {
+      setHasDetectedValidation(false);
+    }
+  }, [step]);
 
   // Calculate element position dynamically for steps 1, 2, 3, 4, 5 and 6
   useEffect(() => {
@@ -304,6 +441,24 @@ const TourFloating: React.FC<TourFloatingProps> = ({
         />
       )}
 
+      {/* Borde redondeado decorativo - sin bloquear interacciones */}
+      {(step === 1 || step === 2 || step === 3 || step === 4 || step === 5 || step === 6) && (
+        <div
+          style={{
+            position: 'fixed',
+            left: `${rucPosition.x - (rucPosition.width / 2 / window.innerWidth * 100)}%`,
+            top: `${rucPosition.y - (rucPosition.height / 2 / window.innerHeight * 100)}%`,
+            width: `${rucPosition.width / window.innerWidth * 100}%`,
+            height: `${rucPosition.height / window.innerHeight * 100}%`,
+            border: '3px solid white',
+            borderRadius: '8px',
+            pointerEvents: 'none',
+            zIndex: 55,
+            boxShadow: '0 0 0 2px #030303a1, 0 0 20px rgba(42, 118, 131, 0.6)'
+          }}
+        />
+      )}
+
       {/* Tour tooltip */}
       <div 
         className="fixed z-70 animate-fade-in"
@@ -335,6 +490,10 @@ const TourFloating: React.FC<TourFloatingProps> = ({
           <div className="flex items-start justify-between mb-4">
             <div className="flex items-center space-x-2">
               <h3 className="font-semibold text-white">{content.title}</h3>
+              {/* Mostrar icono de detección automática si se detectó validación */}
+              {hasDetectedValidation && step === 4 && (
+                <CheckCircle className="w-5 h-5 text-green-300" />
+              )}
             </div>
           </div>
 
