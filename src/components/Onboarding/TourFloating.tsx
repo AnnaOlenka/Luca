@@ -8,7 +8,7 @@ interface TourFloatingProps {
   onContinue: () => void;
   onBack: () => void;
   onClose: () => void;
-  onAutoSkipToValidation?: () => void; // Nueva prop para saltar automáticamente
+  onAutoSkipToValidation?: () => void;
 }
 
 const TourFloating: React.FC<TourFloatingProps> = ({
@@ -23,6 +23,35 @@ const TourFloating: React.FC<TourFloatingProps> = ({
   const [autoCloseTimer, setAutoCloseTimer] = useState<NodeJS.Timeout | null>(null);
   const [rucPosition, setRucPosition] = useState({ x: 50, y: 57, width: 400, height: 100 });
   const [hasDetectedValidation, setHasDetectedValidation] = useState(false);
+
+  // Función para calcular el progreso de la barra
+  const getProgressPercentage = () => {
+    // Etapa 1: Onboarding (pasos 1-5) = 0% a 75%
+    // Etapa 2: Ir a la Bandeja (paso 6) = 75% a 100%
+    
+    if (step <= 5) {
+      // Durante el onboarding: cada paso representa 15% (75% / 5 pasos)
+      return (step / 5) * 75;
+    } else {
+      // En el paso final: 100%
+      return 100;
+    }
+  };
+
+  // Función para obtener la etapa actual
+  const getCurrentStage = () => {
+    if (step <= 5) {
+      return {
+        name: 'Onboarding',
+        description: 'Configurando tu primera empresa'
+      };
+    } else {
+      return {
+        name: 'Ir a la Bandeja',
+        description: 'Completando configuración'
+      };
+    }
+  };
 
   // Función para detectar si la empresa está validada
   const checkValidationStatus = () => {
@@ -415,9 +444,53 @@ const TourFloating: React.FC<TourFloatingProps> = ({
   };
 
   const content = getTourContent();
+  const currentStage = getCurrentStage();
 
   return (
     <>
+      {/* Barra de Progreso - Estilo navegación tabs */}
+      <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-70 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden min-w-[400px]" style={{bottom: '20px',
+                   left: '40%'}}>
+        
+        {/* Navegación tipo tabs */}
+        <div className="flex relative h-9" style={{width: '300px',height: '30px',}}>
+          {/* Tab Onboarding */}
+          <div className={`flex-1 px-6 py-4 text-center cursor-pointer transition-colors relative ${
+            step <= 5 ? 'text-blue-600 font-medium' : 'text-gray-500'
+          }`}>
+            <span className="text-sm">Onboarding</span>
+            {/* Línea azul debajo si está activo */}
+            {step <= 5 && (
+              <div className="absolute bottom-0 left-0 right-0 h-1 bg-blue-600"></div>
+            )}
+          </div>
+          
+          {/* Separador vertical */}
+          <div className="w-px bg-gray-200"></div>
+          
+          {/* Tab Ir a la Bandeja */}
+          <div className={`flex-1 px-6 py-4 text-center cursor-pointer transition-colors relative ${
+            step === 6 ? 'text-blue-600 font-medium' : 'text-gray-500'
+          }`}>
+            <span className="text-sm">Ir a la Bandeja</span>
+            {/* Línea azul debajo si está activo */}
+            {step === 6 && (
+              <div className="absolute bottom-0 left-0 right-0 h-1 bg-blue-600"></div>
+            )}
+          </div>
+        </div>
+        
+        {/* Barra de progreso continua debajo de los tabs */}
+        <div className="px-6 py-3 bg-gray-50">
+          <div className="w-full bg-gray-200 rounded-full h-2">
+            <div 
+              className="bg-blue-600 h-2 rounded-full transition-all duration-500 ease-out"
+              style={{ width: `${(step / 6) * 100}%` }}
+            />
+          </div>
+        </div>
+      </div>
+
       {/* Single overlay with clip-path cutout - visual only, no interaction blocking */}
       {(step === 1 || step === 2 || step === 3 || step === 4 || step === 5 || step === 6) && (
         <div 

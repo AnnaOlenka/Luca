@@ -1,7 +1,7 @@
 import React, { useState, useEffect,useRef } from 'react';
-import { X, Edit3, Save, User, Briefcase, FileText, Shield, Calculator, Users, CheckCircle, Award, Trash2, ChevronDown, ChevronUp, Eye, EyeOff } from 'lucide-react';
+import { X, Edit3, Save, User, Briefcase, FileText, Calculator, Users, CheckCircle, ChevronDown, ChevronUp, Eye, EyeOff } from 'lucide-react';
 import AutoDiscoveryNotification from '../Notifications/AutoDiscoveryNotification';
-import RelatedCompaniesModal from './RelatedCompaniesModal';
+
 import { discoverRelatedCompanies, shouldTriggerDiscovery, type RelatedCompany } from '../../utils/companyDiscovery';
 
 interface EditCompanyModalProps {
@@ -799,15 +799,6 @@ const validateCredentialsRealTime = async (usuario: string, clave: string) => {
   };
   
 
-  const closeOtherSections = (openSection: string) => {
-    setFormData({
-      ...formData,
-      expandedRepresentante: openSection === 'representante' ? !formData.expandedRepresentante : false,
-      expandedAdministrador: openSection === 'administrador' ? !formData.expandedAdministrador : false,
-      expandedContadores: openSection === 'contadores' ? !formData.expandedContadores : false,
-      expandedCredenciales: openSection === 'credenciales' ? !formData.expandedCredenciales : false
-    });
-  };
 
   const renderTabContent = () => {
     switch (activeTab) {
