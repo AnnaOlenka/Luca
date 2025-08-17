@@ -24,16 +24,157 @@ const TourFloating: React.FC<TourFloatingProps> = ({
   const [rucPosition, setRucPosition] = useState({ x: 50, y: 57, width: 400, height: 100 });
   const [hasDetectedValidation, setHasDetectedValidation] = useState(false);
 
+  // Estilos CSS centralizados
+  const styles = {
+    // Barra de progreso inferior
+    progressContainer: { 
+      position: 'fixed' as const, 
+      bottom: '1.25rem', 
+      left: '50%', 
+      transform: 'translateX(-50%)', 
+      zIndex: 70, 
+      backgroundColor: '#ffffff', 
+      borderRadius: '0.5rem', 
+      boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)', 
+      border: '1px solid #e5e7eb', 
+      overflow: 'hidden', 
+      minWidth: '25rem' 
+    },
+    
+    // Tabs navegación
+    tabsContainer: { display: 'flex', position: 'relative' as const, height: '1.875rem', width: '100%' },
+    tabItem: { 
+      flex: 1, 
+      padding: '0.75rem 1.5rem', 
+      textAlign: 'center' as const, 
+      cursor: 'pointer', 
+      transition: 'all 0.3s', 
+      position: 'relative' as const 
+    },
+    tabActive: { color: '#2563eb', fontWeight: 500 },
+    tabInactive: { color: '#6b7280' },
+    tabText: { fontSize: '0.875rem' },
+    tabIndicator: { position: 'absolute' as const, bottom: 0, left: 0, right: 0, height: '0.25rem', backgroundColor: '#2563eb' },
+    tabSeparator: { width: '1px', backgroundColor: '#e5e7eb' },
+    
+    // Barra de progreso
+    progressSection: { padding: '0.75rem 1.5rem', backgroundColor: '#f9fafb' },
+    progressBarBg: { width: '100%', backgroundColor: '#e5e7eb', borderRadius: '9999px', height: '0.5rem' },
+    progressBarFill: { height: '0.5rem', borderRadius: '9999px', transition: 'all 0.5s ease-out', backgroundColor: '#2563eb' },
+    
+    // Overlay con clip-path
+    overlayClip: (clipPath: string) => ({
+      position: 'fixed' as const,
+      inset: 0,
+      zIndex: 60,
+      pointerEvents: 'none' as const,
+      background: 'rgba(0, 0, 0, 0.5)',
+      clipPath
+    }),
+    
+    // Borde decorativo
+    decorativeBorder: (pos: typeof rucPosition) => ({
+      position: 'fixed' as const,
+      left: `${pos.x - (pos.width / 2 / window.innerWidth * 100)}%`,
+      top: `${pos.y - (pos.height / 2 / window.innerHeight * 100)}%`,
+      width: `${pos.width / window.innerWidth * 100}%`,
+      height: `${pos.height / window.innerHeight * 100}%`,
+      border: '3px solid white',
+      borderRadius: '0.3125rem',
+      pointerEvents: 'none' as const,
+      zIndex: 55,
+      boxShadow: '0 0 0 1px rgba(3, 3, 3, 0.235)'
+    }),
+    
+    // Tooltip principal - TAMAÑO FIJO
+    tooltipContainer: (pos: typeof rucPosition, isPositioned: boolean) => ({
+      position: 'fixed' as const,
+      zIndex: 70,
+      ...(isPositioned ? {
+        top: `${pos.y}%`,
+        left: `${pos.x + (pos.width / 2 / window.innerWidth * 100) + 2}%`,
+        transform: 'translateY(-50%)'
+      } : {
+        bottom: '0.375rem',
+        right: '1.5rem'
+      })
+    }),
+    
+    // Ventana del tour - DIMENSIONES FIJAS
+    tourWindow: { 
+      backgroundColor: '#2563eb', 
+      borderRadius: '0.5rem', 
+      boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)', 
+      padding: '1.5rem', 
+      position: 'relative' as const,
+      // DIMENSIONES FIJAS PARA TODAS LAS VENTANAS
+      width: '20rem',
+      height: '12rem',
+      display: 'flex',
+      flexDirection: 'column' as const,
+      justifyContent: 'space-between'
+    },
+    
+    // Flecha indicadora
+    tooltipArrow: {
+      position: 'absolute' as const,
+      transform: 'translateY(-50%)',
+      top: 'calc(50% + 0.25rem)',
+      left: '-0.5625rem',
+      width: 0,
+      height: 0,
+      borderTop: '0.5625rem solid transparent',
+      borderBottom: '0.5625rem solid transparent',
+      borderRight: '0.5625rem solid #2563eb'
+    },
+    
+    // Header del tooltip
+    tooltipHeader: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '1rem' },
+    tooltipTitle: { fontSize: '1rem', fontWeight: 600, color: '#ffffff', margin: 0 },
+    
+    // Contenido del tooltip
+    tooltipContent: { 
+      color: '#ffffff', 
+      fontSize: '0.875rem', 
+      marginBottom: '1rem', 
+      lineHeight: '1.4',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis'
+    },
+    
+    // Indicador de progreso en tooltip
+    progressDots: { display: 'flex', gap: '0.25rem', marginBottom: '1rem' },
+    progressDot: (isActive: boolean) => ({
+      height: '0.25rem',
+      flex: 1,
+      borderRadius: '9999px',
+      backgroundColor: isActive ? '#ffffff' : '#3b82f6'
+    }),
+    
+    // Botones
+    buttonContainer: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
+    tourButton: { 
+      display: 'inline-flex', 
+      alignItems: 'center', 
+      justifyContent: 'center', 
+      width: '2rem', 
+      height: '2rem', 
+      backgroundColor: '#ffffff', 
+      color: '#2563eb', 
+      borderRadius: '9999px', 
+      border: 'none', 
+      cursor: 'pointer', 
+      transition: 'all 0.3s',
+      fontSize: '1rem'
+    },
+    spacer: { width: '2rem' }
+  };
+
   // Función para calcular el progreso de la barra
   const getProgressPercentage = () => {
-    // Etapa 1: Onboarding (pasos 1-5) = 0% a 75%
-    // Etapa 2: Ir a la Bandeja (paso 6) = 75% a 100%
-    
     if (step <= 5) {
-      // Durante el onboarding: cada paso representa 15% (75% / 5 pasos)
       return (step / 5) * 75;
     } else {
-      // En el paso final: 100%
       return 100;
     }
   };
@@ -55,7 +196,6 @@ const TourFloating: React.FC<TourFloatingProps> = ({
 
   // Función para detectar si la empresa está validada
   const checkValidationStatus = () => {
-    // Buscar específicamente el texto de validación exitosa
     const validationSpan = Array.from(document.querySelectorAll('span, div, p')).find(
       element => {
         const text = element.textContent?.trim();
@@ -65,17 +205,14 @@ const TourFloating: React.FC<TourFloatingProps> = ({
       }
     );
     
-    // Buscar iconos de check verdes específicos de validación
     const greenCheckIcons = document.querySelectorAll('.text-green-500, .text-green-600');
     const hasValidationWithCheck = Array.from(greenCheckIcons).some(icon => {
       const parent = icon.closest('div');
       return parent?.textContent?.includes('Validado') || parent?.textContent?.includes('credenciales');
     });
     
-    // Buscar elementos con clases específicas de éxito/validación
     const successElements = document.querySelectorAll('[class*="success"], [class*="validated"], [data-validation="success"]');
     
-    // Buscar si hay empresas listadas (indicativo de validación exitosa)
     const companyElements = Array.from(document.querySelectorAll('*')).filter(el => {
       const text = el.textContent?.trim();
       return text?.includes('empresas completamente verificadas') ||
@@ -83,7 +220,6 @@ const TourFloating: React.FC<TourFloatingProps> = ({
              (text?.includes('Estado: ACTIVO') && text?.includes('Validado'));
     });
     
-    // Verificar si existe el botón "Ir a la Bandeja" (indica que ya hay empresas validadas)
     const bandejaButton = Array.from(document.querySelectorAll('button')).find(
       button => button.textContent?.includes('Ir a la Bandeja')
     );
@@ -103,7 +239,6 @@ const TourFloating: React.FC<TourFloatingProps> = ({
   useEffect(() => {
     if (!isVisible || hasDetectedValidation || step >= 4) return;
 
-    // Solo detectar validación automática en los primeros 3 pasos
     if (step >= 1 && step <= 3) {
       const checkAndSkip = () => {
         const isValidated = checkValidationStatus();
@@ -113,26 +248,22 @@ const TourFloating: React.FC<TourFloatingProps> = ({
           console.log('🎉 Validación detectada automáticamente, saltando al paso 4');
           setHasDetectedValidation(true);
           
-          // Llamar a la función de callback para saltar al paso 4
           if (onAutoSkipToValidation) {
             setTimeout(() => {
               onAutoSkipToValidation();
-            }, 800); // Aumentar la pausa para mejor UX
+            }, 800);
           }
         }
       };
 
-      // Verificar inmediatamente después de un pequeño delay
       setTimeout(checkAndSkip, 500);
 
-      // Configurar un observer para detectar cambios en el DOM
       const observer = new MutationObserver((mutations) => {
         let shouldCheck = false;
 
         mutations.forEach((mutation) => {
           const target = mutation.target as Element;
           
-          // Detectar cambios más específicos que podrían indicar validación
           const hasValidationContent = target.textContent?.includes('Validado: RUC y credenciales validadas') ||
                                      target.textContent?.includes('empresas completamente verificadas') ||
                                      target.textContent?.includes('Estado: ACTIVO') ||
@@ -143,7 +274,6 @@ const TourFloating: React.FC<TourFloatingProps> = ({
                                      target.className?.includes('validated') ||
                                      target.hasAttribute?.('data-validation-success');
 
-          // Detectar cuando aparecen elementos nuevos (como empresas validadas)
           const isRelevantMutation = mutation.type === 'childList' && 
                                    (target.textContent?.includes('Validado') || 
                                     target.querySelector?.('[class*="text-green"]'));
@@ -154,12 +284,10 @@ const TourFloating: React.FC<TourFloatingProps> = ({
         });
 
         if (shouldCheck) {
-          // Debounce para evitar múltiples verificaciones
           setTimeout(checkAndSkip, 300);
         }
       });
 
-      // Observar cambios en todo el documento con más filtros específicos
       observer.observe(document.body, {
         childList: true,
         subtree: true,
@@ -167,7 +295,6 @@ const TourFloating: React.FC<TourFloatingProps> = ({
         attributeFilter: ['class', 'data-validation-success', 'data-validation-state', 'data-status']
       });
 
-      // Verificar periódicamente cada 3 segundos como respaldo más agresivo
       const intervalId = setInterval(() => {
         console.log('⏰ Periodic validation check at step:', step);
         checkAndSkip();
@@ -187,14 +314,13 @@ const TourFloating: React.FC<TourFloatingProps> = ({
     }
   }, [step]);
 
-  // Calculate element position dynamically for steps 1, 2, 3, 4, 5 and 6
+  // Calculate element position dynamically
   useEffect(() => {
     if ((step === 1 || step === 2 || step === 3 || step === 4 || step === 5 || step === 6) && isVisible) {
       const calculateElementPosition = () => {
         let targetElement;
         
         if (step === 1) {
-          // Look for RUC label
           const rucLabel = Array.from(document.querySelectorAll('label')).find(
             label => label.textContent?.includes('RUC *')
           );
@@ -205,7 +331,6 @@ const TourFloating: React.FC<TourFloatingProps> = ({
             }
           }
         } else if (step === 2) {
-          // Look for Usuario SOL label
           const userLabel = Array.from(document.querySelectorAll('label')).find(
             label => label.textContent?.includes('Usuario SOL *')
           );
@@ -213,7 +338,6 @@ const TourFloating: React.FC<TourFloatingProps> = ({
             targetElement = userLabel.parentElement;
           }
         } else if (step === 3) {
-          // Look for Contraseña SOL label
           const passwordLabel = Array.from(document.querySelectorAll('label')).find(
             label => label.textContent?.includes('Contraseña SOL *')
           );
@@ -221,18 +345,15 @@ const TourFloating: React.FC<TourFloatingProps> = ({
             targetElement = passwordLabel.parentElement;
           }
         } else if (step === 4) {
-          // Look for the validation span with "Validado: RUC y credenciales validadas"
           const validationSpan = Array.from(document.querySelectorAll('span')).find(
             span => span.textContent?.includes('Validado: RUC y credenciales validadas')
           );
           if (validationSpan) {
-            // Find the company accordion item container
             targetElement = validationSpan.closest('.border.border-gray-200.rounded-lg') || 
                            validationSpan.closest('.p-4') ||
                            validationSpan.parentElement;
           }
         } else if (step === 5) {
-          // Look for the "Agregar Nueva Empresa" button
           const addButton = Array.from(document.querySelectorAll('button')).find(
             button => button.textContent?.includes('Agregar Nueva Empresa')
           );
@@ -240,7 +361,6 @@ const TourFloating: React.FC<TourFloatingProps> = ({
             targetElement = addButton;
           }
         } else if (step === 6) {
-          // Look for the "Ir a la Bandeja" button
           const bandejaButton = Array.from(document.querySelectorAll('button')).find(
             button => button.textContent?.includes('Ir a la Bandeja')
           );
@@ -257,19 +377,16 @@ const TourFloating: React.FC<TourFloatingProps> = ({
           setRucPosition({
             x: ((rect.left + rect.width / 2) / viewportWidth) * 100,
             y: ((rect.top + rect.height / 2) / viewportHeight) * 100,
-            width: rect.width + 40, // Add some padding
+            width: rect.width + 40,
             height: rect.height + 30
           });
         }
       };
 
-      // Calculate position immediately
       calculateElementPosition();
       
-      // Auto-focus inputs based on tour step
       const focusInput = () => {
         if (step === 2) {
-          // Focus Usuario SOL input
           const userInput = document.querySelector('input[placeholder*="usuario"], input[placeholder*="Usuario"]') as HTMLInputElement;
           if (userInput) {
             setTimeout(() => {
@@ -278,7 +395,6 @@ const TourFloating: React.FC<TourFloatingProps> = ({
             }, 200);
           }
         } else if (step === 3) {
-          // Focus Contraseña SOL input
           const passwordInput = document.querySelector('input[type="password"], input[placeholder*="contraseña"], input[placeholder*="Contraseña"]') as HTMLInputElement;
           if (passwordInput) {
             setTimeout(() => {
@@ -289,27 +405,22 @@ const TourFloating: React.FC<TourFloatingProps> = ({
         }
       };
       
-      // Execute focus after a delay to ensure DOM is ready
       setTimeout(focusInput, 300);
       
-      // Add event listeners for dynamic recalculation
       const handleResize = () => calculateElementPosition();
       const handleScroll = () => calculateElementPosition();
       
       window.addEventListener('resize', handleResize);
-      window.addEventListener('scroll', handleScroll, true); // true for capture phase to catch all scroll events
+      window.addEventListener('scroll', handleScroll, true);
       
-      // Also recalculate after a short delay to ensure DOM is fully rendered
       const timeoutId = setTimeout(calculateElementPosition, 100);
       
-      // Set up MutationObserver to detect DOM changes (like validation messages appearing)
       const observer = new MutationObserver((mutations) => {
         let shouldRecalculate = false;
         
         mutations.forEach((mutation) => {
           const target = mutation.target as Element;
           
-          // Only recalculate if changes are in relevant areas
           const isInOnboardingModal = target.closest('.onboarding-modal') || 
                                     target.closest('[data-tour-target]') ||
                                     target.querySelector('label[for*="ruc"]') ||
@@ -320,7 +431,6 @@ const TourFloating: React.FC<TourFloatingProps> = ({
                                     target.textContent?.includes('Agregar Nueva Empresa') ||
                                     target.textContent?.includes('Ir a la Bandeja');
           
-          // Check if any changes affect the layout (childList changes, attribute changes)
           if (isInOnboardingModal && (
             mutation.type === 'childList' || 
             (mutation.type === 'attributes' && 
@@ -332,12 +442,10 @@ const TourFloating: React.FC<TourFloatingProps> = ({
         });
         
         if (shouldRecalculate) {
-          // Debounce the recalculation to avoid excessive calls
           setTimeout(calculateElementPosition, 50);
         }
       });
       
-      // Start observing the document for changes
       observer.observe(document.body, {
         childList: true,
         subtree: true,
@@ -345,19 +453,16 @@ const TourFloating: React.FC<TourFloatingProps> = ({
         attributeFilter: ['class', 'style', 'data-validation-state']
       });
       
-      // Additional RAF-based position checking for cases where MutationObserver might miss
       let rafId: number;
       const checkPosition = () => {
         calculateElementPosition();
         rafId = requestAnimationFrame(checkPosition);
       };
       
-      // Start position checking only for step 1 (RUC input) where layout changes are most common
       if (step === 1) {
         rafId = requestAnimationFrame(checkPosition);
       }
       
-      // Cleanup function
       return () => {
         window.removeEventListener('resize', handleResize);
         window.removeEventListener('scroll', handleScroll, true);
@@ -371,21 +476,21 @@ const TourFloating: React.FC<TourFloatingProps> = ({
   }, [step, isVisible]);
 
   useEffect(() => {
-    // Clear any existing timer first
     if (autoCloseTimer) {
       clearTimeout(autoCloseTimer);
       setAutoCloseTimer(null);
     }
     
-    // No auto close timer needed since step 6 is the final step
-    
-    // Cleanup function
     return () => {
       if (autoCloseTimer) {
         clearTimeout(autoCloseTimer);
       }
     };
   }, [step, onClose, autoCloseTimer]);
+
+  const handleButtonHover = (e: React.MouseEvent<HTMLButtonElement>, isEnter: boolean) => {
+    e.currentTarget.style.backgroundColor = isEnter ? '#f3f4f6' : '#ffffff';
+  };
 
   if (!isVisible) return null;
 
@@ -444,187 +549,167 @@ const TourFloating: React.FC<TourFloatingProps> = ({
   };
 
   const content = getTourContent();
-  const currentStage = getCurrentStage();
+  const isPositionedStep = step >= 1 && step <= 6;
+
+  const clipPath = `polygon(
+    0% 0%, 
+    0% 100%, 
+    ${rucPosition.x - (rucPosition.width / 2 / window.innerWidth * 100)}% 100%, 
+    ${rucPosition.x - (rucPosition.width / 2 / window.innerWidth * 100)}% ${rucPosition.y - (rucPosition.height / 2 / window.innerHeight * 100)}%, 
+    ${rucPosition.x + (rucPosition.width / 2 / window.innerWidth * 100)}% ${rucPosition.y - (rucPosition.height / 2 / window.innerHeight * 100)}%, 
+    ${rucPosition.x + (rucPosition.width / 2 / window.innerWidth * 100)}% ${rucPosition.y + (rucPosition.height / 2 / window.innerHeight * 100)}%, 
+    ${rucPosition.x - (rucPosition.width / 2 / window.innerWidth * 100)}% ${rucPosition.y + (rucPosition.height / 2 / window.innerHeight * 100)}%, 
+    ${rucPosition.x - (rucPosition.width / 2 / window.innerWidth * 100)}% 100%, 
+    100% 100%, 
+    100% 0%
+  )`;
 
   return (
     <>
       {/* Barra de Progreso - Estilo navegación tabs */}
-      <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-70 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden min-w-[400px]" style={{bottom: '20px',
-                   left: '40%'}}>
-        
+      <div style={styles.progressContainer}>
         {/* Navegación tipo tabs */}
-        <div className="flex relative h-9" style={{width: '300px',height: '30px',}}>
+        <div style={styles.tabsContainer}>
           {/* Tab Onboarding */}
-          <div className={`flex-1 px-6 py-4 text-center cursor-pointer transition-colors relative ${
-            step <= 5 ? 'text-blue-600 font-medium' : 'text-gray-500'
-          }`}>
-            <span className="text-sm">Onboarding</span>
-            {/* Línea azul debajo si está activo */}
-            {step <= 5 && (
-              <div className="absolute bottom-0 left-0 right-0 h-1 bg-blue-600"></div>
-            )}
+          <div style={{
+            ...styles.tabItem,
+            ...(step <= 5 ? styles.tabActive : styles.tabInactive)
+          }}>
+            <span style={styles.tabText}>Onboarding</span>
           </div>
           
           {/* Separador vertical */}
-          <div className="w-px bg-gray-200"></div>
+          <div style={styles.tabSeparator}></div>
           
           {/* Tab Ir a la Bandeja */}
-          <div className={`flex-1 px-6 py-4 text-center cursor-pointer transition-colors relative ${
-            step === 6 ? 'text-blue-600 font-medium' : 'text-gray-500'
-          }`}>
-            <span className="text-sm">Ir a la Bandeja</span>
-            {/* Línea azul debajo si está activo */}
-            {step === 6 && (
-              <div className="absolute bottom-0 left-0 right-0 h-1 bg-blue-600"></div>
-            )}
+          <div style={{
+            ...styles.tabItem,
+            ...(step === 6 ? styles.tabActive : styles.tabInactive)
+          }}>
+            <span style={styles.tabText}>Ir a la Bandeja</span>
           </div>
         </div>
         
         {/* Barra de progreso continua debajo de los tabs */}
-        <div className="px-6 py-3 bg-gray-50">
-          <div className="w-full bg-gray-200 rounded-full h-2">
+        <div style={styles.progressSection}>
+          <div style={styles.progressBarBg}>
             <div 
-              className="bg-blue-600 h-2 rounded-full transition-all duration-500 ease-out"
-              style={{ width: `${(step / 6) * 100}%` }}
+              style={{
+                ...styles.progressBarFill,
+                // Progreso: pasos 1-5 = 75%, paso 6 = 100%
+                width: step <= 5 ? `${(step / 5) * 75}%` : '100%'
+              }}
             />
           </div>
         </div>
       </div>
 
-      {/* Single overlay with clip-path cutout - visual only, no interaction blocking */}
-      {(step === 1 || step === 2 || step === 3 || step === 4 || step === 5 || step === 6) && (
-        <div 
-          className="fixed inset-0 z-60 pointer-events-none"
-          style={{
-            background: 'rgba(0, 0, 0, 0.5)',
-            clipPath: `polygon(
-              0% 0%, 
-              0% 100%, 
-              ${rucPosition.x - (rucPosition.width / 2 / window.innerWidth * 100)}% 100%, 
-              ${rucPosition.x - (rucPosition.width / 2 / window.innerWidth * 100)}% ${rucPosition.y - (rucPosition.height / 2 / window.innerHeight * 100)}%, 
-              ${rucPosition.x + (rucPosition.width / 2 / window.innerWidth * 100)}% ${rucPosition.y - (rucPosition.height / 2 / window.innerHeight * 100)}%, 
-              ${rucPosition.x + (rucPosition.width / 2 / window.innerWidth * 100)}% ${rucPosition.y + (rucPosition.height / 2 / window.innerHeight * 100)}%, 
-              ${rucPosition.x - (rucPosition.width / 2 / window.innerWidth * 100)}% ${rucPosition.y + (rucPosition.height / 2 / window.innerHeight * 100)}%, 
-              ${rucPosition.x - (rucPosition.width / 2 / window.innerWidth * 100)}% 100%, 
-              100% 100%, 
-              100% 0%
-            )`,
-            pointerEvents: 'none'
-          }}
-        />
+      {/* Single overlay with clip-path cutout */}
+      {isPositionedStep && (
+        <div style={styles.overlayClip(clipPath)} />
       )}
 
-      {/* Borde redondeado decorativo - sin bloquear interacciones */}
-      {(step === 1 || step === 2 || step === 3 || step === 4 || step === 5 || step === 6) && (
-        <div
-          style={{
-            position: 'fixed',
-            left: `${rucPosition.x - (rucPosition.width / 2 / window.innerWidth * 100)}%`,
-            top: `${rucPosition.y - (rucPosition.height / 2 / window.innerHeight * 100)}%`,
-            width: `${rucPosition.width / window.innerWidth * 100}%`,
-            height: `${rucPosition.height / window.innerHeight * 100}%`,
-            border: '3px solid white',
-            borderRadius: '8px',
-            pointerEvents: 'none',
-            zIndex: 55,
-            boxShadow: '0 0 0 2px #030303a1, 0 0 20px rgba(42, 118, 131, 0.6)'
-          }}
-        />
+      {/* Borde redondeado decorativo */}
+      {isPositionedStep && (
+        <div style={styles.decorativeBorder(rucPosition)} />
       )}
 
       {/* Tour tooltip */}
-      <div 
-        className="fixed z-70 animate-fade-in"
-        style={{
-          top: (step === 1 || step === 2 || step === 3 || step === 4 || step === 5 || step === 6) ? `${rucPosition.y}%` : 'auto',
-          left: (step === 1 || step === 2 || step === 3 || step === 4 || step === 5 || step === 6) ? `${rucPosition.x + (rucPosition.width / 2 / window.innerWidth * 100) + 2}%` : 'auto',
-          transform: (step === 1 || step === 2 || step === 3 || step === 4 || step === 5 || step === 6) ? 'translateY(-50%)' : 'none',
-          bottom: (step !== 1 && step !== 2 && step !== 3 && step !== 4 && step !== 5 && step !== 6) ? '6px' : 'auto',
-          right: (step !== 1 && step !== 2 && step !== 3 && step !== 4 && step !== 5 && step !== 6) ? '24px' : 'auto'
-        }}
-      >
-        <div className="bg-blue-600 rounded-lg shadow-xl p-6 max-w-sm relative">
-          {/* Triangle pointer - only for steps 1, 2, 3, 4, 5 and 6 */}
-          {(step === 1 || step === 2 || step === 3 || step === 4 || step === 5 || step === 6) && (
-            <div
-              className="absolute transform -translate-y-1/2"
-              style={{
-                top: 'calc(50% + 4px)',
-                left: '-9px',
-                width: 0,
-                height: 0,
-                borderTop: '9px solid transparent',
-                borderBottom: '9px solid transparent',
-                borderRight: '9px solid #2563eb'
-              }}
-            />
+      <div style={styles.tooltipContainer(rucPosition, isPositionedStep)}>
+        <div style={styles.tourWindow}>
+          {/* Triangle pointer - solo para pasos posicionados */}
+          {isPositionedStep && (
+            <div style={styles.tooltipArrow} />
           )}
+          
           {/* Header */}
-          <div className="flex items-start justify-between mb-4">
-            <div className="flex items-center space-x-2">
-              <h3 className="font-semibold text-white">{content.title}</h3>
-              {/* Mostrar icono de detección automática si se detectó validación */}
+          <div style={styles.tooltipHeader}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <h3 style={styles.tooltipTitle}>{content.title}</h3>
               {hasDetectedValidation && step === 4 && (
-                <CheckCircle className="w-5 h-5 text-green-300" />
+                <CheckCircle style={{ width: '1.25rem', height: '1.25rem', color: '#86efac' }} />
               )}
             </div>
           </div>
 
           {/* Content */}
-          <p className="text-white text-sm mb-4">
+          <p style={styles.tooltipContent}>
             {content.message}
           </p>
 
-          {/* Progress indicator */}
-          <div className="flex space-x-1 mb-4">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div
-                key={i}
-                className={`h-1 flex-1 rounded-full ${
-                  i <= step ? 'bg-white' : 'bg-blue-400'
-                }`}
-              />
-            ))}
-          </div>
-
           {/* Buttons */}
           {content.showButtons && (
-            <div className="flex items-center justify-between">
-              {/* Back button - only show from step 2 onwards */}
-              {step >= 2 && (
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    console.log('Tour Back clicked');
-                    onBack();
-                  }}
-                  className="inline-flex items-center justify-center w-8 h-8 bg-white text-blue-600 rounded-full hover:bg-gray-100 transition-colors"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                </button>
+            <div style={styles.buttonContainer}>
+              {/* Lado izquierdo: Indicador "X/3" para pasos 1-3, botón back para pasos 4-6 */}
+              {step <= 3 ? (
+                <div style={{ 
+                  color: '#ffffff', 
+                  fontSize: '0.875rem', 
+                  fontWeight: 500,
+                  display: 'flex',
+                  alignItems: 'center'
+                }}>
+                  {step}/3
+                </div>
+              ) : (
+                /* Back button para pasos 4-6 */
+                step >= 4 ? (
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      console.log('Tour Back clicked');
+                      onBack();
+                    }}
+                    style={styles.tourButton}
+                    onMouseEnter={(e) => handleButtonHover(e, true)}
+                    onMouseLeave={(e) => handleButtonHover(e, false)}
+                  >
+                    <ArrowLeft style={{ width: '1rem', height: '1rem' }} />
+                  </button>
+                ) : (
+                  <div style={styles.spacer}></div>
+                )
               )}
-              
-              {/* Spacer when no back button */}
-              {step < 2 && <div></div>}
-              
-              {/* Continue button */}
-              {content.showContinue && (
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    console.log('Tour Continue clicked');
-                    onContinue();
-                  }}
-                  className="inline-flex items-center justify-center w-8 h-8 bg-white text-blue-600 rounded-full hover:bg-gray-100 transition-colors"
-                >
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              )}
+
+              {/* Lado derecho: botones de navegación */}
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                {/* Back button para pasos 2-3 */}
+                {step >= 2 && step <= 3 && (
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      console.log('Tour Back clicked');
+                      onBack();
+                    }}
+                    style={styles.tourButton}
+                    onMouseEnter={(e) => handleButtonHover(e, true)}
+                    onMouseLeave={(e) => handleButtonHover(e, false)}
+                  >
+                    <ArrowLeft style={{ width: '1rem', height: '1rem' }} />
+                  </button>
+                )}
+                
+                {/* Continue button */}
+                {content.showContinue && (
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      console.log('Tour Continue clicked');
+                      onContinue();
+                    }}
+                    style={styles.tourButton}
+                    onMouseEnter={(e) => handleButtonHover(e, true)}
+                    onMouseLeave={(e) => handleButtonHover(e, false)}
+                  >
+                    <ArrowRight style={{ width: '1rem', height: '1rem' }} />
+                  </button>
+                )}
+              </div>
             </div>
           )}
-
         </div>
       </div>
     </>

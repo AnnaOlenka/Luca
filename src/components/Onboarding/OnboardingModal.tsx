@@ -20,6 +20,39 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({
   const [showUserTypeSelection, setShowUserTypeSelection] = useState(false);
   const [hasSelectedUserType, setHasSelectedUserType] = useState(false);
 
+  // Estilos CSS centralizados
+  const styles = {
+    modal: { width: '100%', maxWidth: '56rem', maxHeight: '90vh', height: '37.5rem', minHeight: '37.5rem', display: 'flex', flexDirection: 'column' as const, borderRadius: '1rem !important', overflow: 'hidden' },
+    header: { padding: '1.5rem', borderBottom: '1px solid #e5e7eb', backgroundColor: '#ffffff', borderTopLeftRadius: '1rem', borderTopRightRadius: '1rem', textAlign: 'center' as const},
+    title: { fontSize: '1.25rem', margin: 0, fontWeight: 600, color: '#111827' },
+    subtitle: { fontSize: '1rem', margin: '0.25rem 0 0 0', color: '#4b5563' },
+    closeButton: { width: '1.5rem', height: '1.5rem', border: 'none', background: 'transparent', cursor: 'pointer', color: '#9ca3af' },
+    stickySection: { padding: '1rem 1.5rem', borderBottom: '1px solid #e5e7eb', backgroundColor: '#f9fafb' },
+    stickyContent: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
+    stickyLeft: { display: 'flex', alignItems: 'center', gap: '1rem' },
+    stickyLabel: { display: 'flex', alignItems: 'center', gap: '0.5rem' },
+    labelText: { fontSize: '1rem', fontWeight: 500, color: '#111827' },
+    badge: { fontSize: '0.75rem', color: '#d97706', backgroundColor: '#fef3c7', padding: '0.25rem 0.5rem', borderRadius: '9999px' },
+    addButton: { display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', backgroundColor: '#2563eb', color: '#ffffff', fontSize: '0.875rem', fontWeight: 500, borderRadius: '0.5rem', border: 'none', cursor: 'pointer', transition: 'all 0.3s' },
+    scrollableContent: { flex: 1, overflow: 'hidden' },
+    innerContent: { padding: '1.5rem', height: '100%', maxHeight: '24rem', overflowY: 'auto' as const },
+    emptyState: { textAlign: 'center' as const, padding: '3rem 0' },
+    emptyIcon: { width: '4rem', height: '4rem', color: '#d1d5db', margin: '0 auto 1rem auto' },
+    emptyTitle: { fontSize: '1.125rem', fontWeight: 500, color: '#111827', marginBottom: '0.5rem' },
+    companiesList: { display: 'flex', flexDirection: 'column' as const, gap: '1rem' },
+    scrollIndicator: { textAlign: 'center' as const, fontSize: '0.75rem', color: '#6b7280', marginTop: '1rem', padding: '0.5rem 0' },
+    footer: { padding: '1.5rem', borderTop: '1px solid #e5e7eb', backgroundColor: '#ffffff', borderBottomLeftRadius: '1rem', borderBottomRightRadius: '1rem' },
+    footerContent: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
+    footerLeft: { display: 'flex', flexDirection: 'column' as const, gap: '0.25rem' },
+    footerTitle: { fontSize: '0.875rem', fontWeight: 500, color: '#111827', margin: 0 },
+    footerSubtitle: { fontSize: '0.75rem', color: '#6b7280', margin: 0 },
+    bandejaButton: { padding: '0.5rem 1.5rem', backgroundColor: '#16a34a', color: '#ffffffff', fontSize: '0.875rem', fontWeight: 500, borderRadius: '0.5rem', border: 'none', cursor: 'pointer', transition: 'all 0.3s', marginLeft: 'auto' }
+  };
+
+  const handleButtonHover = (e: React.MouseEvent<HTMLButtonElement>, hoverColor: string, normalColor: string, isEnter: boolean) => {
+    e.currentTarget.style.backgroundColor = isEnter ? hoverColor : normalColor;
+  };
+
   // Show user type selection modal first when onboarding modal opens
   useEffect(() => {
     if (isOpen && !hasSelectedUserType) {
@@ -124,63 +157,68 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({
           <div className="fixed inset-0 bg-black bg-opacity-50 z-40" />
       
           {/* Modal */}
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl" style={{ height: '600px', minHeight: '600px', maxHeight: '600px', display: 'flex', flexDirection: 'column' }}>
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+            <div className="bg-white rounded-xl shadow-xl" style={styles.modal}>
               {/* Modal Header - Fixed */}
-              <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+              <div className="flex items-center justify-between" style={styles.header}>
                 <div>
-                  <h2 className="text-xl font-semibold text-gray-900">
+                  <h2 className="font-semibold text-gray-900" style={styles.title}>
                     Bienvenido a Luca
                   </h2>
-                  <p className="text-gray-600 mt-1">
+                  <p className="text-gray-600" style={styles.subtitle}>
                     Conecta tu primera empresa para comenzar a gestionar sus obligaciones tributarias
                   </p>
                 </div>
                 <button
                   onClick={handleModalClose}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                  className="hover:text-gray-600 transition-colors"
+                  style={styles.closeButton}
                 >
-                  <X className="w-6 h-6" />
+                  <X style={{ width: '1.5rem', height: '1.5rem'}} />
                 </button>
               </div>
 
               {/* Sticky Section - Company Management */}
-              <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className="flex items-center space-x-2">
-                    <Building2 className="w-5 h-5 text-gray-600" />
-                    <span className="font-medium text-gray-900">Empresas</span>
+              <div style={styles.stickySection}>
+                <div style={styles.stickyContent}>
+                  <div style={styles.stickyLeft}>
+                    <div style={styles.stickyLabel}>
+                      <Building2 style={{ width: '1.25rem', height: '1.25rem', color: '#4b5563' }} />
+                      <span style={styles.labelText}>Empresas</span>
+                    </div>
+                    {state.hasDraft && (
+                      <span style={styles.badge}>
+                        Borrador guardado
+                      </span>
+                    )}
                   </div>
-                  {state.hasDraft && (
-                    <span className="text-xs text-yellow-600 bg-yellow-100 px-2 py-1 rounded-full">
-                      Borrador guardado
-                    </span>
-                  )}
+                  
+                  <button
+                    onClick={actions.addNewCompany}
+                    style={styles.addButton}
+                    onMouseEnter={(e) => handleButtonHover(e, '#1d4ed8', '#2563eb', true)}
+                    onMouseLeave={(e) => handleButtonHover(e, '#1d4ed8', '#2563eb', false)}
+                  >
+                    <Plus style={{ width: '1rem', height: '1rem' }} />
+                    <span>Agregar Nueva Empresa</span>
+                  </button>
                 </div>
-                
-                <button
-                  onClick={actions.addNewCompany}
-                  className="inline-flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>Agregar Nueva Empresa</span>
-                </button>
               </div>
 
               {/* Scrollable Content */}
-              <div className="flex-1 overflow-hidden">
-                <div className="px-6 py-4 h-full max-h-96 overflow-y-auto">
+              <div style={styles.scrollableContent}>
+                <div style={styles.innerContent}>
                   {state.companies.length === 0 ? (
                     /* Empty State */
-                    <div className="text-center py-12">
-                      <Building2 className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                      <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    <div style={styles.emptyState}>
+                      <Building2 style={styles.emptyIcon} />
+                      <h3 style={styles.emptyTitle}>
                         Sin empresas para mostrar
                       </h3>
                     </div>
                   ) : (
                     /* Companies List with conditional scroll */
-                    <div className="space-y-4">
+                    <div style={styles.companiesList}>
                       {state.companies.map((company, index) => (
                         <CompanyAccordionItem
                           key={company.id}
@@ -198,7 +236,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({
                   
                   {/* Scroll indicator for 5+ companies */}
                   {state.companies.length > 5 && (
-                    <div className="text-center text-xs text-gray-500 mt-4 py-2">
+                    <div style={styles.scrollIndicator}>
                       {state.companies.length} empresas · Scroll para ver más
                     </div>
                   )}
@@ -206,23 +244,14 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({
               </div>
 
               {/* Modal Footer - Fixed */}
-              <div className="px-6 py-4 border-t border-gray-200 bg-white">
-                <div className="flex items-center justify-between">
-                  <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium text-gray-900">
-                      {state.validCompanyCount} empresas completamente verificadas
-                    </p>
-                    {state.companies.length > 0 && (
-                       /* No necesario solo para pruebas */
-                      <p className="text-xs text-gray-500">
-                        Credenciales de prueba: 20123456789ACME01 / password123
-                      </p>
-                    )}
-                  </div>
+              <div style={styles.footer}>
+                <div style={styles.footerContent}>
 
                   <button
                     onClick={handleBandejaClick}
-                    className="px-6 py-2 bg-green-600 text-black font-medium rounded-lg hover:bg-green-700 transition-colors"
+                    style={styles.bandejaButton}
+                    onMouseEnter={(e) => handleButtonHover(e, '#15803d', '#16a34a', true)}
+                    onMouseLeave={(e) => handleButtonHover(e, '#15803d', '#16a34a', false)}
                   >
                     Ir a la Bandeja
                   </button>
@@ -231,6 +260,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({
             </div>
           </div>
 
+          
           {/* Tour Floating - Independent */}
           <TourFloating
             isVisible={state.tourState.showTourFloating}
@@ -240,6 +270,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({
             onBack={actions.handleTourBack}
             onClose={actions.handleTourClose}
           />
+
         </>
       )}
     </>
