@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Users, AlertCircle, Save, UserPlus, Search, Trash2, UserCheck, Crown, Calculator, Plus, ChevronDown, Settings, FileText, User as UserIcon, Edit, CheckCircle } from 'lucide-react';
+import { X, Users, AlertCircle, Save, UserPlus, Search, Trash2, UserCheck, Crown, Calculator, Plus, ChevronDown, Settings, FileText, User as UserIcon, Edit, CheckCircle, Shield } from 'lucide-react';
 import RelatedCompaniesModal from './RelatedCompaniesModal';
 
 interface User {
@@ -289,6 +289,55 @@ const CompanyPermissionsModal: React.FC<CompanyPermissionsModalProps> = ({
   savedRolePermissions,
   onSave
 }) => {
+  // Estilos CSS responsivos
+  const styles = `
+    .permissions-modal-backdrop { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center; z-index: 50; padding: 1rem; overflow-y: auto; }
+    .permissions-modal-container { background-color: white; border-radius: 0.75rem; width: 100%; max-width: 56rem; max-height: 90vh; height: 37.5rem; min-height: 37.5rem; display: flex; flex-direction: column; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); position: relative; }
+    .permissions-modal-header { background-color: white; color: #1f2937; padding: 1.5rem; border-bottom: 1px solid #e5e7eb; }
+    .permissions-modal-title { font-size: 1.25rem; font-weight: 600; color: #111827; }
+    .permissions-modal-subtitle { font-size: 0.875rem; color: #6b7280; margin-top: 0.25rem; }
+    .permissions-modal-close-btn { color: #9ca3af; padding: 0.5rem; border-radius: 0.5rem; transition: all 0.2s; border: none; background: none; cursor: pointer; position: absolute; top: 1rem; right: 1rem; }
+    .permissions-modal-close-btn:hover { color: #4b5563; background-color: #f3f4f6; }
+    .permissions-modal-tabs { background-color: #f9fafb; padding: 0.75rem;}
+    .permissions-modal-tab-list { display: flex; gap: 0.5rem; }
+    .permissions-modal-tab { display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1rem; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: all 0.2s; border: none; background: none; }
+    .permissions-modal-tab.active { background-color: white; color: #2563eb; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); }
+    .permissions-modal-tab:not(.active) { color: #6b7280; }
+    .permissions-modal-tab:not(.active):hover { background-color: rgba(255, 255, 255, 0.5); }
+    .permissions-modal-content { flex: 1; overflow-y: auto; }
+    .permissions-modal-search-section { background-color: #f9fafb; padding: 1.3rem; border-bottom: 1px solid #e5e7eb; }
+    .permissions-modal-search-container { display: flex; align-items: center; justify-content: space-between; }
+    .permissions-modal-search-filters { display: flex; align-items: center; gap: 1rem; }
+    .permissions-modal-search-input-wrapper { position: relative; }
+    .permissions-modal-search-input { padding: 0.45rem 1rem; padding-left: 2.5rem; border: 1px solid #d1d5db; border-radius: 0.5rem; font-size: 0.875rem; transition: all 0.2s; }
+    .permissions-modal-search-input:focus { outline: none; border-color: transparent; box-shadow: 0 0 0 2px #3b82f6; }
+    .permissions-modal-select { border: 1px solid #d1d5db; border-radius: 0.5rem; padding: 0.45rem; font-size: 0.875rem; transition: all 0.2s; }
+    .permissions-modal-select:focus { outline: none; border-color: transparent; box-shadow: 0 0 0 2px #3b82f6; }
+    .permissions-modal-add-btn { background-color: #06b6d4; color: white; padding: 0.5rem 1rem; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 500; display: flex; align-items: center; gap: 0.5rem; transition: background-color 0.2s; border: none; cursor: pointer; }
+    .permissions-modal-add-btn:hover { background-color: #0891b2; }
+    .permissions-modal-edit-btn { background-color: #3b82f6; color: white; padding: 0.45rem 0.75rem; border-radius: 0.375rem; font-size: 0.75rem; display: flex; align-items: center; gap: 0.25rem; transition: background-color 0.2s; border: none; cursor: pointer; }
+    .permissions-modal-edit-btn:hover { background-color: #2563eb; }
+    .permissions-modal-delete-btn { background-color: #ef4444; color: white; padding: 0.5rem; border-radius: 0.375rem; transition: background-color 0.2s; border: none; cursor: pointer; }
+    .permissions-modal-delete-btn:hover { background-color: #dc2626; }
+    .permissions-modal-footer { background-color: #f9fafb; padding: 1.5rem; border-top: 1px solid #e5e7eb; }
+    .permissions-modal-cancel-btn:hover { background-color: #e5e7eb; }
+    @media (max-width: 48rem) {
+      .permissions-modal-backdrop { padding: 0.5rem; }
+      .permissions-modal-container { height: 90vh; min-height: 90vh; }
+      .permissions-modal-header { padding: 1rem; }
+      .permissions-modal-title { font-size: 1.125rem; }
+      .permissions-modal-tabs { padding: 0.75rem; }
+      .permissions-modal-tab { padding: 0.5rem 0.75rem; font-size: 0.8125rem; width: auto; }
+      .permissions-modal-search-section { padding: 1rem; }
+      .permissions-modal-search-container { flex-direction: column; gap: 1rem; align-items: stretch; }
+      .permissions-modal-search-filters { flex-direction: column; gap: 0.75rem; }
+    }
+    @media (max-width: 30rem) {
+      .permissions-modal-container { max-width: 95vw; }
+      .permissions-modal-search-filters { gap: 0.5rem; }
+    }
+  `;
+
   const [assignedUsers, setAssignedUsers] = useState<User[]>(initialAssignedUsers);
   const [isSaving, setIsSaving] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
@@ -599,65 +648,51 @@ const CompanyPermissionsModal: React.FC<CompanyPermissionsModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="fixed inset-0 bg-black bg-opacity-50" onClick={onClose} />
-      
-      <div className="flex min-h-screen items-center justify-center p-4">
-        <div className="relative bg-white rounded-lg shadow-xl w-full max-w-4xl min-h-[75vh] max-h-[90vh] overflow-hidden flex flex-col">
+    <>
+      <style>{styles}</style>
+      <div className="permissions-modal-backdrop">
+        <div className="permissions-modal-container">
           
-          <div className="bg-white border-b border-gray-200 px-6 py-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-xl font-semibold text-gray-900">Gestión de Permisos</h2>
-                <p className="text-sm text-gray-500 mt-1">{empresa.nombre} - RUC {empresa.ruc}</p>
-              </div>
-              <button 
-                onClick={onClose}
-                className="text-gray-400 hover:text-gray-600 p-2 rounded-lg hover:bg-gray-100 transition-colors"
-                disabled={isSaving}
-              >
-                <X className="w-5 h-5" />
-              </button>
+          <div className="permissions-modal-header">
+            <div>
+              <h2 className="permissions-modal-title">Gestión de Permisos</h2>
+              <p className="permissions-modal-subtitle">{empresa.nombre} - RUC {empresa.ruc}</p>
             </div>
+            <button 
+              onClick={onClose}
+              className="permissions-modal-close-btn"
+              disabled={isSaving}
+            >
+              <X className="w-5 h-5" />
+            </button>
 
-            <div className="mt-4">
-              <div className="border-b border-gray-200">
-                <nav className="-mb-px flex space-x-8">
-                  <button
-                    onClick={() => setActiveTab('users')}
-                    className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                      activeTab === 'users'
-                        ? 'border-blue-500 text-blue-600'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                    }`}
-                    style={{ width: "150px" }}
-                  >
-                    Usuarios y Roles
-                  </button>
-                  <button
-                    onClick={() => setActiveTab('permissions')}
-                    className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                      activeTab === 'permissions'
-                        ? 'border-blue-500 text-blue-600'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                    }`}
-                    style={{ width: "150px" }}
-                  >
-                    Permisos por Rol
-                  </button>
-                </nav>
-              </div>
+            <div className="permissions-modal-tabs">
+              <nav className="permissions-modal-tab-list">
+                <button
+                  onClick={() => setActiveTab('users')}
+                  className={`permissions-modal-tab ${activeTab === 'users' ? 'active' : ''}`}
+                >
+                  <Users className="w-4 h-4" />
+                  Usuarios y Roles
+                </button>
+                <button
+                  onClick={() => setActiveTab('permissions')}
+                  className={`permissions-modal-tab ${activeTab === 'permissions' ? 'active' : ''}`}
+                >
+                  <Shield className="w-4 h-4" />
+                  Permisos por Rol
+                </button>
+              </nav>
             </div>
           </div>
 
-          {/* Contenedor principal con flex-1 */}
-          <div className="flex-1 flex flex-col">
+          <div className="permissions-modal-content">
           {activeTab === 'users' && (
             <>
-              <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
-                <div className="flex items-center justify-between ">
-                  <div className="flex items-center space-x-4">
-                    <div className="relative ">
+              <div className="permissions-modal-search-section">
+                <div className="permissions-modal-search-container">
+                  <div className="permissions-modal-search-filters">
+                    <div className="permissions-modal-search-input-wrapper">
                       <Search 
                         className="w-5 h-5 text-gray-400" 
                         style={{
@@ -672,15 +707,14 @@ const CompanyPermissionsModal: React.FC<CompanyPermissionsModalProps> = ({
                         placeholder="Buscar usuarios..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pr-4 py-1 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        style={{ paddingLeft: '2.5rem' }}
+                        className="permissions-modal-search-input"
                       />
                     </div>
 
                     <select
                       value={filterRole}
                       onChange={(e) => setFilterRole(e.target.value)}
-                      className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="permissions-modal-select"
                     >
                       <option value="all">Todos los roles</option>
                       {roleOptions.map(role => (
@@ -703,7 +737,7 @@ const CompanyPermissionsModal: React.FC<CompanyPermissionsModalProps> = ({
                           }
                         }}
                         onClick={() => setShowAddUserModal(true)}
-                        className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2"
+                        className="permissions-modal-add-btn"
                       >
                         <UserPlus className="w-4 h-4" />
                         <span>Añadir Usuario</span>
@@ -831,7 +865,7 @@ const CompanyPermissionsModal: React.FC<CompanyPermissionsModalProps> = ({
                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                               <button
                                 onClick={() => handleRemoveUser(user.id)}
-                                className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors"
+                                className="permissions-modal-delete-btn"
                                 title="Eliminar usuario"
                               >
                                 <Trash2 className="w-4 h-4" />
@@ -949,7 +983,7 @@ const CompanyPermissionsModal: React.FC<CompanyPermissionsModalProps> = ({
         )}
         
         {/* Footer fijo del modal */}
-        <div className="bg-gray-50 px-6 py-4 border-t border-gray-200">
+        <div className="permissions-modal-footer">
           <div className="flex items-center justify-between">
             <div className="text-sm text-gray-500">
               <div className="flex items-center space-x-4">
@@ -961,15 +995,17 @@ const CompanyPermissionsModal: React.FC<CompanyPermissionsModalProps> = ({
             <div className="flex space-x-3">
               <button
                 onClick={onClose}
-                className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors"
+                className="permissions-modal-cancel-btn"
                 disabled={isSaving}
+                style={{ padding: '0.5rem 1rem', color: '#6b7280', backgroundColor: '#f3f4f6', border: 'none', borderRadius: '0.5rem', fontSize: '0.875rem', cursor: 'pointer', transition: 'background-color 0.2s' }}
               >
                 Cancelar
               </button>
               <button
                 onClick={handleSave}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                className="permissions-modal-save-btn"
                 disabled={isSaving || !hasChanges}
+                style={{ backgroundColor: '#2563eb', color: 'white', padding: '0.5rem 1rem', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: '500', display: 'flex', alignItems: 'center', gap: '0.5rem', transition: 'background-color 0.2s', border: 'none', cursor: 'pointer', opacity: (isSaving || !hasChanges) ? 0.5 : 1 }}
               >
                 {isSaving ? (
                   <>
@@ -986,27 +1022,27 @@ const CompanyPermissionsModal: React.FC<CompanyPermissionsModalProps> = ({
             </div>
           </div>
         </div>
+        </div>
       </div>
-    </div>
     
-    {/* GeneralPermissionsEditor como overlay */}
-    {editingGeneralPermissions && (
-      <GeneralPermissionsEditor
-        currentPermissions={rolePermissions.find(r => r.roleId === editingGeneralPermissions)?.generalAccess || ''}
-        onSave={(newPermissions) => updateRoleGeneralPermissions(editingGeneralPermissions, newPermissions)}
-        onCancel={() => setEditingGeneralPermissions(null)}
-      />
-    )}
+      {/* GeneralPermissionsEditor como overlay */}
+      {editingGeneralPermissions && (
+        <GeneralPermissionsEditor
+          currentPermissions={rolePermissions.find(r => r.roleId === editingGeneralPermissions)?.generalAccess || ''}
+          onSave={(newPermissions) => updateRoleGeneralPermissions(editingGeneralPermissions, newPermissions)}
+          onCancel={() => setEditingGeneralPermissions(null)}
+        />
+      )}
 
-    <RelatedCompaniesModal
-      isOpen={showRelatedCompaniesModal}
-      onClose={() => setShowRelatedCompaniesModal(false)}
-      personName=""
-      relatedCompanies={[]}
-      onAddSelected={() => {}}
-      onAddAll={() => {}}
-    />
-    </div>
+      <RelatedCompaniesModal
+        isOpen={showRelatedCompaniesModal}
+        onClose={() => setShowRelatedCompaniesModal(false)}
+        personName=""
+        relatedCompanies={[]}
+        onAddSelected={() => {}}
+        onAddAll={() => {}}
+      />
+    </>
   );
 };
 

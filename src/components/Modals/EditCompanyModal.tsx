@@ -39,6 +39,52 @@ const EditCompanyModal: React.FC<EditCompanyModalProps> = ({ empresa, isOpen, on
     { value: 'Contador', label: 'Contador', color: 'bg-blue-100 text-blue-800' },
   ];
 
+  // Estilos CSS responsivos
+  const styles = `
+    .edit-modal-backdrop { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
+    .edit-modal-container { background-color: white; border-radius: 0.75rem; width: 100%; max-width: 56rem; max-height: 90vh; height: 37.5rem; min-height: 37.5rem; display: flex; flex-direction: column; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); }
+    .edit-modal-header { background-color: #2563eb; color: white; padding: 1rem; border-top-left-radius: 0.75rem; border-top-right-radius: 0.75rem; display: flex; align-items: center; justify-content: space-between; }
+    .edit-modal-title { font-size: 1.25rem; font-weight: 600; }
+    .edit-modal-subtitle { font-size: 0.875rem; opacity: 0.9; margin-top: 0.25rem; }
+    .edit-modal-close-btn { color: white; padding: 0.5rem; border-radius: 0.375rem; transition: background-color 0.2s; border: none; background: none; cursor: pointer; }
+    .edit-modal-close-btn:hover { background-color: rgba(255, 255, 255, 0.1); }
+    .edit-modal-tabs { background-color: #f9fafb; padding: 1rem; border-bottom: 1px solid #e5e7eb; }
+    .edit-modal-tab-list { display: flex; gap: 0.5rem; }
+    .edit-modal-tab { display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1rem; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: all 0.2s; border: none; background: none; }
+    .edit-modal-tab.active { background-color: white; color: #2563eb; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); }
+    .edit-modal-tab:not(.active) { color: #6b7280; }
+    .edit-modal-tab:not(.active):hover { background-color: rgba(255, 255, 255, 0.5); }
+    .edit-modal-content { flex: 1; overflow-y: auto; padding: 1rem; }
+    .edit-modal-footer { background-color: #f9fafb; padding: 0.75rem 1rem; border-bottom-left-radius: 0.75rem; border-bottom-right-radius: 0.75rem; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e5e7eb; }
+    .edit-modal-save-btn { background-color: #2563eb; color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; font-size: 0.875rem; font-weight: 500; display: flex; align-items: center; gap: 0.5rem; transition: background-color 0.2s; border: none; cursor: pointer; }
+    .edit-modal-save-btn:hover { background-color: #1d4ed8; }
+    .edit-modal-save-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .edit-modal-completitud { font-size: 0.875rem; color: #6b7280; }
+    .edit-modal-cancel-btn { padding: 0.5rem 1rem; color: #6b7280; background-color: transparent; border: none; border-radius: 0.5rem; fontSize: 0.875rem; cursor: pointer; transition: background-color 0.2s; }
+    .edit-modal-cancel-btn:hover { background-color: #f3f4f6; }
+    .edit-modal-add-contact-btn { background-color: #06b6d4; color: white; padding: 0.5rem 1rem; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 500; display: flex; align-items: center; gap: 0.5rem; transition: background-color 0.2s; border: none; cursor: pointer; }
+    .edit-modal-add-contact-btn:hover { background-color: #0891b2; }
+    .edit-modal-edit-btn { background-color: #3b82f6; color: white; padding: 0.45rem 0.75rem; border-radius: 0.375rem; font-size: 0.75rem; display: flex; align-items: center; gap: 0.25rem; transition: background-color 0.2s; border: none; cursor: pointer; }
+    .edit-modal-edit-btn:hover { background-color: #2563eb;}
+    .edit-modal-delete-btn { background-color: #ef4444; color: white; padding: 0.5rem; border-radius: 0.375rem; transition: background-color 0.2s; border: none; cursor: pointer; }
+    .edit-modal-delete-btn:hover { background-color: #dc2626; }
+    @media (max-width: 48rem) {
+      .edit-modal-backdrop { padding: 0.5rem; }
+      .edit-modal-container { height: 90vh; min-height: 90vh; }
+      .edit-modal-header { padding: 0.75rem; }
+      .edit-modal-title { font-size: 1.125rem; }
+      .edit-modal-tabs { padding: 0.75rem; }
+      .edit-modal-tab { padding: 0.5rem 0.75rem; font-size: 0.8125rem; }
+      .edit-modal-content { padding: 0.75rem; }
+      .edit-modal-footer { padding: 0.75rem; }
+    }
+    @media (max-width: 30rem) {
+      .edit-modal-container { max-width: 95vw; }
+      .edit-modal-tab { padding: 0.5rem; font-size: 0.75rem; }
+      .edit-modal-content { padding: 0.5rem; }
+    }
+  `;
+
   // Funciones de validación
   const validateEmail = (email: string): string => {
     if (!email) return '';
@@ -433,6 +479,14 @@ const EditCompanyModal: React.FC<EditCompanyModalProps> = ({ empresa, isOpen, on
     updatePersonasData(dataWithCompletitud);
   }
 }, [empresa, isOpen]);
+
+  // Inyectar estilos CSS
+  useEffect(() => {
+    const styleElement = document.createElement('style');
+    styleElement.textContent = styles;
+    document.head.appendChild(styleElement);
+    return () => styleElement.remove();
+  }, [styles]);
 
 useEffect(() => {
   // Calcular completitud en tiempo real para mostrar en la UI
@@ -879,10 +933,19 @@ const validateCredentialsRealTime = async (usuario: string, clave: string) => {
         return (
           <div className="h-full flex flex-col">
             <div className="border border-blue-200 rounded-lg p-1 mb-4">
-              <h3 className="text-lg font-medium text-blue-900 mb-1 flex items-center">
-                <Users className="w-5 h-4 mr-2 text-blue-600" />
-                Personas Asignadas
-              </h3>
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-medium text-blue-900 mb-1 flex items-center">
+                  <Users className="w-5 h-4 mr-2 text-blue-600" />
+                  Personas Asignadas
+                </h3>
+                <button
+                  onClick={addNewPersona}
+                  className="edit-modal-add-contact-btn"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Agregar Contacto</span>
+                </button>
+              </div>
             </div>
 
             <div className="flex-1 overflow-y-auto">
@@ -923,22 +986,22 @@ const validateCredentialsRealTime = async (usuario: string, clave: string) => {
                             <div className="flex items-center justify-center space-x-2">
                               <button
                                 onClick={() => setExpandedPersona(expandedPersona === persona.id ? null : persona.id)}
-                                className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs flex items-center space-x-1"
+                                className="edit-modal-edit-btn"
                               >
-                                <Edit3 className="w-3 h-3" />
+                                <Edit3 style={{ width: '0.75rem', height: '0.75rem' }} />
                                 <span>Editar</span>
                                 {expandedPersona === persona.id ? 
-                                  <ChevronUp className="w-3 h-3" /> : 
-                                  <ChevronDown className="w-3 h-3" />
+                                  <ChevronUp style={{ width: '0.75rem', height: '0.75rem' }} /> : 
+                                  <ChevronDown style={{ width: '0.75rem', height: '0.75rem' }} />
                                 }
                               </button>
                               {personasData.length > 1 && (
                                 <button
                                   onClick={() => removePersona(persona.id)}
-                                  className="p-2 bg-red-600 text-white rounded hover:bg-red-700 text-xs"
+                                  className="edit-modal-delete-btn"
                                   title="Eliminar persona"
                                 >
-                                  <Trash2 className="w-3 h-3" />
+                                  <Trash2 style={{ width: '0.75rem', height: '0.75rem' }} />
                                 </button>
                               )}
                             </div>
@@ -1259,17 +1322,6 @@ const validateCredentialsRealTime = async (usuario: string, clave: string) => {
                   </div>
                 )}
               </div>
-            </div>
-            
-            {/* Botón para agregar nueva persona */}
-            <div className="mt-4 flex justify-center">
-              <button
-                onClick={addNewPersona}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center space-x-2 text-sm font-medium transition-colors"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Agregar Contacto</span>
-              </button>
             </div>
             
             {/* Mensaje de éxito */}
@@ -1783,47 +1835,35 @@ const validateCredentialsRealTime = async (usuario: string, clave: string) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg w-full max-w-4xl h-[600px] flex flex-col">
+    <div className="edit-modal-backdrop">
+      <div className="edit-modal-container">
         {/* Header */}
-        <div className="bg-blue-600 text-white p-4 rounded-t-lg">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <Edit3 className="w-6 h-6" />
+        <div className="edit-modal-header" style={{ position: 'relative' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <Edit3 style={{ width: '1.5rem', height: '1.5rem' }} />
+            <div>
+              <h2 className="edit-modal-title">Editar Empresa</h2>
               <div>
-                <h2 className="text-lg font-bold">Editar Empresa</h2>
-                <div>
-                  <p className="text-blue-100 text-sm">{empresa.nombre}</p>
-                  <div className="flex items-center space-x-2 mt-1">
-                    <div className="bg-blue-500 rounded-full h-2 w-32">
-                      <div 
-                        className="bg-white rounded-full h-2 transition-all duration-300" 
-                        style={{ width: `${calculateCompletitudRealTime(formData, credentialsStatus, validationErrors)}%` }}
-                      ></div>
-                    </div>
-                    <span className="text-blue-100 text-xs">
-                      {calculateCompletitudRealTime(formData, credentialsStatus, validationErrors)}% completo
-                    </span>
-                  </div>
-                </div>
+                <p className="edit-modal-subtitle">{empresa.nombre}</p>
               </div>
             </div>
-            <button 
-              onClick={() => {
-                if (successMessage.show) return; // No cerrar si está mostrando mensaje
-                handleModalClose();
-              }} 
-              className="p-2 hover:bg-blue-700 rounded-lg disabled:opacity-50"
-              disabled={successMessage.show}
-            >
-              <X className="w-5 h-5" />
-            </button>
           </div>
+          <button 
+            onClick={() => {
+              if (successMessage.show) return; // No cerrar si está mostrando mensaje
+              handleModalClose();
+            }} 
+            className="edit-modal-close-btn"
+            style={{ position: 'absolute', top: '1rem', right: '1rem' }}
+            disabled={successMessage.show}
+          >
+            <X style={{ width: '1.25rem', height: '1.25rem' }} />
+          </button>
         </div>
 
         {/* Tabs */}
-        <div className="bg-gray-50 p-4">
-          <div className="flex space-x-2 bg-gray-100 rounded-lg p-1">
+        <div className="edit-modal-tabs">
+          <div className="edit-modal-tab-list">
             {tabs.map((tab) => {
               const IconComponent = tab.icon;
               const isActive = activeTab === tab.id;
@@ -1831,18 +1871,15 @@ const validateCredentialsRealTime = async (usuario: string, clave: string) => {
                 <button
                   key={tab.id}
                   onClick={() => handleTabChange(tab.id)}
-                  className={`flex items-center space-x-2 px-4 py-2 text-sm font-medium rounded-md transition-colors flex-1 justify-center relative ${
-                    isActive 
-                      ? 'bg-white text-blue-600 shadow-sm' 
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                  }`}
+                  className={`edit-modal-tab ${isActive ? 'active' : ''}`}
+                  style={{ flex: '1', justifyContent: 'center', position: 'relative' }}
                 >
-                  <IconComponent className="w-4 h-4" />
+                  <IconComponent style={{ width: '1rem', height: '1rem' }} />
                   <span>{tab.label}</span>
                   {/* Símbolo de alerta para credenciales inválidas */}
                   {tab.id === 'credenciales' && credentialsStatus === 'invalid' && (
-                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
-                      <span className="text-white text-xs font-bold">!</span>
+                    <div style={{ position: 'absolute', top: '-0.25rem', right: '-0.25rem', width: '1rem', height: '1rem', backgroundColor: '#ef4444', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <span style={{ color: 'white', fontSize: '0.75rem', fontWeight: 'bold' }}>!</span>
                     </div>
                   )}
                 </button>
@@ -1852,32 +1889,37 @@ const validateCredentialsRealTime = async (usuario: string, clave: string) => {
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-hidden p-4">
+        <div className="edit-modal-content">
           {renderTabContent()}
         </div>
 
         {/* Footer */}
-        <div className="bg-gray-50 px-4 py-3 rounded-b-lg flex justify-between">
-          <button 
-            onClick={() => {
-              if (successMessage.show) return;
-              handleModalClose();
-            }} 
-            className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg text-sm disabled:opacity-50"
-            disabled={successMessage.show}
-          >
-            Cancelar
-          </button>
-          {/* Solo mostrar botón Guardar en tabs que no tienen guardado individual */}
-          {activeTab === 'comercial' && (
-            <button
-              onClick={handleSave}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center text-sm"
+        <div className="edit-modal-footer">
+          <div className="edit-modal-completitud">
+            {calculateCompletitudRealTime(formData, credentialsStatus, validationErrors)}% completo
+          </div>
+          <div style={{ display: 'flex', gap: '0.75rem' }}>
+            <button 
+              onClick={() => {
+                if (successMessage.show) return;
+                handleModalClose();
+              }} 
+              className="edit-modal-cancel-btn"
+              disabled={successMessage.show}
             >
-              <Save className="w-4 h-4 mr-2" />
-              <span>Guardar Cambios</span>
+              Cancelar
             </button>
-          )}
+            {/* Solo mostrar botón Guardar en tabs que no tienen guardado individual */}
+            {activeTab === 'comercial' && (
+              <button
+                onClick={handleSave}
+                className="edit-modal-save-btn"
+              >
+                <Save style={{ width: '1rem', height: '1rem' }} />
+                <span>Guardar Cambios</span>
+              </button>
+            )}
+          </div>
         </div>
       </div>
 

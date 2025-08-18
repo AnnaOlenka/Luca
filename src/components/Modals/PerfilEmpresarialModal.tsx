@@ -18,6 +18,44 @@ const PerfilEmpresarialModal: React.FC<PerfilEmpresarialModalProps> = ({ isOpen,
   const [expandedVariable, setExpandedVariable] = useState<string | null>(null);
   const [expandedHistoricalRow, setExpandedHistoricalRow] = useState<string | null>(null);
 
+  // Estilos CSS responsivos
+  const styles = `
+    .perfil-modal-backdrop { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
+    .perfil-modal-container { background-color: white; border-radius: 0.75rem; width: 100%; max-width: 56rem; max-height: 90vh; height: 37.5rem; min-height: 37.5rem; display: flex; flex-direction: column; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); overflow-y: auto; }
+    .perfil-modal-header { background: linear-gradient(to right, #2563eb, #1d4ed8); color: white; padding: 1rem; border-top-left-radius: 0.75rem; border-top-right-radius: 0.75rem; display: flex; justify-content: space-between; align-items: center; }
+    .perfil-modal-title { font-size: 1.25rem; font-weight: 700; }
+    .perfil-modal-close-btn { color: black; padding: 0.5rem; border-radius: 0.5rem; transition: all 0.2s; border: none; background: none; cursor: pointer; }
+    .perfil-modal-close-btn:hover { background-color: rgba(255, 255, 255, 0.2); }
+    .perfil-modal-tabs { border-bottom: 1px solid #e5e7eb; }
+    .perfil-modal-tab-list { display: flex; }
+    .perfil-modal-tab { display: flex; align-items: center; padding: 0.75rem 1.5rem; font-size: 0.875rem; font-weight: 500; border-bottom: 2px solid transparent; cursor: pointer; transition: all 0.2s; border: none; background: none; }
+    .perfil-modal-tab.active { border-bottom-color: #3b82f6; color: #2563eb; background-color: #eff6ff; }
+    .perfil-modal-tab:not(.active) { color: #6b7280; }
+    .perfil-modal-tab:not(.active):hover { color: #374151; border-bottom-color: #d1d5db; }
+    .perfil-modal-content { flex: 1; overflow-y: auto; padding: 1.5rem; }
+    .perfil-modal-btn-primary { background-color: #2563eb; color: white; padding: 0.5rem 1.5rem; border-radius: 0.5rem; font-weight: 500; transition: background-color 0.2s; border: none; cursor: pointer; }
+    .perfil-modal-btn-primary:hover { background-color: #1d4ed8; }
+    .perfil-modal-btn-secondary { background-color: #e5e7eb; color: #374151; padding: 0.5rem 1.5rem; border-radius: 0.5rem; font-weight: 500; transition: background-color 0.2s; border: none; cursor: pointer; }
+    .perfil-modal-btn-secondary:hover { background-color: #d1d5db; }
+    .perfil-modal-btn-green { background-color: #059669; color: white; padding: 0.5rem 1.5rem; border-radius: 0.5rem; font-weight: 500; transition: background-color 0.2s; border: none; cursor: pointer; }
+    .perfil-modal-btn-green:hover { background-color: #047857; }
+    .perfil-modal-btn-small { background-color: #2563eb; color: white; padding: 0.25rem 0.75rem; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 500; transition: background-color 0.2s; border: none; cursor: pointer; }
+    .perfil-modal-btn-small:hover { background-color: #1d4ed8; }
+    @media (max-width: 48rem) {
+      .perfil-modal-backdrop { padding: 0.5rem; }
+      .perfil-modal-container { height: 90vh; min-height: 90vh; }
+      .perfil-modal-header { padding: 0.75rem; }
+      .perfil-modal-title { font-size: 1.125rem; }
+      .perfil-modal-tab { padding: 0.5rem 1rem; font-size: 0.8125rem; }
+      .perfil-modal-content { padding: 1rem; }
+    }
+    @media (max-width: 30rem) {
+      .perfil-modal-container { max-width: 95vw; }
+      .perfil-modal-tab { padding: 0.5rem 0.75rem; font-size: 0.75rem; }
+      .perfil-modal-content { padding: 0.75rem; }
+    }
+  `;
+
   
   const toggleHistoricalRow = (rowId: string) => {
     setExpandedHistoricalRow(prev => prev === rowId ? null : rowId);
@@ -321,61 +359,49 @@ const PerfilEmpresarialModal: React.FC<PerfilEmpresarialModalProps> = ({ isOpen,
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-black p-4 rounded-t-xl">
-          <div className="flex justify-between items-center">
-            <h2 className="text-xl font-bold">Perfil Empresarial Tributario-Laboral</h2>
+    <>
+      <style>{styles}</style>
+      <div className="perfil-modal-backdrop">
+        <div className="perfil-modal-container">
+          {/* Header */}
+          <div className="perfil-modal-header">
+            <h2 className="perfil-modal-title">Perfil Empresarial Tributario-Laboral</h2>
             <button
               onClick={onClose}
-              className="text-black hover:bg-white hover:bg-opacity-20 p-2 rounded-lg transition-colors"
+              className="perfil-modal-close-btn"
             >
               <X size={20} />
             </button>
           </div>
-        </div>
 
-        {/* Tabs */}
-        <div className="border-b border-gray-200">
-          <nav className="flex">
-            <button
-              onClick={() => setActiveTab('tributario')}
-              className={`px-6 py-3 text-sm font-medium border-b-2 ${
-                activeTab === 'tributario'
-                  ? 'border-blue-500 text-blue-600 bg-blue-50'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              <FileText className="inline w-4 h-4 mr-2" />
-              Régimen Tributario
-            </button>
-            <button
-              onClick={() => setActiveTab('laboral')}
-              className={`px-6 py-3 text-sm font-medium border-b-2 ${
-                activeTab === 'laboral'
-                  ? 'border-blue-500 text-blue-600 bg-blue-50'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              <Building className="inline w-4 h-4 mr-2" />
-              Régimen Laboral
-            </button>
-            <button
-              onClick={() => setActiveTab('score')}
-              className={`px-6 py-3 text-sm font-medium border-b-2 ${
-                activeTab === 'score'
-                  ? 'border-blue-500 text-blue-600 bg-blue-50'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              <Info className="inline w-4 h-4 mr-2" />
-              Score Tributario
-            </button>
-          </nav>
-        </div>
+          {/* Tabs */}
+          <div className="perfil-modal-tabs">
+            <nav className="perfil-modal-tab-list">
+              <button
+                onClick={() => setActiveTab('tributario')}
+                className={`perfil-modal-tab ${activeTab === 'tributario' ? 'active' : ''}`}
+              >
+                <FileText className="inline w-4 h-4 mr-2" />
+                Régimen Tributario
+              </button>
+              <button
+                onClick={() => setActiveTab('laboral')}
+                className={`perfil-modal-tab ${activeTab === 'laboral' ? 'active' : ''}`}
+              >
+                <Building className="inline w-4 h-4 mr-2" />
+                Régimen Laboral
+              </button>
+              <button
+                onClick={() => setActiveTab('score')}
+                className={`perfil-modal-tab ${activeTab === 'score' ? 'active' : ''}`}
+              >
+                <Info className="inline w-4 h-4 mr-2" />
+                Score Tributario
+              </button>
+            </nav>
+          </div>
 
-        <div className="p-6">
+          <div className="perfil-modal-content">
           {activeTab === 'tributario' && (
             <div className="max-w-2xl mx-auto space-y-4">
               {/* Información Básica */}
@@ -725,7 +751,7 @@ const PerfilEmpresarialModal: React.FC<PerfilEmpresarialModalProps> = ({ isOpen,
                       setShowHistorica(true);
                     }
                   }}
-                  className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+                  className="perfil-modal-btn-primary"
                 >
                   {showHistorica ? 'Ocultar Calificación Histórica' : 'Calificación Histórica'}
                 </button>
@@ -738,7 +764,7 @@ const PerfilEmpresarialModal: React.FC<PerfilEmpresarialModalProps> = ({ isOpen,
                       setShowVariables(true);
                     }
                   }}
-                  className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
+                  className="perfil-modal-btn-green"
                 >
                   {showVariables ? 'Ocultar Variables' : 'Ver Variables'}
                 </button>
@@ -785,7 +811,7 @@ const PerfilEmpresarialModal: React.FC<PerfilEmpresarialModalProps> = ({ isOpen,
                             <td className="py-2 px-4">
                               <button
                                 onClick={() => toggleHistoricalRow('I-2025')}
-                                className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-medium transition-colors"
+                                className="perfil-modal-btn-small"
                               >
                                 {expandedHistoricalRow === 'I-2025' ? 'Ocultar' : 'Ver'}
                               </button>
@@ -799,7 +825,7 @@ const PerfilEmpresarialModal: React.FC<PerfilEmpresarialModalProps> = ({ isOpen,
                             <td className="py-2 px-4">
                             <button
                               onClick={() => toggleHistoricalRow('IV-2024')}
-                              className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-medium transition-colors"
+                              className="perfil-modal-btn-small"
                             >
                               {expandedHistoricalRow === 'IV-2024' ? 'Ocultar' : 'Ver'}
                             </button>
@@ -813,7 +839,7 @@ const PerfilEmpresarialModal: React.FC<PerfilEmpresarialModalProps> = ({ isOpen,
                             <td className="py-2 px-4">
                               <button
                                 onClick={() => toggleHistoricalRow('III-2024')}
-                                className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-medium transition-colors"
+                                className="perfil-modal-btn-small"
                               >
                                 {expandedHistoricalRow === 'III-2024' ? 'Ocultar' : 'Ver'}
                               </button>
@@ -827,7 +853,7 @@ const PerfilEmpresarialModal: React.FC<PerfilEmpresarialModalProps> = ({ isOpen,
                             <td className="py-2 px-4">
                               <button
                                 onClick={() => toggleHistoricalRow('II-2024')}
-                                className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-medium transition-colors"
+                                className="perfil-modal-btn-small"
                               >
                                 {expandedHistoricalRow === 'II-2024' ? 'Ocultar' : 'Ver'}
                               </button>
@@ -995,22 +1021,23 @@ const PerfilEmpresarialModal: React.FC<PerfilEmpresarialModalProps> = ({ isOpen,
               <button
                 type="button"
                 onClick={resetForm}
-                className="px-6 py-2 text-gray-700 bg-gray-200 hover:bg-gray-300 rounded-lg font-medium transition-colors"
+                className="perfil-modal-btn-secondary"
               >
                 Limpiar
               </button>
               <button
                 type="button"
                 onClick={handleSubmit}
-                className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+                className="perfil-modal-btn-primary"
               >
                 Guardar Información
               </button>
             </div>
           )}
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
