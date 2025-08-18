@@ -22,8 +22,8 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({
 
   // Estilos CSS centralizados
   const styles = {
-    modal: { width: '100%', maxWidth: '56rem', maxHeight: '90vh', height: '37.5rem', minHeight: '37.5rem', display: 'flex', flexDirection: 'column' as const, borderRadius: '1rem !important', overflow: 'hidden' },
-    header: { padding: '1.5rem', borderBottom: '1px solid #e5e7eb', backgroundColor: '#ffffff', borderTopLeftRadius: '1rem', borderTopRightRadius: '1rem', textAlign: 'center' as const},
+    modal: { width: '100%', maxWidth: '56rem', maxHeight: '90vh', height: '37.5rem', minHeight: '37.5rem', display: 'flex', flexDirection: 'column' as const, borderRadius: '1.5rem', overflow: 'hidden' },
+    header: { padding: '1.5rem', borderBottom: '1px solid #e5e7eb', backgroundColor: '#ffffff', borderTopLeftRadius: '1.5rem', borderTopRightRadius: '1.5rem', textAlign: 'center' as const},
     title: { fontSize: '1.25rem', margin: 0, fontWeight: 600, color: '#111827' },
     subtitle: { fontSize: '1rem', margin: '0.25rem 0 0 0', color: '#4b5563' },
     closeButton: { width: '1.5rem', height: '1.5rem', border: 'none', background: 'transparent', cursor: 'pointer', color: '#9ca3af' },
@@ -41,7 +41,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({
     emptyTitle: { fontSize: '1.125rem', fontWeight: 500, color: '#111827', marginBottom: '0.5rem' },
     companiesList: { display: 'flex', flexDirection: 'column' as const, gap: '1rem' },
     scrollIndicator: { textAlign: 'center' as const, fontSize: '0.75rem', color: '#6b7280', marginTop: '1rem', padding: '0.5rem 0' },
-    footer: { padding: '1.5rem', borderTop: '1px solid #e5e7eb', backgroundColor: '#ffffff', borderBottomLeftRadius: '1rem', borderBottomRightRadius: '1rem' },
+    footer: { padding: '1.5rem', borderTop: '1px solid #e5e7eb', backgroundColor: '#ffffff', borderBottomLeftRadius: '1.5rem', borderBottomRightRadius: '1.5rem' },
     footerContent: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
     footerLeft: { display: 'flex', flexDirection: 'column' as const, gap: '0.25rem' },
     footerTitle: { fontSize: '0.875rem', fontWeight: 500, color: '#111827', margin: 0 },
