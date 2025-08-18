@@ -1425,6 +1425,91 @@ const Empresas: React.FC<EmpresasProps> = ({ onNavigate }) => {
         .button-complete:hover {
           background-color: #15803d; /* hover:bg-green-700 */
         }
+        .more-vertical-button {
+          padding: 0.5rem; /* p-2 */
+          color: #9ca3af; /* text-gray-400 */
+          border-radius: 0.5rem; /* rounded-lg */
+          transition: color 0.3s ease-in-out, background-color 0.3s ease-in-out;
+          border: none;
+          outline: none;
+          background-color: transparent;
+          cursor: pointer;
+        }
+
+        .more-vertical-button:hover {
+          color: #4b5563; /* hover:text-gray-600 */
+          background-color: #f3f4f6; /* hover:bg-gray-100 */
+        }
+
+        .empresas-dropdown {
+          background-color: white;
+          border-radius: 0.5rem;
+          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+          position: absolute;
+          right: 0;
+          top: 100%;
+          margin-top: 0.25rem;
+          z-index: 40;
+          border: 1px solid #e5e7eb;
+        }
+        
+        .dropdown-button {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          width: 100%;
+          padding: 0.75rem 1rem;
+          font-size: 0.875rem;
+          color: #4a5568;
+          transition: background-color 0.3s, color 0.3s;
+          border: none;
+          outline: none;
+          background-color: transparent;
+          cursor: pointer;
+        }
+
+        .dropdown-button:hover {
+          color: #2563eb;
+        }
+
+        .dropdown-button.blue-hover:hover {
+          background-color: #eff6ff;
+          color: #2563eb;
+        }
+        
+        .dropdown-button.green-hover:hover {
+          background-color: #f0fdf4;
+          color: #16a34a;
+        }
+        
+        .dropdown-button.purple-hover:hover {
+          background-color: #f3e8ff;
+          color: #9333ea;
+        }
+
+        .dropdown-button.yellow-hover:hover {
+          background-color: #fffbeb;
+          color: #eab308;
+        }
+
+        .dropdown-button.red-hover:hover {
+          background-color: #fef2f2;
+          color: #dc2626;
+        }
+
+        .dropdown-button:not(:first-child) {
+          border-top: 1px solid #f3f4f6;
+        }
+
+        .dropdown-button:first-child {
+          border-top-left-radius: 0.5rem;
+          border-top-right-radius: 0.5rem;
+        }
+
+        .dropdown-button:last-child {
+          border-bottom-left-radius: 0.5rem;
+          border-bottom-right-radius: 0.5rem;
+        }
     
     @media (max-width: 768px) {
       .empresas-table-empresa { width: 14rem; min-width: 14rem; max-width: 14rem; }
@@ -1634,20 +1719,52 @@ const Empresas: React.FC<EmpresasProps> = ({ onNavigate }) => {
   const handleConfigurarPermisosFromPopover = (empresaId: string, persona: any) => {
     const empresa = empresas.find(e => e.id === empresaId);
     if (empresa) {
+      // Extraer datos de contacto reales basándose en el rol de la persona
+      let documento = '';
+      let email = '';
+      let telefono = '';
+      let nombre = persona.nombre;
+      
+      switch (persona.cargo) {
+        case 'Representante Legal':
+          documento = empresa.representanteDni || '';
+          email = empresa.representanteEmail || '';
+          telefono = empresa.representanteTelefono || '';
+          nombre = empresa.representanteNombres || persona.nombre;
+          break;
+        case 'Administrador':
+          documento = empresa.adminDni || '';
+          email = empresa.adminEmail || '';
+          telefono = empresa.adminTelefono || '';
+          nombre = empresa.adminNombre || persona.nombre;
+          break;
+        case 'Contador':
+          documento = empresa.contadorDni || '';
+          email = empresa.contadorEmail || '';
+          telefono = empresa.contadorTelefono || '';
+          nombre = empresa.contadorNombre || persona.nombre;
+          break;
+        default:
+          // Para otros roles, usar datos del persona si existen, sino generar email
+          documento = '';
+          email = persona.email || `${persona.nombre.toLowerCase().replace(' ', '.')}@empresa.com`;
+          telefono = persona.telefono || '';
+      }
+
       // Crear un usuario temporal para agregarlo automáticamente a la tabla de permisos
       const tempUser = {
         id: persona.id.toString(),
-        nombre: persona.nombre,
-        email: persona.email || `${persona.nombre.toLowerCase().replace(' ', '.')}@empresa.com`,
-        telefono: persona.telefono || '',
-        documento: persona.iniciales || persona.id.toString(),
+        nombre: nombre,
+        email: email,
+        telefono: telefono,
+        documento: documento,
         avatar: persona.avatar,
         role: persona.cargo || 'Sin Rol'
       };
 
       // Actualizar el estado de usuarios asignados para incluir esta persona
       setEmpresaPermissions(prev => {
-        const existingData = prev[empresaId] || { assignedUsers: [], rolePermissions: [] };
+        const existingData = prev[empresaId] || { assignedUsers: [] };
         const userExists = existingData.assignedUsers.some(user => user.id === tempUser.id);
         
         if (!userExists) {
@@ -2945,7 +3062,7 @@ const getStatusColor = (type: string) => {
               <div className="relative">
                 <button
                   onClick={() => toggleDropdown(empresa.id)}
-                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                  className="more-vertical-button"
                 >
                   <MoreVertical className="w-5 h-5" />
                 </button>
@@ -2956,12 +3073,12 @@ const getStatusColor = (type: string) => {
                       className="fixed inset-0 z-30"
                       onClick={() => setOpenDropdownId(null)}
                     />
-                    <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-xl z-40 empresas-dropdown">
+                    <div className="empresas-dropdown">
                       <button
                         onClick={() =>
                           handleAction('permisos', empresa.id, empresa.nombre)
                         }
-                        className="flex items-center space-x-3 w-full px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors rounded-t-lg"
+                        className="dropdown-button blue-hover"
                       >
                         <Shield className="w-4 h-4" />
                         <span>Gestionar Permisos</span>
@@ -2971,7 +3088,7 @@ const getStatusColor = (type: string) => {
                         onClick={() =>
                           handleAction('ficha', empresa.id, empresa.nombre)
                         }
-                        className="flex items-center space-x-3 w-full px-4 py-3 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 border-t border-gray-100 transition-colors"
+                        className="dropdown-button green-hover"
                       >
                         <FileText className="w-4 h-4" />
                         <span>Ver Ficha RUC</span>
@@ -2981,7 +3098,7 @@ const getStatusColor = (type: string) => {
                         onClick={() =>
                           handleAction('marcas', empresa.id, empresa.nombre)
                         }
-                        className="flex items-center space-x-3 w-full px-4 py-3 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-600 border-t border-gray-100 transition-colors"
+                        className="dropdown-button purple-hover"
                       >
                         <Award className="w-4 h-4" />
                         <span>Marcas</span>
@@ -2991,7 +3108,7 @@ const getStatusColor = (type: string) => {
                         onClick={() =>
                           handleAction('perfil-empresarial', empresa.id, empresa.nombre)
                         }
-                        className="flex items-center space-x-3 w-full px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 border-t border-gray-100 transition-colors"
+                        className="dropdown-button blue-hover"
                       >
                         <FileText className="w-4 h-4" />
                         <span>Perfil Empresarial</span>
@@ -3001,7 +3118,7 @@ const getStatusColor = (type: string) => {
                         onClick={() =>
                           handleAction('editar', empresa.id, empresa.nombre)
                         }
-                        className="flex items-center space-x-3 w-full px-4 py-3 text-sm text-gray-700 hover:bg-yellow-50 hover:text-yellow-600 border-t border-gray-100 transition-colors"
+                        className="dropdown-button yellow-hover"
                       >
                         <Edit3 className="w-4 h-4" />
                         <span>Editar Empresa</span>
@@ -3011,7 +3128,7 @@ const getStatusColor = (type: string) => {
                         onClick={() =>
                           handleAction('eliminar', empresa.id, empresa.nombre)
                         }
-                        className="flex items-center space-x-3 w-full px-4 py-3 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 border-t border-gray-100 transition-colors rounded-b-lg"
+                        className="dropdown-button red-hover"
                       >
                         <Trash2 className="w-4 h-4" />
                         <span>Eliminar Empresa</span>

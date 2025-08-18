@@ -782,7 +782,7 @@ const CompanyPermissionsModal: React.FC<CompanyPermissionsModalProps> = ({
                                     {user.nombre}
                                   </div>
                                   <div className="text-sm text-gray-500">
-                                    DNI: {user.documento}
+                                    DNI: {user.documento || 'Falta dato'}
                                   </div>
                                 </div>
                               </div>
@@ -953,9 +953,6 @@ const CompanyPermissionsModal: React.FC<CompanyPermissionsModalProps> = ({
           <div className="flex items-center justify-between">
             <div className="text-sm text-gray-500">
               <div className="flex items-center space-x-4">
-                <span>
-                  Requerido: <strong>Gerente/Apoderado</strong>
-                </span>
                 {hasChanges && (
                   <span className="text-amber-600 font-medium">• Cambios no guardados</span>
                 )}
