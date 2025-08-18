@@ -1013,7 +1013,7 @@ const validateCredentialsRealTime = async (usuario: string, clave: string) => {
                           <tr className="border-t bg-blue-50">
                             <td colSpan={6} className="p-4">
                               <div className="bg-white border border-blue-200 rounded-lg p-4">
-                                <h4 className="text-sm font-medium text-blue-900 mb-3">Editar {persona.rol}: {persona.nombre}</h4>
+                                <h4 className="text-sm font-medium text-blue-900 mb-2">Editar {persona.rol}: {persona.nombre}</h4>
                                 
                                 {/* Dropdown de rol */}
                                 <div className="mb-4">
