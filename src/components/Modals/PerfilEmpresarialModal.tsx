@@ -405,7 +405,7 @@ const PerfilEmpresarialModal: React.FC<PerfilEmpresarialModalProps> = ({ isOpen,
 
           <div className="perfil-modal-content">
           {activeTab === 'tributario' && (
-            <div className="max-w-2xl mx-auto space-y-4">
+            <div className="max-w-2xl mx-auto space-y-4 ">
               {/* Información Básica */}
               <div className="bg-blue-50 border border-gray-200 rounded-lg p-3">
                 <h3 className="text-sm font-medium text-gray-900 mb-3">Información Básica</h3>
