@@ -26,12 +26,14 @@ const PerfilEmpresarialModal: React.FC<PerfilEmpresarialModalProps> = ({ isOpen,
     .perfil-modal-title { font-size: 1.25rem; font-weight: 700; }
     .perfil-modal-close-btn { color: black; padding: 0.5rem; border-radius: 0.5rem; transition: all 0.2s; border: none; background: none; cursor: pointer; }
     .perfil-modal-close-btn:hover { background-color: rgba(255, 255, 255, 0.2); }
-    .perfil-modal-tabs { border-bottom: 1px solid #e5e7eb; }
-    .perfil-modal-tab-list { display: flex; }
-    .perfil-modal-tab { display: flex; align-items: center; padding: 0.75rem 1.5rem; font-size: 0.875rem; font-weight: 500; border-bottom: 2px solid transparent; cursor: pointer; transition: all 0.2s; border: none; background: none; }
-    .perfil-modal-tab.active { border-bottom-color: #3b82f6; color: #2563eb; background-color: #eff6ff; }
-    .perfil-modal-tab:not(.active) { color: #6b7280; }
-    .perfil-modal-tab:not(.active):hover { color: #374151; border-bottom-color: #d1d5db; }
+    .perfil-modal-tabs { border-bottom: 1px solid #e5e7eb; padding: 0.5rem; }
+    .perfil-modal-tab-list { display: flex; gap: 0.5rem; }
+    .perfil-modal-tab { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; font-size: 0.875rem; font-weight: 500; border: 1px solid #e4e4e498; border-radius: 0.5rem; cursor: pointer; transition: all 0.2s; background: white; min-width: 120px; gap: 0.5rem; }
+    .perfil-modal-tab.active { color: #2563eb; background-color: #ffffffff; box-shadow: 0 2px 4px rgba(125, 128, 134, 0.41); }
+    .perfil-modal-tab:not(.active) { color: #6b7280; background-color: #ffffffff; }
+    .perfil-modal-tab:not(.active):hover { color: #374151; border-color: #ffffffff; background-color: #ffffffff; }
+    .perfil-modal-tab-icon { width: 1.25rem; height: 1.25rem; margin-bottom: 0.125rem; }
+    .perfil-modal-tab-text { font-size: 0.8125rem; font-weight: 500; text-align: left; line-height: 1.2; flex: 1; }
     .perfil-modal-content { flex: 1; overflow-y: auto; padding: 1.5rem; }
     .perfil-modal-btn-primary { background-color: #2563eb; color: white; padding: 0.5rem 1.5rem; border-radius: 0.5rem; font-weight: 500; transition: background-color 0.2s; border: none; cursor: pointer; }
     .perfil-modal-btn-primary:hover { background-color: #1d4ed8; }
