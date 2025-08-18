@@ -1,5 +1,5 @@
 import React, { useState, useEffect,useRef } from 'react';
-import { X, Edit3, Save, User, Briefcase, FileText, Calculator, Users, CheckCircle, ChevronDown, ChevronUp, Eye, EyeOff } from 'lucide-react';
+import { X, Edit3, Save, User, Briefcase, FileText, Calculator, Users, CheckCircle, ChevronDown, ChevronUp, Eye, EyeOff, Plus, Trash2 } from 'lucide-react';
 import AutoDiscoveryNotification from '../Notifications/AutoDiscoveryNotification';
 
 import { discoverRelatedCompanies, shouldTriggerDiscovery, type RelatedCompany } from '../../utils/companyDiscovery';
@@ -30,7 +30,14 @@ const EditCompanyModal: React.FC<EditCompanyModalProps> = ({ empresa, isOpen, on
   const [showAutoDiscovery, setShowAutoDiscovery] = useState(false);
   const [relatedCompanies, setRelatedCompanies] = useState<RelatedCompany[]>([]);
   const [discoveredPersonName, setDiscoveredPersonName] = useState('');
+  const [nextPersonaId, setNextPersonaId] = useState(4); // Para generar IDs únicos
 
+  // Opciones de roles disponibles
+  const roleOptions = [
+    { value: 'Representante Legal', label: 'Representante Legal', color: 'bg-red-100 text-red-800' },
+    { value: 'Administrador', label: 'Administrador', color: 'bg-orange-100 text-orange-800' },
+    { value: 'Contador', label: 'Contador', color: 'bg-blue-100 text-blue-800' },
+  ];
 
   // Funciones de validación
   const validateEmail = (email: string): string => {
@@ -195,6 +202,63 @@ const EditCompanyModal: React.FC<EditCompanyModalProps> = ({ empresa, isOpen, on
         return '';
     }
   };
+
+  // Funciones para manejo de personas dinámicas
+  const addNewPersona = () => {
+    const newPersona = {
+      id: nextPersonaId.toString(),
+      rol: 'Representante Legal', // Rol por defecto
+      nombre: '',
+      dni: '',
+      email: '',
+      telefono: ''
+    };
+    
+    setPersonasData([...personasData, newPersona]);
+    setNextPersonaId(nextPersonaId + 1);
+    setExpandedPersona(newPersona.id); // Expandir automáticamente para editar
+  };
+
+  const removePersona = (personaId: string) => {
+    setPersonasData(personasData.filter(p => p.id !== personaId));
+    if (expandedPersona === personaId) {
+      setExpandedPersona(null);
+    }
+  };
+
+  const updatePersonaRole = (personaId: string, newRole: string) => {
+    const updatedPersonas = personasData.map(p => 
+      p.id === personaId ? {...p, rol: newRole} : p
+    );
+    setPersonasData(updatedPersonas);
+  };
+
+  const getRoleColor = (role: string) => {
+    const roleOption = roleOptions.find(option => option.value === role);
+    return roleOption ? roleOption.color : 'bg-gray-100 text-gray-800';
+  };
+
+  const getFormFieldName = (role: string, fieldType: 'nombre' | 'dni' | 'email' | 'telefono'): string | null => {
+    // Solo sincronizar con formData para los roles tradicionales
+    if (role === 'Representante Legal') {
+      return fieldType === 'nombre' ? 'representanteNombres' :
+             fieldType === 'dni' ? 'representanteDni' :
+             fieldType === 'email' ? 'representanteEmail' :
+             fieldType === 'telefono' ? 'representanteTelefono' : null;
+    } else if (role === 'Administrador') {
+      return fieldType === 'nombre' ? 'adminNombre' :
+             fieldType === 'dni' ? 'adminDni' :
+             fieldType === 'email' ? 'adminEmail' :
+             fieldType === 'telefono' ? 'adminTelefono' : null;
+    } else if (role === 'Contador') {
+      return fieldType === 'nombre' ? 'contadorNombre' :
+             fieldType === 'dni' ? 'contadorDni' :
+             fieldType === 'email' ? 'contadorEmail' :
+             fieldType === 'telefono' ? 'contadorTelefono' : null;
+    }
+    // Para otros roles, no sincronizar con formData
+    return null;
+  };
  
   // Función para calcular el porcentaje de completitud
   const calculateCompletitud = (data: any, credStatus: string) => {
@@ -261,33 +325,42 @@ const EditCompanyModal: React.FC<EditCompanyModalProps> = ({ empresa, isOpen, on
 };
 
   // Función para actualizar las personas asignadas basadas en formData
-  const updatePersonasData = (data: any) => {
-    setPersonasData([
-      {
-        id: '1',
-        rol: 'Representante Legal',
-        nombre: data.representanteNombres || '',
-        dni: data.representanteDni || '',
-        email: data.representanteEmail || '',
-        telefono: data.representanteTelefono || ''
-      },
-      {
-        id: '2',
-        rol: 'Administrador',
-        nombre: data.adminNombre || '',
-        dni: data.adminDni || '',
-        email: data.adminEmail || '',
-        telefono: data.adminTelefono || ''
-      },
-      {
-        id: '3',
-        rol: 'Contador',
-        nombre: data.contadorNombre || '',
-        dni: data.contadorDni || '',
-        email: data.contadorEmail || '',
-        telefono: data.contadorTelefono || ''
-      }
-    ]);
+  const updatePersonasData = (data: any, customPersonas?: any[]) => {
+    // Si se pasan personas personalizadas, usar esas
+    if (customPersonas) {
+      setPersonasData(customPersonas);
+      return;
+    }
+    
+    // Si no hay personas existentes, crear las por defecto
+    if (personasData.length === 0) {
+      setPersonasData([
+        {
+          id: '1',
+          rol: 'Representante Legal',
+          nombre: data.representanteNombres || '',
+          dni: data.representanteDni || '',
+          email: data.representanteEmail || '',
+          telefono: data.representanteTelefono || ''
+        },
+        {
+          id: '2',
+          rol: 'Administrador',
+          nombre: data.adminNombre || '',
+          dni: data.adminDni || '',
+          email: data.adminEmail || '',
+          telefono: data.adminTelefono || ''
+        },
+        {
+          id: '3',
+          rol: 'Contador',
+          nombre: data.contadorNombre || '',
+          dni: data.contadorDni || '',
+          email: data.contadorEmail || '',
+          telefono: data.contadorTelefono || ''
+        }
+      ]);
+    }
   };
 
   useEffect(() => {
@@ -830,11 +903,7 @@ const validateCredentialsRealTime = async (usuario: string, clave: string) => {
                       <React.Fragment key={persona.id}>
                         <tr className="border-t hover:bg-gray-50">
                           <td className="p-3">
-                            <span className={`px-1.7 py-0.7 text-xs font-medium ${
-                              persona.rol === 'Representante Legal' ? 'bg-red-100 text-red-800' :
-                              persona.rol === 'Administrador' ? 'bg-orange-100 text-orange-800' :
-                              'bg-blue-100 text-blue-800'
-                            }`}>
+                            <span className={`px-1.7 py-0.7 text-xs font-medium ${getRoleColor(persona.rol)}`}>
                               {persona.rol}
                             </span>
                           </td>
@@ -851,7 +920,7 @@ const validateCredentialsRealTime = async (usuario: string, clave: string) => {
                             {persona.telefono || <span className="text-gray-400 italic">Falta dato</span>}
                           </td>
                           <td className="p-3">
-                            <div className="flex items-center justify-center">
+                            <div className="flex items-center justify-center space-x-2">
                               <button
                                 onClick={() => setExpandedPersona(expandedPersona === persona.id ? null : persona.id)}
                                 className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs flex items-center space-x-1"
@@ -863,6 +932,15 @@ const validateCredentialsRealTime = async (usuario: string, clave: string) => {
                                   <ChevronDown className="w-3 h-3" />
                                 }
                               </button>
+                              {personasData.length > 1 && (
+                                <button
+                                  onClick={() => removePersona(persona.id)}
+                                  className="p-2 bg-red-600 text-white rounded hover:bg-red-700 text-xs"
+                                  title="Eliminar persona"
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                </button>
+                              )}
                             </div>
                           </td>
                         </tr>
@@ -873,6 +951,23 @@ const validateCredentialsRealTime = async (usuario: string, clave: string) => {
                             <td colSpan={6} className="p-4">
                               <div className="bg-white border border-blue-200 rounded-lg p-4">
                                 <h4 className="text-sm font-medium text-blue-900 mb-3">Editar {persona.rol}: {persona.nombre}</h4>
+                                
+                                {/* Dropdown de rol */}
+                                <div className="mb-4">
+                                  <label className="block text-xs font-medium text-gray-700 mb-1">Rol/Asignación</label>
+                                  <select
+                                    value={persona.rol}
+                                    onChange={(e) => updatePersonaRole(persona.id, e.target.value)}
+                                    className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-blue-500"
+                                  >
+                                    {roleOptions.map(option => (
+                                      <option key={option.value} value={option.value}>
+                                        {option.label}
+                                      </option>
+                                    ))}
+                                  </select>
+                                </div>
+
                                 <div className="grid grid-cols-2 gap-4">
                                   <div>
                                     <label className="block text-xs font-medium text-gray-700 mb-1">Nombre Completo</label>
@@ -887,54 +982,41 @@ const validateCredentialsRealTime = async (usuario: string, clave: string) => {
                                           );
                                           setPersonasData(updatedPersonas);
                                           
-                                          // También actualizar en formData y validar
+                                          // También actualizar en formData y validar (solo para roles tradicionales)
+                                          const fieldName = getFormFieldName(persona.rol, 'nombre');
                                           let newFormData = { ...formData };
-                                          let fieldName = '';
-                                          if (persona.rol === 'Representante Legal') {
-                                            fieldName = 'representanteNombres';
-                                            newFormData.representanteNombres = value;
-                                          } else if (persona.rol === 'Administrador') {
-                                            fieldName = 'adminNombre';
-                                            newFormData.adminNombre = value;
-                                          } else if (persona.rol === 'Contador') {
-                                            fieldName = 'contadorNombre';
-                                            newFormData.contadorNombre = value;
-                                          }
+                                          let newValidationErrors = { ...validationErrors };
                                           
-                                          // Validar el campo
-                                          const error = validateField(fieldName, value);
-                                          const newValidationErrors = { ...validationErrors };
-                                          
-                                          if (error) {
-                                            newValidationErrors[fieldName] = error;
-                                          } else {
-                                            delete newValidationErrors[fieldName];
+                                          if (fieldName) {
+                                            newFormData[fieldName] = value;
+                                            
+                                            // Validar el campo
+                                            const error = validateField(fieldName, value);
+                                            
+                                            if (error) {
+                                              newValidationErrors[fieldName] = error;
+                                            } else {
+                                              delete newValidationErrors[fieldName];
+                                            }
+                                            
+                                            // Actualizar completitud en tiempo real
+                                            const newCompletitud = calculateCompletitud(newFormData, credentialsStatus);
+                                            newFormData.completitud = newCompletitud;
                                           }
                                           
                                           setValidationErrors(newValidationErrors);
-                                          
-                                          // Actualizar completitud en tiempo real
-                                          const newCompletitud = calculateCompletitud(newFormData, credentialsStatus);
-                                          newFormData.completitud = newCompletitud;
                                           setFormData(newFormData);
                                         }}
                                         className={`w-full px-2 py-1 border rounded text-sm focus:ring-1 ${
-                                          validationErrors[
-                                            persona.rol === 'Representante Legal' ? 'representanteNombres' :
-                                            persona.rol === 'Administrador' ? 'adminNombre' : 'contadorNombre'
-                                          ] ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
+                                          validationErrors[getFormFieldName(persona.rol, 'nombre') || ''] 
+                                            ? 'border-red-500 focus:ring-red-500' 
+                                            : 'border-gray-300 focus:ring-blue-500'
                                         }`}
                                         placeholder="Nombre completo"
                                       />
-                                      {validationErrors[
-                                        persona.rol === 'Representante Legal' ? 'representanteNombres' :
-                                        persona.rol === 'Administrador' ? 'adminNombre' : 'contadorNombre'
-                                      ] && (
+                                      {validationErrors[getFormFieldName(persona.rol, 'nombre') || ''] && (
                                         <p className="text-xs text-red-600 mt-1">
-                                          {validationErrors[
-                                            persona.rol === 'Representante Legal' ? 'representanteNombres' :
-                                            persona.rol === 'Administrador' ? 'adminNombre' : 'contadorNombre'
-                                          ]}
+                                          {validationErrors[getFormFieldName(persona.rol, 'nombre') || '']}
                                         </p>
                                       )}
                                     </div>
@@ -1177,6 +1259,17 @@ const validateCredentialsRealTime = async (usuario: string, clave: string) => {
                   </div>
                 )}
               </div>
+            </div>
+            
+            {/* Botón para agregar nueva persona */}
+            <div className="mt-4 flex justify-center">
+              <button
+                onClick={addNewPersona}
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center space-x-2 text-sm font-medium transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Agregar Contacto</span>
+              </button>
             </div>
             
             {/* Mensaje de éxito */}
