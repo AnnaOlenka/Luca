@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Dashboard from './pages/Dashboard';
 import Empresas from './pages/Empresas';
+import Bandeja from './pages/Bandeja';
 import './App.css';
 
 function App() {
@@ -16,6 +17,8 @@ function App() {
         return <Dashboard onNavigate={handleNavigate} />;
       case 'empresas':
         return <Empresas onNavigate={handleNavigate} />;
+      case 'bandeja':
+        return <Bandeja onNavigate={handleNavigate} />;
       case 'tareas':
         // Placeholder for Tareas view
         return (

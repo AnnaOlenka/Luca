@@ -16,20 +16,41 @@ const PerfilEmpresarialModal: React.FC<PerfilEmpresarialModalProps> = ({ isOpen,
   const [showHistorica, setShowHistorica] = useState(false);
   const [showVariables, setShowVariables] = useState(false);
   const [expandedVariable, setExpandedVariable] = useState<string | null>(null);
-  const [expandedHistoricalRows, setExpandedHistoricalRows] = useState<Set<string>>(new Set());
+  const [expandedHistoricalRow, setExpandedHistoricalRow] = useState<string | null>(null);
 
   
   const toggleHistoricalRow = (rowId: string) => {
-  setExpandedHistoricalRows(prev => {
-    const newSet = new Set(prev);
-    if (newSet.has(rowId)) {
-      newSet.delete(rowId);
-    } else {
-      newSet.add(rowId);
-    }
-    return newSet;
-  });
-};
+    setExpandedHistoricalRow(prev => prev === rowId ? null : rowId);
+  };
+
+  // Función para obtener datos específicos de variables por trimestre
+  const getVariableData = (trimestre: string, tipo: 'ponderacion' | 'vinculacion' | 'calificacion') => {
+    const variablesData = {
+      'I-2025': {
+        ponderacion: 'No ha efectuado el pago del íntegro de las obligaciones tributarias por el Impuesto General a las Ventas (IGV) al vencimiento de dichas obligaciones hasta en dos (2) cuotas para el trimestre I-2025.',
+        vinculacion: 'No registra incumplimientos o supuesto previsto en el inciso b) del numeral 6.1 del artículo 6 del Decreto Legislativo N° 1535 para el periodo I-2025.',
+        calificacion: 'Registra presentación tardía de declaración jurada informativa del Impuesto a la Renta anual para el período I-2025.'
+      },
+      'IV-2024': {
+        ponderacion: 'No ha efectuado el pago del íntegro de las obligaciones tributarias por el Impuesto a la Renta (IR) al vencimiento de dichas obligaciones hasta en dos (2) cuotas para el trimestre IV-2024.',
+        vinculacion: 'Registra vínculos con empresas del mismo grupo económico que presentaron inconsistencias tributarias en el periodo IV-2024.',
+        calificacion: 'No registra incumplimientos o supuesto previsto en el inciso b) del numeral 6.1 del artículo 6 del Decreto Legislativo N° 1535 para el período IV-2024.'
+      },
+      'III-2024': {
+        ponderacion: 'No registra incumplimiento o supuesto previsto en inciso b) del numeral 6.1. del artículo 6 del Decreto Legislativo N° 1535 para el trimestre III-2024.',
+        vinculacion: 'No registra incumplimientos o supuesto previsto en el inciso b) del numeral 6.1 del artículo 6 del Decreto Legislativo N° 1535 para el periodo III-2024.',
+        calificacion: 'Registra omisión en la presentación de declaración jurada mensual del IGV para los meses de julio y agosto 2024.'
+      },
+      'II-2024': {
+        ponderacion: 'No ha efectuado el pago del íntegro de las obligaciones tributarias por el Impuesto Temporal a los Activos Netos (ITAN) al vencimiento de dichas obligaciones hasta en dos (2) cuotas para el trimestre II-2024.',
+        vinculacion: 'No registra incumplimientos o supuesto previsto en el inciso b) del numeral 6.1 del artículo 6 del Decreto Legislativo N° 1535 para el periodo II-2024.',
+        calificacion: 'No registra incumplimientos o supuesto previsto en el inciso b) del numeral 6.1 del artículo 6 del Decreto Legislativo N° 1535 para el período II-2024.'
+      }
+    };
+
+    return variablesData[trimestre as keyof typeof variablesData]?.[tipo] || 
+           `No registra incumplimiento o supuesto previsto en inciso b) del numeral 6.1. del artículo 6 del Decreto Legislativo N° 1535 para el ${tipo} del trimestre ${trimestre}.`;
+  };
   // Simulación de datos RUC basados en la empresa seleccionada
   const simulatedRucData = {
     numeroRuc: empresa ? `${empresa.ruc} - ${empresa.nombre}` : "20486774283 - CONSERIN S.A.C.",
@@ -293,7 +314,7 @@ const PerfilEmpresarialModal: React.FC<PerfilEmpresarialModalProps> = ({ isOpen,
     } else if (activeTab === 'score') {
       setShowHistorica(false);
       setShowVariables(false);
-      setExpandedHistoricalRows(new Set());
+      setExpandedHistoricalRow(null);
     }
   };
 
@@ -766,7 +787,7 @@ const PerfilEmpresarialModal: React.FC<PerfilEmpresarialModalProps> = ({ isOpen,
                                 onClick={() => toggleHistoricalRow('I-2025')}
                                 className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-medium transition-colors"
                               >
-                                {expandedHistoricalRows.has('I-2025') ? 'Ocultar' : 'Ver'}
+                                {expandedHistoricalRow === 'I-2025' ? 'Ocultar' : 'Ver'}
                               </button>
                             </td>
                           </tr>
@@ -780,7 +801,7 @@ const PerfilEmpresarialModal: React.FC<PerfilEmpresarialModalProps> = ({ isOpen,
                               onClick={() => toggleHistoricalRow('IV-2024')}
                               className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-medium transition-colors"
                             >
-                              {expandedHistoricalRows.has('IV-2024') ? 'Ocultar' : 'Ver'}
+                              {expandedHistoricalRow === 'IV-2024' ? 'Ocultar' : 'Ver'}
                             </button>
                             </td>
                           </tr>
@@ -794,7 +815,7 @@ const PerfilEmpresarialModal: React.FC<PerfilEmpresarialModalProps> = ({ isOpen,
                                 onClick={() => toggleHistoricalRow('III-2024')}
                                 className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-medium transition-colors"
                               >
-                                {expandedHistoricalRows.has('III-2024') ? 'Ocultar' : 'Ver'}
+                                {expandedHistoricalRow === 'III-2024' ? 'Ocultar' : 'Ver'}
                               </button>
                             </td>
                           </tr>
@@ -808,7 +829,7 @@ const PerfilEmpresarialModal: React.FC<PerfilEmpresarialModalProps> = ({ isOpen,
                                 onClick={() => toggleHistoricalRow('II-2024')}
                                 className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-medium transition-colors"
                               >
-                                {expandedHistoricalRows.has('II-2024') ? 'Ocultar' : 'Ver'}
+                                {expandedHistoricalRow === 'II-2024' ? 'Ocultar' : 'Ver'}
                               </button>
                             </td>
                           </tr>
@@ -817,38 +838,44 @@ const PerfilEmpresarialModal: React.FC<PerfilEmpresarialModalProps> = ({ isOpen,
                     </div>
                   </div>
                   
-                  {/* Variables expandibles del historial */}
-                  {expandedHistoricalRows.size > 0 &&(
+                  {/* Variables expandibles específicas por trimestre */}
+                  {expandedHistoricalRow && (
                     <div className="mt-6 space-y-4">
+                      <div className="text-center mb-4">
+                        <h4 className="text-lg font-bold text-white bg-green-600 py-2 px-4 rounded-lg">
+                          VARIABLES PARA TRIMESTRE {expandedHistoricalRow}
+                        </h4>
+                      </div>
+                      
                       <div className="bg-white border border-gray-300 rounded-lg">
                         <div className="bg-blue-600 text-white px-4 py-2 font-bold text-center rounded-t-lg">
-                          VARIABLES DE PONDERACIÓN
+                          VARIABLES DE PONDERACIÓN - {expandedHistoricalRow}
                         </div>
                         <div className="p-4">
                           <p className="text-gray-700 text-sm">
-                            No registra incumplimiento o supuesto previsto en inciso b); del numeral 6.1. del artículo 6 del Decreto Legislativo N° 1535
+                            {getVariableData(expandedHistoricalRow, 'ponderacion')}
                           </p>
                         </div>
                       </div>
 
                       <div className="bg-white border border-gray-300 rounded-lg">
                         <div className="bg-blue-600 text-white px-4 py-2 font-bold text-center rounded-t-lg">
-                          VARIABLES DE VINCULACIÓN
+                          VARIABLES DE VINCULACIÓN - {expandedHistoricalRow}
                         </div>
                         <div className="p-4">
                           <p className="text-gray-700 text-sm">
-                            No registra incumplimiento o supuesto previsto en inciso b); del numeral 6.1. del artículo 6 del Decreto Legislativo N° 1535
+                            {getVariableData(expandedHistoricalRow, 'vinculacion')}
                           </p>
                         </div>
                       </div>
 
                       <div className="bg-white border border-gray-300 rounded-lg">
                         <div className="bg-blue-600 text-white px-4 py-2 font-bold text-center rounded-t-lg">
-                          VARIABLES DE CALIFICACIÓN DIRECTA
+                          VARIABLES DE CALIFICACIÓN DIRECTA - {expandedHistoricalRow}
                         </div>
                         <div className="p-4">
                           <p className="text-gray-700 text-sm">
-                            No registra incumplimiento o supuesto previsto en inciso b); del numeral 6.1. del artículo 6 del Decreto Legislativo N° 1535
+                            {getVariableData(expandedHistoricalRow, 'calificacion')}
                           </p>
                         </div>
                       </div>

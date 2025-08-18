@@ -1,5 +1,5 @@
 import React from 'react';
-import { Building2, Search, CheckSquare, BarChart3, Bell, Moon, Crown } from 'lucide-react';
+import { Building2, Search, CheckSquare, BarChart3, Bell, Moon, Crown, Inbox } from 'lucide-react';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -33,6 +33,19 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, currentModu
             >
               <Building2 className="w-4 h-4" />
               <span>Empresas</span>
+            </button>
+            
+            {/* Bandeja button */}
+            <button 
+              onClick={() => onNavigate?.('bandeja')}
+              className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                currentModule === 'bandeja' 
+                  ? 'bg-blue-100 text-blue-700' 
+                  : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50'
+              }`}
+            >
+              <Inbox className="w-4 h-4" />
+              <span>Bandeja</span>
             </button>
             
             {/* Search bar */}

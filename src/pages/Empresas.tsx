@@ -202,7 +202,8 @@ const PersonaPopover: React.FC<{
   position: { top: number; left: number };
   empresaId?: string;
   onQuitarPersona?: (empresaId: string, personaId: number | string) => void;
-}> = ({ isOpen, onClose, persona, position, empresaId, onQuitarPersona }) => {
+  onConfigurarPermisos?: (empresaId: string, persona: any) => void;
+}> = ({ isOpen, onClose, persona, position, empresaId, onQuitarPersona, onConfigurarPermisos }) => {
   const popoverRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -263,11 +264,8 @@ const PersonaPopover: React.FC<{
   return (
     <div
       ref={popoverRef}
-      className="fixed z-50 bg-white rounded-lg shadow-xl border border-gray-200 w-64"
-      style={{
-        top: position.top,
-        left: position.left,
-      }}
+      className="empresas-popover empresas-popover-sm"
+      style={{ top: position.top, left: position.left }}
     >
 {/* Header compacto con avatar e info al lado */}
 <div className="px-4 py-4 border-b border-gray-200">
@@ -342,7 +340,9 @@ const PersonaPopover: React.FC<{
     
     <button
       onClick={() => {
-        alert('Configurar permisos - Modal disponible desde la tabla principal');
+        if (empresaId && persona && onConfigurarPermisos) {
+          onConfigurarPermisos(empresaId, persona);
+        }
         onClose();
       }}
       className=" border-0 outline-none w-full flex items-center space-x-3 px-3 py-2 text-xs text-gray-700 hover:bg-gray-50 transition-colors"
@@ -445,12 +445,8 @@ const ListaPersonasPopover: React.FC<{
   return (
     <div
       ref={popoverRef}
-      className="fixed z-50 bg-white rounded-lg shadow-xl border border-gray-200 w-72"
-      style={{
-        top: position.top,
-        left: position.left,
-        maxHeight: '300px',
-      }}
+      className="empresas-popover empresas-popover-md"
+      style={{ top: position.top, left: position.left }}
     >{/* Header compacto */}
 <div className="px-4 py-3 border-b border-gray-200 bg-gray-50 rounded-t-lg">
   <div className="flex items-center justify-between">
@@ -477,22 +473,13 @@ const ListaPersonasPopover: React.FC<{
 {/* Búsqueda compacta */}
 <div className="px-4 py-1 border-b border-gray-200">
   <div className="relative">
-    <Search 
-      className="text-gray-400 w-4 h-4" 
-      style={{
-        position: 'absolute',
-        left: '0.75rem',
-        top: '50%',
-        transform: 'translateY(-50%)'
-      }}
-    />
+    <Search className="text-gray-400 w-4 h-4 empresas-icon-search" />
     <input
       type="text"
       placeholder="Buscar miembros"
       value={searchTerm}
       onChange={(e) => setSearchTerm(e.target.value)}
-      className="w-full h-4 pr-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-      style={{ paddingLeft: '2.5rem' }}
+      className="w-full h-4 pr-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent empresas-input-icon"
     />
   </div>
 </div>
@@ -570,7 +557,8 @@ const PersonasAsignadas: React.FC<{
   empresaNombre?: string;
   empresaId?: string;
   onQuitarPersona?: (empresaId: string, personaId: number | string) => void;
-}> = ({ personas = [], empresaNombre = "Empresa", empresaId, onQuitarPersona }) => {
+  onConfigurarPermisos?: (empresaId: string, persona: any) => void;
+}> = ({ personas = [], empresaNombre = "Empresa", empresaId, onQuitarPersona, onConfigurarPermisos }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [showTooltip, setShowTooltip] = useState<number | null>(null);
   const [selectedPersona, setSelectedPersona] = useState<any | null>(null);
@@ -797,6 +785,7 @@ const PersonasAsignadas: React.FC<{
         position={popoverPosition}
         empresaId={empresaId}
         onQuitarPersona={onQuitarPersona}
+        onConfigurarPermisos={onConfigurarPermisos}
       />
 
       {/* Popover lista completa */}
@@ -1341,6 +1330,53 @@ const ProximaObligacion: React.FC<{
   );
 };
 const Empresas: React.FC<EmpresasProps> = ({ onNavigate }) => {
+  // Estilos CSS responsivos
+  const styles = `
+    .empresas-popover { position: fixed; z-index: 50; background: white; border-radius: 0.5rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); border: 1px solid rgb(229, 231, 235); }
+    .empresas-popover-sm { width: 16rem; }
+    .empresas-popover-md { width: 18rem; max-height: 18.75rem; }
+    .empresas-input-icon { padding-left: 2.5rem; }
+    .empresas-icon-search { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); }
+    .empresas-table-empresa { width: 16.875rem; min-width: 16.875rem; max-width: 16.875rem; }
+    .empresas-table-empresa-card { width: 12.5rem; min-width: 12.5rem; max-width: 13.75rem; overflow: hidden; }
+    .empresas-table-personas { width: 8.75rem; min-width: 8.75rem; max-width: 8.75rem; }
+    .empresas-table-metric { width: 5rem; }
+    .empresas-table-semaforo { width: 11.25rem; }
+    .empresas-table-obligacion { width: 9.375rem; }
+    .empresas-progress-bar { max-width: 8.75rem; }
+    .empresas-progress-fill { height: 0.5rem; border-radius: 9999px; transition: all 0.5s; }
+    .empresas-status-badge { padding: 0.125rem 0.375rem; max-width: 100%; word-break: break-word; line-height: 1.2; }
+    .empresas-dropdown { width: 12.5rem; }
+    @media (max-width: 768px) {
+      .empresas-table-empresa { width: 14rem; min-width: 14rem; max-width: 14rem; }
+      .empresas-table-empresa-card { width: 10rem; min-width: 10rem; max-width: 12rem; }
+      .empresas-table-personas { width: 7rem; min-width: 7rem; max-width: 7rem; }
+      .empresas-table-metric { width: 4rem; }
+      .empresas-table-semaforo { width: 9rem; }
+      .empresas-table-obligacion { width: 8rem; }
+      .empresas-progress-bar { max-width: 7rem; }
+    }s
+    @media (max-width: 480px) {
+      .empresas-table-empresa { width: 12rem; min-width: 12rem; max-width: 12rem; }
+      .empresas-table-empresa-card { width: 8rem; min-width: 8rem; max-width: 10rem; }
+      .empresas-table-personas { width: 6rem; min-width: 6rem; max-width: 6rem; }
+      .empresas-table-metric { width: 3.5rem; }
+      .empresas-table-semaforo { width: 8rem; }
+      .empresas-table-obligacion { width: 7rem; }
+      .empresas-progress-bar { max-width: 6rem; }
+      .empresas-popover-sm { width: 14rem; }
+      .empresas-popover-md { width: 16rem; }
+    }
+  `;
+
+  // Inyectar estilos
+  useEffect(() => {
+    const styleElement = document.createElement('style');
+    styleElement.textContent = styles;
+    document.head.appendChild(styleElement);
+    return () => styleElement.remove();
+  }, [styles]);
+
   const [searchTerm, setSearchTerm] = useState('');
   const [filterEstado, setFilterEstado] = useState('');
   const [isRucModalOpen, setIsRucModalOpen] = useState(false);
@@ -1513,6 +1549,44 @@ const Empresas: React.FC<EmpresasProps> = ({ onNavigate }) => {
   const handleOpenPermissionsModal = (empresa: Empresa) => {
     setEmpresaForPermissions(empresa);
     setIsPermissionsModalOpen(true);
+  };
+
+  // Función para configurar permisos desde popover de persona
+  const handleConfigurarPermisosFromPopover = (empresaId: string, persona: any) => {
+    const empresa = empresas.find(e => e.id === empresaId);
+    if (empresa) {
+      // Crear un usuario temporal para agregarlo automáticamente a la tabla de permisos
+      const tempUser = {
+        id: persona.id.toString(),
+        nombre: persona.nombre,
+        email: persona.email || `${persona.nombre.toLowerCase().replace(' ', '.')}@empresa.com`,
+        telefono: persona.telefono || '',
+        documento: persona.iniciales || persona.id.toString(),
+        avatar: persona.avatar,
+        role: persona.cargo || 'Sin Rol'
+      };
+
+      // Actualizar el estado de usuarios asignados para incluir esta persona
+      setEmpresaPermissions(prev => {
+        const existingData = prev[empresaId] || { assignedUsers: [], rolePermissions: [] };
+        const userExists = existingData.assignedUsers.some(user => user.id === tempUser.id);
+        
+        if (!userExists) {
+          return {
+            ...prev,
+            [empresaId]: {
+              ...existingData,
+              assignedUsers: [...existingData.assignedUsers, tempUser]
+            }
+          };
+        }
+        return prev;
+      });
+
+      // Abrir el modal de permisos
+      setEmpresaForPermissions(empresa);
+      setIsPermissionsModalOpen(true);
+    }
   };
 
   // Función para guardar permisos y sincronizar con datos de empresa
@@ -2350,8 +2424,7 @@ const getStatusColor = (type: string) => {
                   placeholder="Buscar por nombre o RUC de empresa..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  style={{ paddingLeft: '2.5rem' }}
+                  className="w-full pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent empresas-input-icon"
                 />
               </div>
               {/* Filter */}
@@ -2650,8 +2723,7 @@ const getStatusColor = (type: string) => {
 
             {/* 1️⃣ Columna Empresa */}
             <div
-              style={{ width: '270px', minWidth: '270px', maxWidth: '270px' }}
-              className="flex-shrink-0 flex items-center space-x-2 overflow-hidden"
+              className="flex-shrink-0 flex items-center space-x-2 overflow-hidden empresas-table-empresa"
             >
               {/* Logo */}
               <div className="w-8 h-8 bg-blue-500 flex items-center justify-center flex-shrink-0">
@@ -2660,24 +2732,16 @@ const getStatusColor = (type: string) => {
 
               {/* Card interna */}
               <div
-                style={{ width: '200px', minWidth: '200px', maxWidth: '220px' }}
-                className="overflow-hidden"
+                className="overflow-hidden empresas-table-empresa-card"
               >
                 {/* Progress bar */}
               <span className="text-xs font-medium text-gray-600 mb-1 text-left">Datos completados </span>
               <div className="flex items-center mb-2">
                 <div
-                  className="flex-1 bg-gray-200 rounded-full h-1.5 mr-2"
-                  style={{ maxWidth: '140px' }}
+                  className="flex-1 bg-gray-200 rounded-full h-1.5 mr-2 empresas-progress-bar"
                 >
                   
-                  <div
-                    className="h-2 rounded-full transition-all duration-500"
-                    style={{ 
-                    width: `${empresa.completitud}%`,
-                    backgroundColor: getCompletitudColor(empresa.completitud)
-                  }}
-                  />
+                  <div className="empresas-progress-fill" style={{ width: `${empresa.completitud}%`, backgroundColor: getCompletitudColor(empresa.completitud) }} />
                 </div>
                 <span className="text-xs font-semibold text-gray-700 w-8 text-right">
                   {empresa.completitud}%
@@ -2696,26 +2760,10 @@ const getStatusColor = (type: string) => {
 
                 {/* Estados con flex-wrap mejorado */}
                 <div className="flex flex-wrap justify-between gap-2">
-                  <span
-                    className={`text-xs rounded border font-medium text-center ${getEstadoColor(empresa.estado)}`}
-                    style={{
-                      padding: '2px 6px',
-                      maxWidth: '100%',
-                      wordBreak: 'break-word',
-                      lineHeight: '1.2',
-                    }}
-                  >
+                  <span className={`text-xs rounded border font-medium text-center empresas-status-badge ${getEstadoColor(empresa.estado)}`}>
                     {empresa.estado}
                   </span>
-                  <span
-                    className={`text-xs rounded border font-medium text-center ${getCondicionColor(empresa.condicion)}`}
-                    style={{
-                      padding: '2px 6px',
-                      maxWidth: '100%',
-                      wordBreak: 'break-word',
-                      lineHeight: '1.2',
-                    }}
-                  >
+                  <span className={`text-xs rounded border font-medium text-center empresas-status-badge ${getCondicionColor(empresa.condicion)}`}>
                     {empresa.condicion}
                   </span>
                 </div>
@@ -2740,8 +2788,7 @@ const getStatusColor = (type: string) => {
 
             {/* 2️⃣ Personas Asignadas */}
             <div
-              style={{ width: '140px', minWidth: '140px', maxWidth: '140px' }}
-              className="flex-shrink-0 overflow-hidden"
+              className="flex-shrink-0 overflow-hidden empresas-table-personas"
             >
                {/* TÍTULO */}
               <div className="text-xs text-gray-500 font-medium mb-1 text-center">Asignados</div>
@@ -2750,11 +2797,12 @@ const getStatusColor = (type: string) => {
                 empresaNombre={empresa.nombre} 
                 empresaId={empresa.id}
                 onQuitarPersona={handleQuitarPersona}
+                onConfigurarPermisos={handleConfigurarPermisosFromPopover}
               />
             </div>
 
             {/* 3️⃣ Ingresos */}
-            <div style={{ width: '80px' }} className="flex-shrink-0 overflow-hidden">
+            <div className="flex-shrink-0 overflow-hidden empresas-table-metric">
               <MiniChart
                 label="Ingresos"
                 porcentaje={empresa.tendencia?.porcentaje || 12.5}
@@ -2765,7 +2813,7 @@ const getStatusColor = (type: string) => {
             </div>
 
             {/* 4️⃣ Egresos */}
-            <div style={{ width: '80px' }} className="flex-shrink-0 overflow-hidden">
+            <div className="flex-shrink-0 overflow-hidden empresas-table-metric">
               <MiniChart
                 label="Egresos"
                 porcentaje={-8.75}
@@ -2777,7 +2825,7 @@ const getStatusColor = (type: string) => {
             </div>
 
             {/* 5️⃣ IGV */}
-            <div style={{ width: '80px' }} className="flex-shrink-0 overflow-hidden">
+            <div className="flex-shrink-0 overflow-hidden empresas-table-metric">
               <MiniChart
                 label="IGV"
                 porcentaje={5}
@@ -2788,7 +2836,7 @@ const getStatusColor = (type: string) => {
             </div>
 
             {/* 6️⃣ Rentas */}
-            <div style={{ width: '80px' }} className="flex-shrink-0 overflow-hidden">
+            <div className="flex-shrink-0 overflow-hidden empresas-table-metric">
               <MiniChart
                 label="Rentas"
                 porcentaje={7.5}
@@ -2799,13 +2847,13 @@ const getStatusColor = (type: string) => {
             </div>
 
             {/* 7️⃣ Estado Tributario */}
-            <div style={{ width: '180px' }} className="flex-shrink-0 overflow-hidden">
+            <div className="flex-shrink-0 overflow-hidden empresas-table-semaforo">
               <div className="text-xs text-gray-500 font-medium mb-1 text-center">Semaforo Tributario</div>
               <SemaforoTributario semaforo={empresa.semaforoTributario} />
             </div>
 
             {/* 8️⃣ Próximo Vencimiento */}
-            <div style={{ width: '150px' }} className="flex-shrink-0 overflow-hidden">
+            <div className="flex-shrink-0 overflow-hidden empresas-table-obligacion">
               <div className="text-xs text-gray-500 font-medium mb-1 text-center">Próxima Obligación</div>
               <ProximaObligacion 
                 obligacion={empresa.proximaObligacion} 
@@ -2829,7 +2877,7 @@ const getStatusColor = (type: string) => {
                       className="fixed inset-0 z-30"
                       onClick={() => setOpenDropdownId(null)}
                     />
-                    <div className="absolute right-0 top-full mt-1 w-58 bg-white border border-gray-200 rounded-lg shadow-xl z-40" style={{width: '200px'}}>
+                    <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-xl z-40 empresas-dropdown">
                       <button
                         onClick={() =>
                           handleAction('permisos', empresa.id, empresa.nombre)

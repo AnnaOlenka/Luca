@@ -879,6 +879,18 @@ const useOnboarding = () => {
     }));
   }, []);
 
+  const handleTourJumpToStep = useCallback((targetStep: number) => {
+    console.log('Jumping to step:', targetStep);
+    setState(prev => ({
+      ...prev,
+      tourState: {
+        ...prev.tourState,
+        tourStep: targetStep,
+        userClickedContinue: false
+      }
+    }));
+  }, []);
+
   const clearAllTimers = useCallback(() => {
     if (tourCloseTimer.current) {
       clearTimeout(tourCloseTimer.current);
@@ -899,6 +911,7 @@ const useOnboarding = () => {
       handleTourBack,
       handleTourSkip,
       handleTourClose,
+      handleTourJumpToStep,
       clearAllTimers,
       saveDraft,
       clearDraft

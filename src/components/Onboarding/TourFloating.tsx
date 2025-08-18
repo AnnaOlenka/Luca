@@ -9,6 +9,7 @@ interface TourFloatingProps {
   onBack: () => void;
   onClose: () => void;
   onAutoSkipToValidation?: () => void;
+  onJumpToStep?: (step: number) => void;
 }
 
 const TourFloating: React.FC<TourFloatingProps> = ({
@@ -18,7 +19,8 @@ const TourFloating: React.FC<TourFloatingProps> = ({
   onContinue,
   onBack,
   onClose,
-  onAutoSkipToValidation
+  onAutoSkipToValidation,
+  onJumpToStep
 }) => {
   const [autoCloseTimer, setAutoCloseTimer] = useState<NodeJS.Timeout | null>(null);
   const [rucPosition, setRucPosition] = useState({ x: 50, y: 57, width: 400, height: 100 });
@@ -26,7 +28,7 @@ const TourFloating: React.FC<TourFloatingProps> = ({
 
   // Estilos CSS centralizados
   const styles = {
-    // Barra de progreso inferior
+    // Barra de progreso inferior con flechas
     progressContainer: { 
       position: 'fixed' as const, 
       bottom: '1.25rem', 
@@ -38,7 +40,35 @@ const TourFloating: React.FC<TourFloatingProps> = ({
       boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)', 
       border: '1px solid #e5e7eb', 
       overflow: 'hidden', 
-      minWidth: '25rem' 
+      minWidth: '25rem',
+      display: 'flex',
+      alignItems: 'center'
+    },
+    
+    // Contenedor principal interno
+    progressContent: {
+      flex: 1,
+      display: 'flex',
+      flexDirection: 'column' as const
+    },
+    
+    // Botones de flecha
+    arrowButton: {
+      width: '2.5rem',
+      height: '100%',
+      border: 'none',
+      backgroundColor: 'transparent',
+      cursor: 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      transition: 'all 0.3s',
+      borderRadius: 0
+    },
+    
+    arrowButtonDisabled: {
+      opacity: 0.3,
+      cursor: 'not-allowed'
     },
     
     // Tabs navegación
@@ -492,6 +522,31 @@ const TourFloating: React.FC<TourFloatingProps> = ({
     e.currentTarget.style.backgroundColor = isEnter ? '#f3f4f6' : '#ffffff';
   };
 
+  // Funciones de navegación
+  const handleTabClick = (targetStep: number) => {
+    if (onJumpToStep) {
+      onJumpToStep(targetStep);
+    }
+  };
+
+  const handlePreviousStep = () => {
+    if (step > 1 && onBack) {
+      onBack();
+    }
+  };
+
+  const handleNextStep = () => {
+    if (step < 6 && onContinue) {
+      onContinue();
+    }
+  };
+
+  const handleArrowButtonHover = (e: React.MouseEvent<HTMLButtonElement>, isEnter: boolean) => {
+    if (!e.currentTarget.disabled) {
+      e.currentTarget.style.backgroundColor = isEnter ? '#f3f4f6' : 'transparent';
+    }
+  };
+
   if (!isVisible) return null;
 
   const getTourContent = () => {
@@ -566,42 +621,79 @@ const TourFloating: React.FC<TourFloatingProps> = ({
 
   return (
     <>
-      {/* Barra de Progreso - Estilo navegación tabs */}
+      {/* Barra de Progreso con Flechas de Navegación */}
       <div style={styles.progressContainer}>
-        {/* Navegación tipo tabs */}
-        <div style={styles.tabsContainer}>
-          {/* Tab Onboarding */}
-          <div style={{
-            ...styles.tabItem,
-            ...(step <= 5 ? styles.tabActive : styles.tabInactive)
-          }}>
-            <span style={styles.tabText}>Onboarding</span>
-          </div>
-          
-          {/* Separador vertical */}
-          <div style={styles.tabSeparator}></div>
-          
-          {/* Tab Ir a la Bandeja */}
-          <div style={{
-            ...styles.tabItem,
-            ...(step === 6 ? styles.tabActive : styles.tabInactive)
-          }}>
-            <span style={styles.tabText}>Ir a la Bandeja</span>
-          </div>
-        </div>
-        
-        {/* Barra de progreso continua debajo de los tabs */}
-        <div style={styles.progressSection}>
-          <div style={styles.progressBarBg}>
+        {/* Flecha Izquierda */}
+        <button
+          style={{
+            ...styles.arrowButton,
+            ...(step <= 1 ? styles.arrowButtonDisabled : {})
+          }}
+          disabled={step <= 1}
+          onClick={handlePreviousStep}
+          onMouseEnter={(e) => handleArrowButtonHover(e, true)}
+          onMouseLeave={(e) => handleArrowButtonHover(e, false)}
+        >
+          <ArrowLeft style={{ width: '1.25rem', height: '1.25rem', color: '#6b7280' }} />
+        </button>
+
+        {/* Contenido Principal */}
+        <div style={styles.progressContent}>
+          {/* Navegación tipo tabs */}
+          <div style={styles.tabsContainer}>
+            {/* Tab Onboarding - Clickeable */}
             <div 
               style={{
-                ...styles.progressBarFill,
-                // Progreso: pasos 1-5 = 75%, paso 6 = 100%
-                width: step <= 5 ? `${(step / 5) * 75}%` : '100%'
+                ...styles.tabItem,
+                ...(step <= 5 ? styles.tabActive : styles.tabInactive)
               }}
-            />
+              onClick={() => handleTabClick(1)}
+            >
+              <span style={styles.tabText}>Onboarding</span>
+            </div>
+            
+            {/* Separador vertical */}
+            <div style={styles.tabSeparator}></div>
+            
+            {/* Tab Ir a la Bandeja - Clickeable */}
+            <div 
+              style={{
+                ...styles.tabItem,
+                ...(step === 6 ? styles.tabActive : styles.tabInactive)
+              }}
+              onClick={() => handleTabClick(6)}
+            >
+              <span style={styles.tabText}>Ir a la Bandeja</span>
+            </div>
+          </div>
+          
+          {/* Barra de progreso continua debajo de los tabs */}
+          <div style={styles.progressSection}>
+            <div style={styles.progressBarBg}>
+              <div 
+                style={{
+                  ...styles.progressBarFill,
+                  // Progreso: pasos 1-5 = 75%, paso 6 = 100%
+                  width: step <= 5 ? `${(step / 5) * 75}%` : '100%'
+                }}
+              />
+            </div>
           </div>
         </div>
+
+        {/* Flecha Derecha */}
+        <button
+          style={{
+            ...styles.arrowButton,
+            ...(step >= 6 ? styles.arrowButtonDisabled : {})
+          }}
+          disabled={step >= 6}
+          onClick={handleNextStep}
+          onMouseEnter={(e) => handleArrowButtonHover(e, true)}
+          onMouseLeave={(e) => handleArrowButtonHover(e, false)}
+        >
+          <ArrowRight style={{ width: '1.25rem', height: '1.25rem', color: '#6b7280' }} />
+        </button>
       </div>
 
       {/* Single overlay with clip-path cutout */}

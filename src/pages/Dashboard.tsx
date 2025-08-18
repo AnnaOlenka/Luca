@@ -221,6 +221,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
         isOpen={showOnboardingModal}
         onClose={handleCloseOnboarding}
         onNavigateToBandeja={handleNavigateToBandeja}
+        onNavigate={onNavigate}
       />
     </DashboardLayout>
   );

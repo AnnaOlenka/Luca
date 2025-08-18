@@ -9,12 +9,16 @@ interface OnboardingModalProps {
   isOpen: boolean;
   onClose: () => void;
   onNavigateToBandeja: () => void;
+  onNavigate?: (module: string) => void;
+  skipUserTypeSelection?: boolean;
 }
 
 const OnboardingModal: React.FC<OnboardingModalProps> = ({
   isOpen,
   onClose,
-  onNavigateToBandeja
+  onNavigateToBandeja,
+  onNavigate,
+  skipUserTypeSelection = false
 }) => {
   const { state, actions } = useOnboarding();
   const [showUserTypeSelection, setShowUserTypeSelection] = useState(false);
@@ -22,7 +26,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({
 
   // Estilos CSS centralizados
   const styles = {
-    modal: { width: '100%', maxWidth: '56rem', maxHeight: '90vh', height: '37.5rem', minHeight: '37.5rem', display: 'flex', flexDirection: 'column' as const, borderRadius: '1.5rem', overflow: 'hidden' },
+    modal: { width: '100%', maxWidth: '56rem', maxHeight: '90vh', height: '37.5rem', minHeight: '37.5rem', display: 'flex', flexDirection: 'column' as const, borderRadius: '0.7rem', overflow: 'hidden' },
     header: { padding: '1.5rem', borderBottom: '1px solid #e5e7eb', backgroundColor: '#ffffff', borderTopLeftRadius: '1.5rem', borderTopRightRadius: '1.5rem', textAlign: 'center' as const},
     title: { fontSize: '1.25rem', margin: 0, fontWeight: 600, color: '#111827' },
     subtitle: { fontSize: '1rem', margin: '0.25rem 0 0 0', color: '#4b5563' },
@@ -55,10 +59,12 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({
 
   // Show user type selection modal first when onboarding modal opens
   useEffect(() => {
-    if (isOpen && !hasSelectedUserType) {
+    if (isOpen && !hasSelectedUserType && !skipUserTypeSelection) {
       setShowUserTypeSelection(true);
+    } else if (skipUserTypeSelection) {
+      setHasSelectedUserType(true);
     }
-  }, [isOpen, hasSelectedUserType]);
+  }, [isOpen, hasSelectedUserType, skipUserTypeSelection]);
 
   const handleUserTypeSelected = (userType: 'contable' | 'contador' | 'empresario') => {
     console.log('Selected user type:', userType);
@@ -136,7 +142,13 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({
     // Clear draft when successfully completing onboarding
     actions.clearDraft();
     actions.clearAllTimers();
-    onNavigateToBandeja();
+    
+    // Navigate to Bandeja page if navigation function is available
+    if (onNavigate) {
+      onNavigate('bandeja');
+    } else {
+      onNavigateToBandeja();
+    }
   };
 
   if (!isOpen) return null;
@@ -269,6 +281,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({
             onContinue={actions.handleTourContinue}
             onBack={actions.handleTourBack}
             onClose={actions.handleTourClose}
+            onJumpToStep={actions.handleTourJumpToStep}
           />
 
         </>
