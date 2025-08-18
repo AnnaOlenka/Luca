@@ -808,7 +808,7 @@ const validateCredentialsRealTime = async (usuario: string, clave: string) => {
             <div className="border border-blue-200 rounded-lg p-1 mb-4">
               <h3 className="text-lg font-medium text-blue-900 mb-1 flex items-center">
                 <Users className="w-5 h-4 mr-2 text-blue-600" />
-                Personas y Roles Asignados
+                Personas Asignadas
               </h3>
             </div>
 
@@ -817,7 +817,7 @@ const validateCredentialsRealTime = async (usuario: string, clave: string) => {
                 <table className="w-full text-sm">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="p-3 text-center font-medium text-gray-700">Rol</th>
+                      <th className="p-3 text-center font-medium text-gray-700">Asignación</th>
                       <th className="p-3 text-center font-medium text-gray-700">Nombre</th>
                       <th className="p-3 text-center font-medium text-gray-700">DNI</th>
                       <th className="p-3 text-center font-medium text-gray-700">Email</th>
