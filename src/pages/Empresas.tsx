@@ -316,9 +316,9 @@ const PersonaPopover: React.FC<{
     {/* Botón cerrar más pequeño */}
     <button
       onClick={onClose}
-      className="  border-0 outline-none text-gray-400 hover:text-gray-600 hover:bg-gray-100  p-0.5 transition-colors ml-2 flex-shrink-0"
+      className="close-button"
     >
-      <X className="w-3 h-3" />
+      <X className="w-4 h-4 " />
     </button>
   </div>
 </div>
@@ -327,42 +327,42 @@ const PersonaPopover: React.FC<{
       {/* Acciones */}
 <div className="p-2">
   <div className="space-y-1">
-    <button
-      onClick={() => {
-        alert(`Ver perfil completo de ${persona.nombre}`);
-        onClose();
-      }}
-      className=" border-0 outline-none w-full flex items-center space-x-3 px-3 py-2 text-xs text-gray-700 hover:bg-gray-50 transition-colors"
-    >
-      <UserIcon className="w-4 h-4 text-gray-400" />
-      <span>Ver perfil completo</span>
-    </button>
-    
-    <button
-      onClick={() => {
-        if (empresaId && persona && onConfigurarPermisos) {
-          onConfigurarPermisos(empresaId, persona);
-        }
-        onClose();
-      }}
-      className=" border-0 outline-none w-full flex items-center space-x-3 px-3 py-2 text-xs text-gray-700 hover:bg-gray-50 transition-colors"
-    >
-      <Settings className="w-4 h-4 text-gray-400" />
-      <span>Configurar permisos</span>
-    </button>
-    
-    <button
-      onClick={() => {
-        if (empresaId && persona?.id && onQuitarPersona) {
-          onQuitarPersona(empresaId, persona.id);
-        }
-        onClose();
-      }}
-      className="border-0 outline-none w-full flex items-center space-x-3 px-3 py-2 text-xs text-red-600 hover:bg-red-50  transition-colors"
-    >
-      <UserMinus className="w-4 h-4" />
-      <span>Quitar asignado</span>
-    </button>
+   <button
+        onClick={() => {
+          console.log(`Ver perfil completo de ${persona?.nombre}`);
+          onClose();
+        }}
+        className="styled-button"
+      >
+        <UserIcon className="styled-icon-gray w-4 h-4" />
+        <span>Ver perfil completo</span>
+      </button>
+      
+      <button
+        onClick={() => {
+          if (empresaId && persona && onConfigurarPermisos) {
+            onConfigurarPermisos(empresaId, persona);
+          }
+          onClose();
+        }}
+        className="styled-button"
+      >
+        <Settings className="styled-icon-gray w-4 h-4" />
+        <span>Configurar permisos</span>
+      </button>
+      
+      <button
+        onClick={() => {
+          if (empresaId && persona?.id && onQuitarPersona) {
+            onQuitarPersona(empresaId, persona.id);
+          }
+          onClose();
+        }}
+        className="styled-button styled-button-red"
+      >
+        <UserMinus className="w-4 h-4" />
+        <span>Quitar asignado</span>
+      </button>
   </div>
 </div>
     </div>
@@ -463,9 +463,9 @@ const ListaPersonasPopover: React.FC<{
     {/* Botón cerrar con su propio espacio */}
     <button
       onClick={onClose}
-      className="text-gray-400 hover:text-gray-600 hover:bg-white rounded-full p-1 transition-colors shadow-sm ml-2 flex-shrink-0"
+      className="close-button"
     >
-      <X className="w-3 h-3" />
+      <X className="w-4 h-4" />
     </button>
   </div>
 </div>
@@ -1060,9 +1060,9 @@ const ProximaObligacionPopover: React.FC<{
           
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 hover:bg-white rounded-full p-1 transition-colors ml-2 flex-shrink-0"
+            className="close-button"
           >
-            <X className="w-3 h-3" />
+            <X className="w-5 h-5" />
           </button>
         </div>
       </div>
@@ -1111,7 +1111,7 @@ const ProximaObligacionPopover: React.FC<{
               alert(`Abrir calendario para ${tipo} ${mes}`);
               onClose();
             }}
-            className="flex-1 flex items-center justify-center space-x-2 px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors border-0"
+            className="button-base button-calendar"
           >
             <Calendar className="w-4 h-4" />
             <span>Calendario</span>
@@ -1124,7 +1124,7 @@ const ProximaObligacionPopover: React.FC<{
                 alert(`Marcar como completado: ${tipo} ${mes}`);
                 onClose();
               }}
-              className="flex-1 flex items-center justify-center space-x-2 px-3 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 transition-colors border-0"
+              className="button-base button-complete"
             >
               <CheckCircle className="w-4 h-4" />
               <span>Completar</span>
@@ -1347,6 +1347,85 @@ const Empresas: React.FC<EmpresasProps> = ({ onNavigate }) => {
     .empresas-progress-fill { height: 0.5rem; border-radius: 9999px; transition: all 0.5s; }
     .empresas-status-badge { padding: 0.125rem 0.375rem; max-width: 100%; word-break: break-word; line-height: 1.2; }
     .empresas-dropdown { width: 12.5rem; }
+    .styled-button {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          padding: 0.5rem 0.75rem;
+          font-size: 0.75rem;
+          line-height: 1rem;
+          color: #4a5568;
+          transition: background-color 0.3s ease-in-out;
+          border: none;
+          outline: none;
+          background-color: transparent;
+          cursor: pointer;
+        }
+    .styled-button:hover {
+          background-color: #f9fafb;
+        }
+
+    .styled-button-red {
+          color: #dc2626;
+        }
+
+    .styled-button-red:hover {
+          background-color: #fef2f2;
+        }
+
+    .styled-icon-gray {
+          color: #9ca3af;
+        }
+    .close-button {
+          border: none;
+          outline: none;
+          color: #9ca3af;
+          background-color: transparent;
+          padding: 0.125rem;
+          transition: color 0.3s ease-in-out, background-color 0.3s ease-in-out;
+          margin-left: 0.5rem;
+          flex-shrink: 0;
+          cursor: pointer;
+        }
+
+    .close-button:hover {
+          color: #4b5563;
+          background-color: #f3f4f6;
+        }
+    .button-base {
+          flex: 1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.5rem; /* space-x-2 */
+          padding: 0.5rem 0.75rem; /* px-3 py-2 */
+          font-size: 0.875rem; /* text-sm */
+          font-weight: 500;
+          border-radius: 0.375rem; /* rounded-md */
+          transition: background-color 0.3s ease-in-out;
+          border: none;
+          outline: none;
+          cursor: pointer;
+          color: white;
+        }
+
+        .button-calendar {
+          background-color: #2563eb; /* bg-blue-600 */
+        }
+        
+        .button-calendar:hover {
+          background-color: #1d4ed8; /* hover:bg-blue-700 */
+        }
+        
+        .button-complete {
+          background-color: #16a34a; /* bg-green-600 */
+        }
+
+        .button-complete:hover {
+          background-color: #15803d; /* hover:bg-green-700 */
+        }
+    
     @media (max-width: 768px) {
       .empresas-table-empresa { width: 14rem; min-width: 14rem; max-width: 14rem; }
       .empresas-table-empresa-card { width: 10rem; min-width: 10rem; max-width: 12rem; }

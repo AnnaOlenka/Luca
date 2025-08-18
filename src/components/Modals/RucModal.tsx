@@ -44,7 +44,6 @@ const RucModal: React.FC<RucModalProps> = ({ isOpen, onClose, empresa }) => {
 
   const downloadPDF = async () => {
     try {
-      // Cargar jsPDF dinámicamente desde el CDN
       const script = document.createElement('script');
       script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
       document.head.appendChild(script);
@@ -53,145 +52,142 @@ const RucModal: React.FC<RucModalProps> = ({ isOpen, onClose, empresa }) => {
         script.onload = resolve;
       });
       
-      // @ts-ignore - jsPDF se carga globalmente
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
       
-      // Título principal
       doc.setFontSize(18);
       doc.setTextColor(59, 130, 246);
       doc.text('FICHA RUC - CONSULTA SUNAT', 20, 20);
       
-      // Línea separadora azul
       doc.setDrawColor(59, 130, 246);
       doc.setLineWidth(0.8);
       doc.line(20, 35, 190, 35);
       
-      // Configuración de la tabla
       let yPosition = 45;
       const tableX = 20;
       const tableWidth = 170;
       const leftColWidth = 85;
       const rightColWidth = 85;
-      const rowHeight = 12;
+      const padding = 2; // Reduced padding
       
-      // Borde exterior de la tabla
       doc.setDrawColor(59, 130, 246);
       doc.setLineWidth(1);
-      doc.rect(tableX, yPosition, tableWidth, 0); // Solo para empezar
+      doc.rect(tableX, yPosition, tableWidth, 0);
       
-      // Header de la tabla
-      doc.setFillColor(59, 130, 246);
-      doc.rect(tableX, yPosition, tableWidth, rowHeight, 'F');
+      // Header
+      doc.setFillColor('#2f79b9');
+      doc.rect(tableX, yPosition, tableWidth, 12, 'F');
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(10);
       doc.text('Resultado de la Búsqueda', tableX + 5, yPosition + 8);
-      yPosition += rowHeight;
+      yPosition += 12;
       
-      // Función para agregar fila de la tabla
       const addTableRow = (label: string, value: string, isHighlighted: boolean = false) => {
-        // Fondo de la fila
-        if (isHighlighted) {
-          doc.setFillColor(220, 252, 231); // Verde claro
-          doc.rect(tableX, yPosition, tableWidth, rowHeight, 'F');
-        }
+        const labelColor = isHighlighted ? '#437e43' : '#000000';
+        const valueColor = isHighlighted ? '#437e43' : '#4b5563';
+        const labelBg = isHighlighted ? '#dff0d7' : '#ffffff';
+        const valueBg = isHighlighted ? '#dff0d7' : '#ffffff';
+
+        doc.setFontSize(9);
+        const labelLines = doc.splitTextToSize(label, leftColWidth - padding * 2);
+        const valueLines = doc.splitTextToSize(value, rightColWidth - padding * 2);
+        const rowHeight = Math.max(labelLines.length, valueLines.length) * 5 + padding * 2;
         
-        // Columna izquierda (etiqueta)
-        doc.setFillColor(239, 246, 255); // Azul muy claro
+        // Background
+        doc.setFillColor(labelBg);
         doc.rect(tableX, yPosition, leftColWidth, rowHeight, 'F');
+        doc.setFillColor(valueBg);
+        doc.rect(tableX + leftColWidth, yPosition, rightColWidth, rowHeight, 'F');
         
-        // Bordes
+        // Borders
         doc.setDrawColor(180, 180, 180);
         doc.setLineWidth(0.3);
         doc.rect(tableX, yPosition, leftColWidth, rowHeight, 'S');
         doc.rect(tableX + leftColWidth, yPosition, rightColWidth, rowHeight, 'S');
         
-        // Texto de la etiqueta
-        doc.setFontSize(9);
-        doc.setTextColor(30, 64, 175);
-        const labelLines = doc.splitTextToSize(label, leftColWidth - 4);
-        doc.text(labelLines, tableX + 2, yPosition + 6);
+        // Label Text
+        doc.setTextColor(labelColor);
+        doc.text(labelLines, tableX + padding, yPosition + padding + 4);
         
-        // Texto del valor
-        doc.setTextColor(isHighlighted ? 21 : 75, isHighlighted ? 128 : 85, isHighlighted ? 61 : 99);
-        const valueLines = doc.splitTextToSize(value, rightColWidth - 4);
-        doc.text(valueLines, tableX + leftColWidth + 2, yPosition + 6);
+        // Value Text
+        doc.setTextColor(valueColor);
+        doc.text(valueLines, tableX + leftColWidth + padding, yPosition + padding + 4);
         
         yPosition += rowHeight;
         
-        // Nueva página si es necesario
         if (yPosition > 270) {
           doc.addPage();
           yPosition = 20;
         }
       };
-      
-      // Función para fila con 4 columnas (fechas)
+
       const addSplitRow = (label1: string, value1: string, label2: string, value2: string) => {
         const quarterWidth = tableWidth / 4;
+        const textColor = '#000000';
+        const valueColor = '#4b5563';
+        const labelBg = '#ffffff';
+
+        doc.setFontSize(8);
+        const label1Lines = doc.splitTextToSize(label1, quarterWidth - padding * 2);
+        const value1Lines = doc.splitTextToSize(value1, quarterWidth - padding * 2);
+        const label2Lines = doc.splitTextToSize(label2, quarterWidth - padding * 2);
+        const value2Lines = doc.splitTextToSize(value2, quarterWidth - padding * 2);
+
+        const rowHeight = Math.max(label1Lines.length, value1Lines.length, label2Lines.length, value2Lines.length) * 4 + padding * 2;
         
-        // Primera columna (etiqueta 1)
-        doc.setFillColor(239, 246, 255);
+        // Columna 1
+        doc.setFillColor(labelBg);
         doc.rect(tableX, yPosition, quarterWidth, rowHeight, 'F');
         doc.setDrawColor(180, 180, 180);
         doc.setLineWidth(0.3);
         doc.rect(tableX, yPosition, quarterWidth, rowHeight, 'S');
-        doc.setFontSize(8);
-        doc.setTextColor(30, 64, 175);
-        const label1Lines = doc.splitTextToSize(label1, quarterWidth - 2);
-        doc.text(label1Lines, tableX + 1, yPosition + 6);
+        doc.setTextColor(textColor);
+        doc.text(label1Lines, tableX + padding, yPosition + padding + 4);
         
-        // Segunda columna (valor 1)
+        // Columna 2
         doc.rect(tableX + quarterWidth, yPosition, quarterWidth, rowHeight, 'S');
-        doc.setTextColor(75, 85, 99);
-        doc.text(value1, tableX + quarterWidth + 1, yPosition + 6);
+        doc.setTextColor(valueColor);
+        doc.text(value1Lines, tableX + quarterWidth + padding, yPosition + padding + 4);
         
-        // Tercera columna (etiqueta 2)
-        doc.setFillColor(239, 246, 255);
+        // Columna 3
+        doc.setFillColor(labelBg);
         doc.rect(tableX + (quarterWidth * 2), yPosition, quarterWidth, rowHeight, 'F');
         doc.rect(tableX + (quarterWidth * 2), yPosition, quarterWidth, rowHeight, 'S');
-        doc.setTextColor(30, 64, 175);
-        const label2Lines = doc.splitTextToSize(label2, quarterWidth - 2);
-        doc.text(label2Lines, tableX + (quarterWidth * 2) + 1, yPosition + 6);
+        doc.setTextColor(textColor);
+        doc.text(label2Lines, tableX + (quarterWidth * 2) + padding, yPosition + padding + 4);
         
-        // Cuarta columna (valor 2)
+        // Columna 4
         doc.rect(tableX + (quarterWidth * 3), yPosition, quarterWidth, rowHeight, 'S');
-        doc.setTextColor(75, 85, 99);
-        doc.text(value2, tableX + (quarterWidth * 3) + 1, yPosition + 6);
+        doc.setTextColor(valueColor);
+        doc.text(value2Lines, tableX + (quarterWidth * 3) + padding, yPosition + padding + 4);
         
         yPosition += rowHeight;
       };
       
-      // Agregar todas las filas de la tabla
       addTableRow('Número de RUC:', rucData.numeroRuc);
       addTableRow('Tipo Contribuyente:', rucData.tipoContribuyente);
-      addTableRow('Tipo de Documento:', rucData.tipoDocumento);
       addTableRow('Nombre Comercial:', rucData.nombreComercial || '-');
       
-      // Fila especial para fechas (4 columnas)
-      addSplitRow('Fecha de Inscripción:', rucData.fechaInscripcion, 'Fecha Inicio Act.:', rucData.fechaInicioActividades);
+      addSplitRow('Fecha de Inscripción:', rucData.fechaInscripcion, 'Fecha de Inicio de Actividades:', rucData.fechaInicioActividades);
       
-      // Continuar con filas destacadas
       addTableRow('Estado del Contribuyente:', rucData.estadoContribuyente, true);
       addTableRow('Condición del Contribuyente:', rucData.condicionContribuyente, true);
       
-      // Resto de filas normales
       addTableRow('Domicilio Fiscal:', rucData.domicilioFiscal);
+      addSplitRow('Sistema Emisión de Comprobante:', rucData.sistemaEmisionComprobante, 'Actividad Comercio Exterior:', rucData.actividadComercioExterior);
       addTableRow('Sistema Contabilidad:', rucData.sistemaContabilidad);
       addTableRow('Actividad(es) Económica(s):', rucData.actividadesEconomicas);
-      addTableRow('Comprobantes de Pago:', rucData.comprobantesPago);
+      addTableRow('Comprobantes de Pago c/aut. de impresión (F. 806 u 816):', rucData.comprobantesPago);
       addTableRow('Sistema de Emisión Electrónica:', rucData.sistemaEmisionElectronica);
       addTableRow('Emisor electrónico desde:', rucData.emisorElectronicoDesde);
       addTableRow('Comprobantes Electrónicos:', rucData.comprobantesElectronicos);
       addTableRow('Afiliado al PLE desde:', rucData.afiliadoPLE);
       addTableRow('Padrones:', rucData.padrones);
       
-      // Borde final de la tabla
       doc.setDrawColor(59, 130, 246);
       doc.setLineWidth(1);
       doc.rect(tableX, 45, tableWidth, yPosition - 45, 'S');
       
-      // Footer
       yPosition += 8;
       doc.setFontSize(8);
       doc.setTextColor(100, 100, 100);
@@ -204,7 +200,6 @@ const RucModal: React.FC<RucModalProps> = ({ isOpen, onClose, empresa }) => {
       });
       doc.text(`Fecha consulta: ${fechaConsulta}`, 20, yPosition);
       
-      // Descargar el PDF
       doc.save(`Ficha_RUC_${empresa.ruc}_${empresa.nombre.replace(/\s+/g, '_')}.pdf`);
     } catch (error) {
       console.error('Error al generar PDF:', error);
@@ -219,31 +214,44 @@ const RucModal: React.FC<RucModalProps> = ({ isOpen, onClose, empresa }) => {
       
       {/* Modal */}
       <div className="flex min-h-screen items-center justify-center p-4">
-        <div className="relative bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[85vh] overflow-hidden">
-          
+        <div 
+          className="relative flex flex-col shadow-xl overflow-y-auto"
+          style={{ 
+            width: '56rem', 
+            height: '37.5rem', 
+            borderRadius: '0.75rem', 
+            backgroundColor: 'white' 
+          }}
+        >
           {/* Header */}
-          <div className="bg-blue-600 text-white px-6 py-4 flex justify-between items-center">
-            <div>
-              <h2 className="font-bold text-lg">
-                FICHA RUC - CONSULTA SUNAT
-              </h2>
+          <div className="p-6" style={{ backgroundColor: '#2563eb', color: 'white', borderRadius: '0.75rem 0.75rem 0 0' }}>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <h2 className="text-xl font-bold">FICHA RUC - CONSULTA SUNAT</h2>
+              </div>
+              <button
+                onClick={onClose}
+                className="rounded-full p-2"
+                style={{ color: 'white', backgroundColor: 'transparent', border: 'none' }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1e40af'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
-            <button 
-              onClick={onClose}
-              className="text-black bg-white rounded-full w-8 h-8 flex items-center justify-center font-bold hover:bg-gray-200 transition"
-            >
-              ×
-            </button>
           </div>
 
-          {/* Content with scroll */}
-          <div className="overflow-y-auto max-h-[calc(85vh-140px)] p-4">
+          {/* Content */}
+          <div className="p-6">
             
             {/* Botón de descarga */}
             <div className="mb-4 flex justify-end">
               <button
                 onClick={downloadPDF}
-                className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors shadow-md"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg transition-colors shadow-md"
+                style={{ backgroundColor: '#16a34a', color: 'white', border: 'none' }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#15803d'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#16a34a'}
               >
                 <Download className="w-4 h-4" />
                 Descargar Ficha RUC (PDF)
@@ -251,216 +259,204 @@ const RucModal: React.FC<RucModalProps> = ({ isOpen, onClose, empresa }) => {
             </div>
             
             {/* Panel con borde azul */}
-            <div className="border-2 border-blue-400 rounded">
+            <div className="border-2 rounded" style={{ borderColor: '#2563eb' }}>
               
               {/* Header del panel */}
-              <div className="bg-blue-500 text-white px-4 py-2 text-sm font-medium">
+              <div className="px-4 py-2 text-sm font-medium" style={{ backgroundColor: '#2f79b9', color: 'white' }}>
                 Resultado de la Búsqueda
               </div>
               
               {/* Tabla de datos */}
-              <div className="bg-white">
+              <div style={{ backgroundColor: 'white' }}>
                 
                 {/* Número de RUC */}
-                <div className="border-b border-gray-300">
+                <div style={{ borderBottom: '1px solid #d1d5db' }}>
                   <div className="grid grid-cols-2">
-                    <div className="bg-blue-50 px-4 py-3 border-r border-gray-300">
-                      <span className="font-semibold text-blue-800 text-sm">Número de RUC:</span>
+                    <div className="px-4 py-3" style={{ backgroundColor: '#ffffff', borderRight: '1px solid #d1d5db' }}>
+                      <span className="font-semibold" style={{ color: '#000000ff', fontSize: '0.875rem' }}>Número de RUC:</span>
                     </div>
                     <div className="px-4 py-3">
-                      <span className="font-semibold text-gray-800 text-sm">{rucData.numeroRuc}</span>
+                      <span className="font-semibold" style={{ color: '#1f2937', fontSize: '0.875rem' }}>{rucData.numeroRuc}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Tipo Contribuyente */}
-                <div className="border-b border-gray-300">
+                <div style={{ borderBottom: '1px solid #d1d5db' }}>
                   <div className="grid grid-cols-2">
-                    <div className="bg-blue-50 px-4 py-3 border-r border-gray-300">
-                      <span className="font-semibold text-blue-800 text-sm">Tipo Contribuyente:</span>
+                    <div className="px-4 py-3" style={{ backgroundColor: '#ffffff', borderRight: '1px solid #d1d5db' }}>
+                      <span className="font-semibold" style={{ color: '#000000ff', fontSize: '0.875rem' }}>Tipo Contribuyente:</span>
                     </div>
                     <div className="px-4 py-3">
-                      <span className="text-gray-700 text-sm">{rucData.tipoContribuyente}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Tipo de Documento */}
-                <div className="border-b border-gray-300">
-                  <div className="grid grid-cols-2">
-                    <div className="bg-blue-50 px-4 py-3 border-r border-gray-300">
-                      <span className="font-semibold text-blue-800 text-sm">Tipo de Documento:</span>
-                    </div>
-                    <div className="px-4 py-3">
-                      <span className="text-blue-600 text-sm underline">{rucData.tipoDocumento}</span>
+                      <span style={{ color: '#4b5563', fontSize: '0.875rem' }}>{rucData.tipoContribuyente}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Nombre Comercial */}
-                <div className="border-b border-gray-300">
+                <div style={{ borderBottom: '1px solid #d1d5db' }}>
                   <div className="grid grid-cols-2">
-                    <div className="bg-blue-50 px-4 py-3 border-r border-gray-300">
-                      <span className="font-semibold text-blue-800 text-sm">Nombre Comercial:</span>
+                    <div className="px-4 py-3" style={{ backgroundColor: '#ffffff', borderRight: '1px solid #d1d5db' }}>
+                      <span className="font-semibold" style={{ color: '#000000ff', fontSize: '0.875rem' }}>Nombre Comercial:</span>
                     </div>
                     <div className="px-4 py-3">
-                      <span className="text-gray-700 text-sm">{rucData.nombreComercial || '-'}</span>
+                      <span style={{ color: '#4b5563', fontSize: '0.875rem' }}>{rucData.nombreComercial || '-'}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Fechas - en una sola fila */}
-                <div className="border-b border-gray-300">
+                <div style={{ borderBottom: '1px solid #d1d5db' }}>
                   <div className="grid grid-cols-4">
-                    <div className="bg-blue-50 px-4 py-3 border-r border-gray-300">
-                      <span className="font-semibold text-blue-800 text-sm">Fecha de Inscripción:</span>
+                    <div className="px-4 py-3" style={{ backgroundColor: '#ffffff', borderRight: '1px solid #d1d5db' }}>
+                      <span className="font-semibold" style={{ color: '#000000ff', fontSize: '0.875rem' }}>Fecha de Inscripción:</span>
                     </div>
-                    <div className="px-4 py-3 border-r border-gray-300">
-                      <span className="text-gray-700 text-sm">{rucData.fechaInscripcion}</span>
+                    <div className="px-4 py-3" style={{ borderRight: '1px solid #d1d5db' }}>
+                      <span style={{ color: '#4b5563', fontSize: '0.875rem' }}>{rucData.fechaInscripcion}</span>
                     </div>
-                    <div className="bg-blue-50 px-4 py-3 border-r border-gray-300">
-                      <span className="font-semibold text-blue-800 text-sm">Fecha de Inicio de Actividades:</span>
+                    <div className="px-4 py-3" style={{ backgroundColor: '#ffffff', borderRight: '1px solid #d1d5db' }}>
+                      <span className="font-semibold" style={{ color: '#000000ff', fontSize: '0.875rem' }}>Fecha de Inicio de Actividades:</span>
                     </div>
                     <div className="px-4 py-3">
-                      <span className="text-gray-700 text-sm">{rucData.fechaInicioActividades}</span>
+                      <span style={{ color: '#4b5563', fontSize: '0.875rem' }}>{rucData.fechaInicioActividades}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Estado del Contribuyente */}
-                <div className="border-b border-gray-300 bg-green-100">
+                <div style={{ borderBottom: '1px solid #d1d5db', backgroundColor: '#dff0d7' }}>
                   <div className="grid grid-cols-2">
-                    <div className="bg-green-200 px-4 py-3 border-r border-gray-300">
-                      <span className="font-semibold text-green-800 text-sm">Estado del Contribuyente:</span>
+                    <div className="px-4 py-3" style={{ backgroundColor: '#dff0d7', borderRight: '1px solid #d1d5db' }}>
+                      <span className="font-semibold" style={{ color: '#437e43', fontSize: '0.875rem' }}>Estado del Contribuyente:</span>
                     </div>
                     <div className="px-4 py-3">
-                      <span className="text-green-700 text-sm font-semibold">{rucData.estadoContribuyente}</span>
+                      <span className="font-semibold" style={{ color: '#437e43', fontSize: '0.875rem' }}>{rucData.estadoContribuyente}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Condición del Contribuyente */}
-                <div className="border-b border-gray-300 bg-green-100">
+                <div style={{ borderBottom: '1px solid #d1d5db', backgroundColor: '#dff0d7' }}>
                   <div className="grid grid-cols-2">
-                    <div className="bg-green-200 px-4 py-3 border-r border-gray-300">
-                      <span className="font-semibold text-green-800 text-sm">Condición del Contribuyente:</span>
+                    <div className="px-4 py-3" style={{ backgroundColor: '#dff0d7', borderRight: '1px solid #d1d5db' }}>
+                      <span className="font-semibold" style={{ color: '#437e43', fontSize: '0.875rem' }}>Condición del Contribuyente:</span>
                     </div>
                     <div className="px-4 py-3">
-                      <span className="text-green-700 text-sm font-semibold">{rucData.condicionContribuyente}</span>
+                      <span className="font-semibold" style={{ color: '#437e43', fontSize: '0.875rem' }}>{rucData.condicionContribuyente}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Domicilio Fiscal */}
-                <div className="border-b border-gray-300">
+                <div style={{ borderBottom: '1px solid #d1d5db' }}>
                   <div className="grid grid-cols-2">
-                    <div className="bg-blue-50 px-4 py-3 border-r border-gray-300">
-                      <span className="font-semibold text-blue-800 text-sm">Domicilio Fiscal:</span>
+                    <div className="px-4 py-3" style={{ backgroundColor: '#ffffff', borderRight: '1px solid #d1d5db' }}>
+                      <span className="font-semibold" style={{ color: '#000000ff', fontSize: '0.875rem' }}>Domicilio Fiscal:</span>
                     </div>
                     <div className="px-4 py-3">
-                      <span className="text-gray-700 text-sm">{rucData.domicilioFiscal}</span>
+                      <span style={{ color: '#4b5563', fontSize: '0.875rem' }}>{rucData.domicilioFiscal}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Sistema Emisión y Comercio Exterior */}
-                <div className="border-b border-gray-300">
+                <div style={{ borderBottom: '1px solid #d1d5db' }}>
                   <div className="grid grid-cols-4">
-                    <div className="bg-blue-50 px-4 py-3 border-r border-gray-300">
-                      <span className="font-semibold text-blue-800 text-sm">Sistema Emisión de Comprobante:</span>
+                    <div className="px-4 py-3" style={{ backgroundColor: '#ffffff', borderRight: '1px solid #d1d5db' }}>
+                      <span className="font-semibold" style={{ color: '#000000ff', fontSize: '0.875rem' }}>Sistema Emisión de Comprobante:</span>
                     </div>
-                    <div className="px-4 py-3 border-r border-gray-300">
-                      <span className="text-gray-700 text-sm">{rucData.sistemaEmisionComprobante}</span>
+                    <div className="px-4 py-3" style={{ borderRight: '1px solid #d1d5db' }}>
+                      <span style={{ color: '#4b5563', fontSize: '0.875rem' }}>{rucData.sistemaEmisionComprobante}</span>
                     </div>
-                    <div className="bg-blue-50 px-4 py-3 border-r border-gray-300">
-                      <span className="font-semibold text-blue-800 text-sm">Actividad Comercio Exterior:</span>
+                    <div className="px-4 py-3" style={{ backgroundColor: '#ffffff', borderRight: '1px solid #d1d5db' }}>
+                      <span className="font-semibold" style={{ color: '#000000ff', fontSize: '0.875rem' }}>Actividad Comercio Exterior:</span>
                     </div>
                     <div className="px-4 py-3">
-                      <span className="text-red-600 text-sm">{rucData.actividadComercioExterior}</span>
+                      <span style={{ color: '#4b5563', fontSize: '0.875rem' }}>{rucData.actividadComercioExterior}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Sistema Contabilidad */}
-                <div className="border-b border-gray-300">
+                <div style={{ borderBottom: '1px solid #d1d5db' }}>
                   <div className="grid grid-cols-2">
-                    <div className="bg-blue-50 px-4 py-3 border-r border-gray-300">
-                      <span className="font-semibold text-blue-800 text-sm">Sistema Contabilidad:</span>
+                    <div className="px-4 py-3" style={{ backgroundColor: '#ffffff', borderRight: '1px solid #d1d5db' }}>
+                      <span className="font-semibold" style={{ color: '#000000ff', fontSize: '0.875rem' }}>Sistema Contabilidad:</span>
                     </div>
                     <div className="px-4 py-3">
-                      <span className="text-gray-700 text-sm">{rucData.sistemaContabilidad}</span>
+                      <span style={{ color: '#4b5563', fontSize: '0.875rem' }}>{rucData.sistemaContabilidad}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Actividades Económicas */}
-                <div className="border-b border-gray-300">
+                <div style={{ borderBottom: '1px solid #d1d5db' }}>
                   <div className="grid grid-cols-2">
-                    <div className="bg-blue-50 px-4 py-3 border-r border-gray-300">
-                      <span className="font-semibold text-blue-800 text-sm">Actividad(es) Económica(s):</span>
+                    <div className="px-4 py-3" style={{ backgroundColor: '#ffffff', borderRight: '1px solid #d1d5db' }}>
+                      <span className="font-semibold" style={{ color: '#000000ff', fontSize: '0.875rem' }}>Actividad(es) Económica(s):</span>
                     </div>
                     <div className="px-4 py-3">
-                      <span className="text-blue-600 text-sm underline">{rucData.actividadesEconomicas}</span>
+                      <span style={{ color: '#4b5563', fontSize: '0.875rem' }}>{rucData.actividadesEconomicas}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Comprobantes de Pago */}
-                <div className="border-b border-gray-300">
+                <div style={{ borderBottom: '1px solid #d1d5db' }}>
                   <div className="grid grid-cols-2">
-                    <div className="bg-blue-50 px-4 py-3 border-r border-gray-300">
-                      <span className="font-semibold text-blue-800 text-sm">Comprobantes de Pago c/aut. de impresión (F. 806 u 816):</span>
+                    <div className="px-4 py-3" style={{ backgroundColor: '#ffffff', borderRight: '1px solid #d1d5db' }}>
+                      <span className="font-semibold" style={{ color: '#000000ff', fontSize: '0.875rem' }}>Comprobantes de Pago c/aut. de impresión (F. 806 u 816):</span>
                     </div>
                     <div className="px-4 py-3">
-                      <span className="text-gray-700 text-sm">{rucData.comprobantesPago}</span>
+                      <span style={{ color: '#4b5563', fontSize: '0.875rem' }}>{rucData.comprobantesPago}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Sistema de Emisión Electrónica */}
-                <div className="border-b border-gray-300">
+                <div style={{ borderBottom: '1px solid #d1d5db' }}>
                   <div className="grid grid-cols-2">
-                    <div className="bg-blue-50 px-4 py-3 border-r border-gray-300">
-                      <span className="font-semibold text-blue-800 text-sm">Sistema de Emisión Electrónica:</span>
+                    <div className="px-4 py-3" style={{ backgroundColor: '#ffffff', borderRight: '1px solid #d1d5db' }}>
+                      <span className="font-semibold" style={{ color: '#000000ff', fontSize: '0.875rem' }}>Sistema de Emisión Electrónica:</span>
                     </div>
                     <div className="px-4 py-3">
-                      <span className="text-gray-700 text-sm">{rucData.sistemaEmisionElectronica}</span>
+                      <span style={{ color: '#4b5563', fontSize: '0.875rem' }}>{rucData.sistemaEmisionElectronica}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Emisor electrónico desde */}
-                <div className="border-b border-gray-300">
+                <div style={{ borderBottom: '1px solid #d1d5db' }}>
                   <div className="grid grid-cols-2">
-                    <div className="bg-blue-50 px-4 py-3 border-r border-gray-300">
-                      <span className="font-semibold text-blue-800 text-sm">Emisor electrónico desde:</span>
+                    <div className="px-4 py-3" style={{ backgroundColor: '#ffffff', borderRight: '1px solid #d1d5db' }}>
+                      <span className="font-semibold" style={{ color: '#000000ff', fontSize: '0.875rem' }}>Emisor electrónico desde:</span>
                     </div>
                     <div className="px-4 py-3">
-                      <span className="text-gray-700 text-sm">{rucData.emisorElectronicoDesde}</span>
+                      <span style={{ color: '#4b5563', fontSize: '0.875rem' }}>{rucData.emisorElectronicoDesde}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Comprobantes Electrónicos */}
-                <div className="border-b border-gray-300">
+                <div style={{ borderBottom: '1px solid #d1d5db' }}>
                   <div className="grid grid-cols-2">
-                    <div className="bg-blue-50 px-4 py-3 border-r border-gray-300">
-                      <span className="font-semibold text-blue-800 text-sm">Comprobantes Electrónicos:</span>
+                    <div className="px-4 py-3" style={{ backgroundColor: '#ffffff', borderRight: '1px solid #d1d5db' }}>
+                      <span className="font-semibold" style={{ color: '#000000ff', fontSize: '0.875rem' }}>Comprobantes Electrónicos:</span>
                     </div>
                     <div className="px-4 py-3">
-                      <span className="text-gray-700 text-sm">{rucData.comprobantesElectronicos}</span>
+                      <span style={{ color: '#4b5563', fontSize: '0.875rem' }}>{rucData.comprobantesElectronicos}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Afiliado al PLE desde */}
-                <div className="border-b border-gray-300">
+                <div style={{ borderBottom: '1px solid #d1d5db' }}>
                   <div className="grid grid-cols-2">
-                    <div className="bg-blue-50 px-4 py-3 border-r border-gray-300">
-                      <span className="font-semibold text-blue-800 text-sm">Afiliado al PLE desde:</span>
+                    <div className="px-4 py-3" style={{ backgroundColor: '#ffffff', borderRight: '1px solid #d1d5db' }}>
+                      <span className="font-semibold" style={{ color: '#000000ff', fontSize: '0.875rem' }}>Afiliado al PLE desde:</span>
                     </div>
                     <div className="px-4 py-3">
-                      <span className="text-gray-700 text-sm">{rucData.afiliadoPLE}</span>
+                      <span style={{ color: '#4b5563', fontSize: '0.875rem' }}>{rucData.afiliadoPLE}</span>
                     </div>
                   </div>
                 </div>
@@ -468,11 +464,11 @@ const RucModal: React.FC<RucModalProps> = ({ isOpen, onClose, empresa }) => {
                 {/* Padrones */}
                 <div>
                   <div className="grid grid-cols-2">
-                    <div className="bg-blue-50 px-4 py-3 border-r border-gray-300">
-                      <span className="font-semibold text-blue-800 text-sm">Padrones:</span>
+                    <div className="px-4 py-3" style={{ backgroundColor: '#ffffff', borderRight: '1px solid #d1d5db' }}>
+                      <span className="font-semibold" style={{ color: '#000000ff', fontSize: '0.875rem' }}>Padrones:</span>
                     </div>
                     <div className="px-4 py-3">
-                      <span className="text-gray-700 text-sm">{rucData.padrones}</span>
+                      <span style={{ color: '#4b5563', fontSize: '0.875rem' }}>{rucData.padrones}</span>
                     </div>
                   </div>
                 </div>
@@ -480,8 +476,8 @@ const RucModal: React.FC<RucModalProps> = ({ isOpen, onClose, empresa }) => {
               </div>
               
               {/* Footer del panel */}
-              <div className="bg-gray-100 px-4 py-2 text-center border-t border-gray-300">
-                <small className="text-gray-600">Fecha consulta: {new Date().toLocaleString('es-PE', {
+              <div className="px-4 py-2 text-center" style={{ backgroundColor: '#f3f4f6', borderTop: '1px solid #d1d5db' }}>
+                <small style={{ color: '#6b7280' }}>Fecha consulta: {new Date().toLocaleString('es-PE', {
                   day: '2-digit',
                   month: '2-digit', 
                   year: 'numeric',
@@ -494,11 +490,14 @@ const RucModal: React.FC<RucModalProps> = ({ isOpen, onClose, empresa }) => {
           </div>
 
           {/* Modal Footer */}
-          <div className="bg-gray-50 px-6 py-4 border-t border-gray-200">
+          <div className="px-6 py-4" style={{ backgroundColor: '#f9fafb', borderTop: '1px solid #e5e7eb', borderRadius: '0 0 0.75rem 0.75rem' }}>
             <div className="flex justify-end">
               <button
                 onClick={onClose}
-                className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                className="px-4 py-2 rounded-lg transition-colors"
+                style={{ backgroundColor: '#6b7280', color: 'white', border: 'none' }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#4b5563'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#6b7280'}
               >
                 Cerrar
               </button>
