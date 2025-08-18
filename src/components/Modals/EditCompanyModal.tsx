@@ -48,7 +48,7 @@ const EditCompanyModal: React.FC<EditCompanyModalProps> = ({ empresa, isOpen, on
     .edit-modal-subtitle { font-size: 0.875rem; opacity: 0.9; margin-top: 0.25rem; }
     .edit-modal-close-btn { color: white; padding: 0.5rem; border-radius: 0.375rem; transition: background-color 0.2s; border: none; background: none; cursor: pointer; }
     .edit-modal-close-btn:hover { background-color: rgba(255, 255, 255, 0.1); }
-    .edit-modal-tabs { background-color: #f9fafb; padding: 1rem; border-bottom: 1px solid #e5e7eb; }
+    .edit-modal-tabs { background-color: #f9fafb; padding: 0.35rem; border-bottom: 1px solid #e5e7eb; }
     .edit-modal-tab-list { display: flex; gap: 0.5rem; }
     .edit-modal-tab { display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1rem; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: all 0.2s; border: none; background: none; }
     .edit-modal-tab.active { background-color: white; color: #2563eb; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); }
@@ -74,7 +74,7 @@ const EditCompanyModal: React.FC<EditCompanyModalProps> = ({ empresa, isOpen, on
       .edit-modal-header { padding: 0.75rem; }
       .edit-modal-title { font-size: 1.125rem; }
       .edit-modal-tabs { padding: 0.75rem; }
-      .edit-modal-tab { padding: 0.5rem 0.75rem; font-size: 0.8125rem; }
+      .edit-modal-tab { padding: 0.5rem 0.45rem; font-size: 0.8125rem; }
       .edit-modal-content { padding: 0.75rem; }
       .edit-modal-footer { padding: 0.75rem; }
     }
@@ -1342,7 +1342,7 @@ const validateCredentialsRealTime = async (usuario: string, clave: string) => {
             {/* Columna Izquierda */}
             <div className="space-y-3">
               <div className="bg-blue-50 border border-gray-200 rounded-lg p-3">
-                <h3 className="text-left text-sm font-medium text-gray-900 mb-3">Datos Operacionales</h3>
+                <h3 className="text-left text-sm font-medium text-gray-900 mb-2">Datos Operacionales</h3>
                 <div className="space-y-2">
                   <div className="grid grid-cols-2 gap-2">
                     <div>
@@ -1432,7 +1432,7 @@ const validateCredentialsRealTime = async (usuario: string, clave: string) => {
 
               {/* Nueva Sección: Configuración Financiera */}
               <div className="bg-blue-50 border border-emerald-200 rounded-lg p-3">
-                <h3 className="text-sm font-medium text-emerald-900 mb-3 flex items-center">
+                <h3 className="text-sm font-medium text-emerald-900 mb-2 flex items-center">
                   Configuración Financiera
                 </h3>
                 <div className="space-y-2">
@@ -1512,8 +1512,7 @@ const validateCredentialsRealTime = async (usuario: string, clave: string) => {
             {/* Columna Derecha */}
             <div className="space-y-3">
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                <h3 className="text-sm font-medium text-blue-900 mb-3 flex items-center">
-                  <Users className="w-4 h-4 mr-1 text-blue-600" />
+                <h3 className="text-sm font-medium text-blue-900 mb-2 flex items-center">
                   Segmentación Clientes
                 </h3>
                 <div className="space-y-2">
@@ -1585,9 +1584,8 @@ const validateCredentialsRealTime = async (usuario: string, clave: string) => {
               </div>
 
               <div className="bg-blue-50 border border-purple-200 rounded-lg p-3">
-                <h3 className="text-sm font-medium text-purple-900 mb-3 flex items-center">
-                  <Calculator className="w-4 h-4 mr-1 text-purple-600" />
-                  Config. Contable
+                <h3 className="text-sm font-medium text-purple-900 mb-2 flex items-center">
+                  Configuración Contable
                 </h3>
                 <div className="space-y-2">
                   <div>
@@ -1644,8 +1642,8 @@ const validateCredentialsRealTime = async (usuario: string, clave: string) => {
 
               {/* Nueva Sección: Configuración Tributaria */}
               <div className="bg-blue-50 border border-orange-200 rounded-lg p-3">
-                <h3 className="text-sm font-medium text-orange-900 mb-3 flex items-center">
-                  🏛️ Config. Tributaria
+                <h3 className="text-sm font-medium text-orange-900 mb-2 flex items-center">
+                  Configuración Tributaria
                 </h3>
                 <div className="space-y-2">
                   <div className="grid grid-cols-2 gap-2">

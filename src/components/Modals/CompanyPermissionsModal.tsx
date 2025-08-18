@@ -292,14 +292,14 @@ const CompanyPermissionsModal: React.FC<CompanyPermissionsModalProps> = ({
   // Estilos CSS responsivos
   const styles = `
     .permissions-modal-backdrop { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center; z-index: 50; padding: 1rem; overflow-y: auto; }
-    .permissions-modal-container { background-color: white; border-radius: 0.75rem; width: 100%; max-width: 56rem; max-height: 90vh; height: 37.5rem; min-height: 37.5rem; display: flex; flex-direction: column; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); position: relative; }
-    .permissions-modal-header { background-color: white; color: #1f2937; padding: 1.5rem; border-bottom: 1px solid #e5e7eb; }
+    .permissions-modal-container { background-color: white; border-radius: 0.75rem ; width: 100%; max-width: 56rem; max-height: 90vh; height: 37.5rem; min-height: 37.5rem; display: flex; flex-direction: column; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); position: relative;  }
+    .permissions-modal-header { background-color: white; color: #1f2937; padding: 2rem 1.5rem 1.5rem; border-bottom: 1px solid #e5e7eb; }
     .permissions-modal-title { font-size: 1.25rem; font-weight: 600; color: #111827; }
     .permissions-modal-subtitle { font-size: 0.875rem; color: #6b7280; margin-top: 0.25rem; }
-    .permissions-modal-close-btn { color: #9ca3af; padding: 0.5rem; border-radius: 0.5rem; transition: all 0.2s; border: none; background: none; cursor: pointer; position: absolute; top: 1rem; right: 1rem; }
+    .permissions-modal-close-btn { color: #9ca3af; padding: 0.5rem; border-radius: 0.5rem; transition: all 0.2s; border: none; background: none; cursor: pointer; position: absolute; top: 1.5rem; right: 1.5rem; }
     .permissions-modal-close-btn:hover { color: #4b5563; background-color: #f3f4f6; }
-    .permissions-modal-tabs { background-color: #f9fafb; padding: 0.75rem;}
-    .permissions-modal-tab-list { display: flex; gap: 0.5rem; }
+    .permissions-modal-tabs { background-color: #f9fafb; padding: 0.75rem 1.3rem; border-bottom: 1px solid #e5e7eb; width: 100%; box-sizing: border-box; }
+    .permissions-modal-tab-list { display: flex; gap: 0.5rem; width: 100%; }
     .permissions-modal-tab { display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1rem; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: all 0.2s; border: none; background: none; }
     .permissions-modal-tab.active { background-color: white; color: #2563eb; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); }
     .permissions-modal-tab:not(.active) { color: #6b7280; }
@@ -665,6 +665,7 @@ const CompanyPermissionsModal: React.FC<CompanyPermissionsModalProps> = ({
             >
               <X className="w-5 h-5" />
             </button>
+          </div>
 
             <div className="permissions-modal-tabs">
               <nav className="permissions-modal-tab-list">
@@ -683,7 +684,6 @@ const CompanyPermissionsModal: React.FC<CompanyPermissionsModalProps> = ({
                   Permisos por Rol
                 </button>
               </nav>
-            </div>
           </div>
 
           <div className="permissions-modal-content">
