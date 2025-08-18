@@ -28,7 +28,7 @@ const PerfilEmpresarialModal: React.FC<PerfilEmpresarialModalProps> = ({ isOpen,
     .perfil-modal-close-btn:hover { background-color: rgba(255, 255, 255, 0.2); }
     .perfil-modal-tabs { border-bottom: 1px solid #e5e7eb; padding: 0.5rem; }
     .perfil-modal-tab-list { display: flex; gap: 0.5rem; }
-    .perfil-modal-tab { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; font-size: 0.875rem; font-weight: 500; border: 1px solid #e4e4e498; border-radius: 0.5rem; cursor: pointer; transition: all 0.2s; background: white; min-width: 120px; gap: 0.5rem; }
+    .perfil-modal-tab { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; font-size: 0.875rem; font-weight: 500; border: 1px solid #cccccc98; border-radius: 0.5rem; cursor: pointer; transition: all 0.2s; background: white; min-width: 120px; gap: 0.5rem; }
     .perfil-modal-tab.active { color: #2563eb; background-color: #ffffffff; box-shadow: 0 2px 4px rgba(125, 128, 134, 0.41); }
     .perfil-modal-tab:not(.active) { color: #6b7280; background-color: #ffffffff; }
     .perfil-modal-tab:not(.active):hover { color: #374151; border-color: #ffffffff; background-color: #ffffffff; }
