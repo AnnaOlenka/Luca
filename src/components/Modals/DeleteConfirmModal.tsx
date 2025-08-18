@@ -31,10 +31,10 @@ const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
       <div className="flex min-h-screen items-center justify-center p-4">
         <div 
           className="relative flex flex-col shadow-xl"
-          style={{width: '896px', height: '600px', borderRadius: '12px', backgroundColor: 'white'}}
+          style={{width: '56rem', height: '37.5rem', borderRadius: '0.75rem', backgroundColor: 'white'}}
         >
           {/* Header */}
-          <div className="p-6" style={{backgroundColor: '#dc2626', color: 'white', borderRadius: '12px 12px 0 0'}}>
+          <div className="p-6" style={{backgroundColor: '#dc2626', color: 'white', borderRadius: '0.75rem 0.75rem 0 0'}}>
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <AlertTriangle className="w-6 h-6" />
@@ -99,7 +99,7 @@ const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
           </div>
 
           {/* Footer */}
-          <div className="px-6 py-4" style={{ borderRadius: '0 0 12px 12px'}}>
+          <div className="px-6 py-4" style={{ borderRadius: '0 0 0.75rem 0.75rem'}}>
             <div className="flex justify-end space-x-3">
               <button
                 onClick={onClose}
