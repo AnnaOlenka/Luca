@@ -295,7 +295,7 @@ const ImportCsvModal: React.FC<ImportCsvModalProps> = ({ isOpen, onClose, onImpo
     .import-modal-close-btn:disabled { opacity: 0.5; cursor: not-allowed; }
     .import-modal-content { flex: 1; overflow-y: auto; padding: 1.5rem; }
     .import-modal-footer { border-top: 1px solid #e5e7eb; padding: 1rem; background-color: #f9fafb; border-bottom-left-radius: 0.75rem; border-bottom-right-radius: 0.75rem; }
-    .import-modal-btn-primary { background-color: #2563eb; color: white; padding: 0.5rem 1.5rem; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 500; display: flex; align-items: center; gap: 0.5rem; transition: background-color 0.2s; border: none; cursor: pointer; }
+    .import-modal-btn-primary { background-color: #2563eb; color: white; padding: 0.5rem 1.5rem; justify-content: center; margin: 0 auto; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 500; display: flex; align-items: center; gap: 0.5rem; transition: background-color 0.2s; border: none; cursor: pointer; }
     .import-modal-btn-primary:hover { background-color: #1d4ed8; }
     .import-modal-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
     .import-modal-btn-secondary { background-color: #6b7280; color: white; padding: 0.5rem 1.5rem; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 500; display: flex; align-items: center; gap: 0.5rem; transition: background-color 0.2s; border: none; cursor: pointer; }
