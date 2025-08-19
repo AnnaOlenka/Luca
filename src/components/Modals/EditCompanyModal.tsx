@@ -1331,392 +1331,405 @@ const validateCredentialsRealTime = async (usuario: string, clave: string) => {
 
       case 'comercial':
         return (
-          <div className="grid grid-cols-2 gap-4 h-full">
-            {/* Columna Izquierda */}
-            <div className="space-y-3">
-              <div className="bg-blue-50 border border-gray-200 rounded-lg p-3">
-                <h3 className="text-left text-sm font-medium text-gray-900 mb-2">Datos Operacionales</h3>
-                <div className="space-y-2">
-                  <div className="grid grid-cols-2 gap-2">
+          <div style={{display: 'flex', flexDirection: 'column', gap: '1.5rem', height: '100%'}}>
+            {/* Datos Operacionales */}
+            <div>
+              <h3 style={{fontSize: '0.875rem', fontWeight: '600', color: '#1f2937', marginBottom: '0.75rem', paddingBottom: '0.5rem', borderBottom: '2px dotted #d1d5db'}}>Datos Operacionales</h3>
+              <div style={{display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem'}}>
+                <div style={{gridColumn: 'span 2'}}>
+                  <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem'}}>
                     <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">Facturación Anual</label>
+                      <label style={{display: 'block', fontSize: '0.75rem', fontWeight: '500', color: '#374151', marginBottom: '0.25rem'}}>Facturación Anual</label>
                       <div>
                         <input
                           type="text"
                           value={formData.facturacionAnual || ''}
                           onChange={(e) => handleInputChange('facturacionAnual', e.target.value)}
-                          className={`w-full px-2 py-1 border rounded text-sm focus:ring-1 ${
-                            validationErrors.facturacionAnual ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
-                          }`}
+                          style={{
+                            width: '100%',
+                            padding: '0.25rem 0.5rem',
+                            border: `1px solid ${
+                              validationErrors.facturacionAnual ? '#ef4444' : '#d1d5db'
+                            }`,
+                            borderRadius: '0.25rem',
+                            fontSize: '0.875rem',
+                            outline: 'none'
+                          }}
                           placeholder="1500000"
                         />
                         {validationErrors.facturacionAnual && (
-                          <p className="text-xs text-red-600 mt-1">{validationErrors.facturacionAnual}</p>
+                          <p style={{fontSize: '0.75rem', color: '#dc2626', marginTop: '0.25rem'}}>{validationErrors.facturacionAnual}</p>
                         )}
                       </div>
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">Moneda</label>
+                      <label style={{display: 'block', fontSize: '0.75rem', fontWeight: '500', color: '#374151', marginBottom: '0.25rem'}}>Moneda</label>
                       <select
                         value={formData.moneda || 'PEN'}
                         onChange={(e) => handleInputChange('moneda', e.target.value)}
-                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-blue-500"
+                        style={{width: '100%', padding: '0.25rem 0.5rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', fontSize: '0.875rem', outline: 'none'}}
                       >
                         <option value="PEN">PEN - Soles</option>
                         <option value="USD">USD - Dólares</option>
                       </select>
                     </div>
                   </div>
+                </div>
+                <div>
+                  <label style={{display: 'block', fontSize: '0.75rem', fontWeight: '500', color: '#374151', marginBottom: '0.25rem'}}>N° Trabajadores</label>
                   <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">N° Trabajadores</label>
-                    <div>
-                      <input
-                        type="number"
-                        value={formData.numTrabajadores || ''}
-                        onChange={(e) => handleInputChange('numTrabajadores', e.target.value)}
-                        className={`w-full px-2 py-1 border rounded text-sm focus:ring-1 ${
-                          validationErrors.numTrabajadores ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
-                        }`}
-                        placeholder="25"
-                        min="0"
-                      />
-                      {validationErrors.numTrabajadores && (
-                        <p className="text-xs text-red-600 mt-1">{validationErrors.numTrabajadores}</p>
-                      )}
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">Tipo de Trabajadores</label>
-                      <select
-                        value={formData.tipoTrabajadores || ''}
-                        onChange={(e) => handleInputChange('tipoTrabajadores', e.target.value)}
-                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-blue-500"
-                      >
-                        <option value="">Seleccionar tipo</option>
-                        <option value="PLANILLA">Planilla</option>
-                        <option value="RECIBOS">Recibos por Honorarios</option>
-                        <option value="MIXTO">Mixto</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">Vol. Mensual</label>
-                      <input
-                        type="text"
-                        value={formData.volumenMensual || ''}
-                        onChange={(e) => handleInputChange('volumenMensual', e.target.value)}
-                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-blue-500"
-                        placeholder="150"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Estacionalidad</label>
                     <input
-                      type="text"
-                      value={formData.estacionalidad || ''}
-                      onChange={(e) => handleInputChange('estacionalidad', e.target.value)}
-                      className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-blue-500"
-                      placeholder="Mayor actividad en diciembre"
+                      type="number"
+                      value={formData.numTrabajadores || ''}
+                      onChange={(e) => handleInputChange('numTrabajadores', e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '0.25rem 0.5rem',
+                        border: `1px solid ${
+                          validationErrors.numTrabajadores ? '#ef4444' : '#d1d5db'
+                        }`,
+                        borderRadius: '0.25rem',
+                        fontSize: '0.875rem',
+                        outline: 'none'
+                      }}
+                      placeholder="25"
+                      min="0"
                     />
+                    {validationErrors.numTrabajadores && (
+                      <p style={{fontSize: '0.75rem', color: '#dc2626', marginTop: '0.25rem'}}>{validationErrors.numTrabajadores}</p>
+                    )}
                   </div>
                 </div>
+                <div>
+                  <label style={{display: 'block', fontSize: '0.75rem', fontWeight: '500', color: '#374151', marginBottom: '0.25rem'}}>Estacionalidad</label>
+                  <input
+                    type="text"
+                    value={formData.estacionalidad || ''}
+                    onChange={(e) => handleInputChange('estacionalidad', e.target.value)}
+                    style={{width: '100%', padding: '0.25rem 0.5rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', fontSize: '0.875rem', outline: 'none'}}
+                    placeholder="Mayor actividad en diciembre"
+                  />
+                </div>
               </div>
+              <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', marginTop: '0.75rem'}}>
+                <div>
+                  <label style={{display: 'block', fontSize: '0.75rem', fontWeight: '500', color: '#374151', marginBottom: '0.25rem'}}>Tipo de Trabajadores</label>
+                  <select
+                    value={formData.tipoTrabajadores || ''}
+                    onChange={(e) => handleInputChange('tipoTrabajadores', e.target.value)}
+                    style={{width: '100%', padding: '0.25rem 0.5rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', fontSize: '0.875rem', outline: 'none'}}
+                  >
+                    <option value="">Seleccionar tipo</option>
+                    <option value="PLANILLA">Planilla</option>
+                    <option value="RECIBOS">Recibos por Honorarios</option>
+                    <option value="MIXTO">Mixto</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{display: 'block', fontSize: '0.75rem', fontWeight: '500', color: '#374151', marginBottom: '0.25rem'}}>Vol. Mensual</label>
+                  <input
+                    type="text"
+                    value={formData.volumenMensual || ''}
+                    onChange={(e) => handleInputChange('volumenMensual', e.target.value)}
+                    style={{width: '100%', padding: '0.25rem 0.5rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', fontSize: '0.875rem', outline: 'none'}}
+                    placeholder="150"
+                  />
+                </div>
+              </div>
+            </div>
 
-              {/* Nueva Sección: Configuración Financiera */}
-              <div className="bg-blue-50 border border-emerald-200 rounded-lg p-3">
-                <h3 className="text-sm font-medium text-emerald-900 mb-2 flex items-center">
-                  Configuración Financiera
-                </h3>
-                <div className="space-y-2">
-                  {/* Ingresos */}
+            {/* Segmentación de Clientes */}
+            <div>
+              <h3 style={{fontSize: '0.875rem', fontWeight: '600', color: '#1f2937', marginBottom: '0.75rem', paddingBottom: '0.5rem', borderBottom: '2px dotted #d1d5db'}}>Segmentación de Clientes</h3>
+              <div style={{display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.75rem'}}>
+                <div>
+                  <label style={{display: 'block', fontSize: '0.75rem', fontWeight: '500', color: '#374151', marginBottom: '0.25rem'}}>Tipo Principal</label>
+                  <select
+                    value={formData.tipoPrincipal || ''}
+                    onChange={(e) => handleInputChange('tipoPrincipal', e.target.value)}
+                    style={{width: '100%', padding: '0.25rem 0.5rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', fontSize: '0.875rem', outline: 'none'}}
+                  >
+                    <option value="">Seleccionar tipo</option>
+                    <option value="B2B">B2B - Empresas</option>
+                    <option value="B2C">B2C - Consumidores</option>
+                    <option value="MIXTO">Mixto</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{display: 'block', fontSize: '0.75rem', fontWeight: '500', color: '#374151', marginBottom: '0.25rem'}}>Sector</label>
                   <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Meta Mensual Ingresos</label>
                     <input
                       type="text"
-                      value={formData.metaIngresosMensual || ''}
-                      onChange={(e) => handleInputChange('metaIngresosMensual', e.target.value)}
-                      className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-emerald-500"
-                      placeholder="85,000"
+                      value={formData.sector || ''}
+                      onChange={(e) => handleInputChange('sector', e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '0.25rem 0.5rem',
+                        border: `1px solid ${
+                          validationErrors.sector ? '#ef4444' : '#d1d5db'
+                        }`,
+                        borderRadius: '0.25rem',
+                        fontSize: '0.875rem',
+                        outline: 'none'
+                      }}
+                      placeholder="Construcción"
                     />
+                    {validationErrors.sector && (
+                      <p style={{fontSize: '0.75rem', color: '#dc2626', marginTop: '0.25rem'}}>{validationErrors.sector}</p>
+                    )}
                   </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">Mes Mayor Ingreso</label>
-                      <select
-                        value={formData.mesMayorIngreso || ''}
-                        onChange={(e) => handleInputChange('mesMayorIngreso', e.target.value)}
-                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-emerald-500"
-                      >
-                        <option value="">Seleccionar</option>
-                        <option value="ENERO">Enero</option>
-                        <option value="FEBRERO">Febrero</option>
-                        <option value="MARZO">Marzo</option>
-                        <option value="ABRIL">Abril</option>
-                        <option value="MAYO">Mayo</option>
-                        <option value="JUNIO">Junio</option>
-                        <option value="JULIO">Julio</option>
-                        <option value="AGOSTO">Agosto</option>
-                        <option value="SEPTIEMBRE">Septiembre</option>
-                        <option value="OCTUBRE">Octubre</option>
-                        <option value="NOVIEMBRE">Noviembre</option>
-                        <option value="DICIEMBRE">Diciembre</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">Mes Menor Ingreso</label>
-                      <select
-                        value={formData.mesMenorIngreso || ''}
-                        onChange={(e) => handleInputChange('mesMenorIngreso', e.target.value)}
-                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-emerald-500"
-                      >
-                        <option value="">Seleccionar</option>
-                        <option value="ENERO">Enero</option>
-                        <option value="FEBRERO">Febrero</option>
-                        <option value="MARZO">Marzo</option>
-                        <option value="ABRIL">Abril</option>
-                        <option value="MAYO">Mayo</option>
-                        <option value="JUNIO">Junio</option>
-                        <option value="JULIO">Julio</option>
-                        <option value="AGOSTO">Agosto</option>
-                        <option value="SEPTIEMBRE">Septiembre</option>
-                        <option value="OCTUBRE">Octubre</option>
-                        <option value="NOVIEMBRE">Noviembre</option>
-                        <option value="DICIEMBRE">Diciembre</option>
-                      </select>
-                    </div>
-                  </div>
-                  
-                  {/* Egresos */}
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Promedio Mensual Egresos</label>
-                    <input
-                      type="text"
-                      value={formData.promedioEgresosMensual || ''}
-                      onChange={(e) => handleInputChange('promedioEgresosMensual', e.target.value)}
-                      className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-emerald-500"
-                      placeholder="35,000"
-                    />
+                </div>
+                <div>
+                  <label style={{display: 'block', fontSize: '0.75rem', fontWeight: '500', color: '#374151', marginBottom: '0.25rem'}}>Canales de Venta</label>
+                  <div style={{display: 'flex', flexWrap: 'wrap', gap: '0.5rem'}}>
+                    <label style={{display: 'flex', alignItems: 'center', gap: '0.25rem'}}>
+                      <input
+                        type="checkbox"
+                        checked={formData.canalPresencial || false}
+                        onChange={(e) => handleInputChange('canalPresencial', e.target.checked)}
+                        style={{width: '0.75rem', height: '0.75rem'}}
+                      />
+                      <span style={{fontSize: '0.75rem', color: '#374151'}}>Presencial</span>
+                    </label>
+                    <label style={{display: 'flex', alignItems: 'center', gap: '0.25rem'}}>
+                      <input
+                        type="checkbox"
+                        checked={formData.canalOnline || false}
+                        onChange={(e) => handleInputChange('canalOnline', e.target.checked)}
+                        style={{width: '0.75rem', height: '0.75rem'}}
+                      />
+                      <span style={{fontSize: '0.75rem', color: '#374151'}}>Online</span>
+                    </label>
+                    <label style={{display: 'flex', alignItems: 'center', gap: '0.25rem'}}>
+                      <input
+                        type="checkbox"
+                        checked={formData.canalMarketplace || false}
+                        onChange={(e) => handleInputChange('canalMarketplace', e.target.checked)}
+                        style={{width: '0.75rem', height: '0.75rem'}}
+                      />
+                      <span style={{fontSize: '0.75rem', color: '#374151'}}>Marketplace</span>
+                    </label>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Columna Derecha */}
-            <div className="space-y-3">
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                <h3 className="text-sm font-medium text-blue-900 mb-2 flex items-center">
-                  Segmentación Clientes
-                </h3>
-                <div className="space-y-2">
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">Tipo Principal</label>
-                      <select
-                        value={formData.tipoPrincipal || ''}
-                        onChange={(e) => handleInputChange('tipoPrincipal', e.target.value)}
-                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-blue-500"
-                      >
-                        <option value="">Seleccionar tipo</option>
-                        <option value="B2B">B2B - Empresas</option>
-                        <option value="B2C">B2C - Consumidores</option>
-                        <option value="MIXTO">Mixto</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">Sector</label>
-                      <div>
-                        <input
-                          type="text"
-                          value={formData.sector || ''}
-                          onChange={(e) => handleInputChange('sector', e.target.value)}
-                          className={`w-full px-2 py-1 border rounded text-sm focus:ring-1 ${
-                            validationErrors.sector ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
-                          }`}
-                          placeholder="Construcción"
-                        />
-                        {validationErrors.sector && (
-                          <p className="text-xs text-red-600 mt-1">{validationErrors.sector}</p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Canales de Venta</label>
-                    <div className="flex flex-wrap gap-2">
-                      <label className="flex items-center space-x-1">
-                        <input
-                          type="checkbox"
-                          checked={formData.canalPresencial || false}
-                          onChange={(e) => handleInputChange('canalPresencial', e.target.checked)}
-                          className="w-3 h-3 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                        />
-                        <span className="text-xs text-gray-700">Presencial</span>
-                      </label>
-                      <label className="flex items-center space-x-1">
-                        <input
-                          type="checkbox"
-                          checked={formData.canalOnline || false}
-                          onChange={(e) => handleInputChange('canalOnline', e.target.checked)}
-                          className="w-3 h-3 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                        />
-                        <span className="text-xs text-gray-700">Online</span>
-                      </label>
-                      <label className="flex items-center space-x-1">
-                        <input
-                          type="checkbox"
-                          checked={formData.canalMarketplace || false}
-                          onChange={(e) => handleInputChange('canalMarketplace', e.target.checked)}
-                          className="w-3 h-3 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                        />
-                        <span className="text-xs text-gray-700">Marketplace</span>
-                      </label>
-                    </div>
-                  </div>
+            {/* Configuración Financiera */}
+            <div>
+              <h3 style={{fontSize: '0.875rem', fontWeight: '600', color: '#1f2937', marginBottom: '0.75rem', paddingBottom: '0.5rem', borderBottom: '2px dotted #d1d5db'}}>Configuración Financiera</h3>
+              <div style={{display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.75rem'}}>
+                <div>
+                  <label style={{display: 'block', fontSize: '0.75rem', fontWeight: '500', color: '#374151', marginBottom: '0.25rem'}}>Meta Mensual Ingresos</label>
+                  <input
+                    type="text"
+                    value={formData.metaIngresosMensual || ''}
+                    onChange={(e) => handleInputChange('metaIngresosMensual', e.target.value)}
+                    style={{width: '100%', padding: '0.25rem 0.5rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', fontSize: '0.875rem', outline: 'none'}}
+                    placeholder="85,000"
+                  />
+                </div>
+                <div>
+                  <label style={{display: 'block', fontSize: '0.75rem', fontWeight: '500', color: '#374151', marginBottom: '0.25rem'}}>Mes Mayor Ingreso</label>
+                  <select
+                    value={formData.mesMayorIngreso || ''}
+                    onChange={(e) => handleInputChange('mesMayorIngreso', e.target.value)}
+                    style={{width: '100%', padding: '0.25rem 0.5rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', fontSize: '0.875rem', outline: 'none'}}
+                  >
+                    <option value="">Seleccionar</option>
+                    <option value="ENERO">Enero</option>
+                    <option value="FEBRERO">Febrero</option>
+                    <option value="MARZO">Marzo</option>
+                    <option value="ABRIL">Abril</option>
+                    <option value="MAYO">Mayo</option>
+                    <option value="JUNIO">Junio</option>
+                    <option value="JULIO">Julio</option>
+                    <option value="AGOSTO">Agosto</option>
+                    <option value="SEPTIEMBRE">Septiembre</option>
+                    <option value="OCTUBRE">Octubre</option>
+                    <option value="NOVIEMBRE">Noviembre</option>
+                    <option value="DICIEMBRE">Diciembre</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{display: 'block', fontSize: '0.75rem', fontWeight: '500', color: '#374151', marginBottom: '0.25rem'}}>Mes Menor Ingreso</label>
+                  <select
+                    value={formData.mesMenorIngreso || ''}
+                    onChange={(e) => handleInputChange('mesMenorIngreso', e.target.value)}
+                    style={{width: '100%', padding: '0.25rem 0.5rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', fontSize: '0.875rem', outline: 'none'}}
+                  >
+                    <option value="">Seleccionar</option>
+                    <option value="ENERO">Enero</option>
+                    <option value="FEBRERO">Febrero</option>
+                    <option value="MARZO">Marzo</option>
+                    <option value="ABRIL">Abril</option>
+                    <option value="MAYO">Mayo</option>
+                    <option value="JUNIO">Junio</option>
+                    <option value="JULIO">Julio</option>
+                    <option value="AGOSTO">Agosto</option>
+                    <option value="SEPTIEMBRE">Septiembre</option>
+                    <option value="OCTUBRE">Octubre</option>
+                    <option value="NOVIEMBRE">Noviembre</option>
+                    <option value="DICIEMBRE">Diciembre</option>
+                  </select>
                 </div>
               </div>
+              <div style={{marginTop: '0.75rem'}}>
+                <label style={{display: 'block', fontSize: '0.75rem', fontWeight: '500', color: '#374151', marginBottom: '0.25rem'}}>Promedio Mensual Egresos</label>
+                <input
+                  type="text"
+                  value={formData.promedioEgresosMensual || ''}
+                  onChange={(e) => handleInputChange('promedioEgresosMensual', e.target.value)}
+                  style={{width: '33%', padding: '0.25rem 0.5rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', fontSize: '0.875rem', outline: 'none'}}
+                  placeholder="35,000"
+                />
+              </div>
+            </div>
 
-              <div className="bg-blue-50 border border-purple-200 rounded-lg p-3">
-                <h3 className="text-sm font-medium text-purple-900 mb-2 flex items-center">
-                  Configuración Contable
-                </h3>
-                <div className="space-y-2">
+            {/* Configuración Contable */}
+            <div>
+              <h3 style={{fontSize: '0.875rem', fontWeight: '600', color: '#1f2937', marginBottom: '0.75rem', paddingBottom: '0.5rem', borderBottom: '2px dotted #d1d5db'}}>Configuración Contable</h3>
+
+              <div style={{display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.75rem'}}>
+                <div>
+                  <label style={{display: 'block', fontSize: '0.75rem', fontWeight: '500', color: '#374151', marginBottom: '0.25rem'}}>Plan Contable</label>
+                  <select
+                    value={formData.planContable || ''}
+                    onChange={(e) => handleInputChange('planContable', e.target.value)}
+                    style={{width: '100%', padding: '0.25rem 0.5rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', fontSize: '0.875rem', outline: 'none'}}
+                  >
+                    <option value="">Seleccionar plan</option>
+                    <option value="PCGE">PCGE</option>
+                    <option value="PERSONALIZADO">Personalizado</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{display: 'block', fontSize: '0.75rem', fontWeight: '500', color: '#374151', marginBottom: '0.25rem'}}>Moneda Funcional</label>
+                  <select
+                    value={formData.monedaFuncional || 'PEN'}
+                    onChange={(e) => handleInputChange('monedaFuncional', e.target.value)}
+                    style={{width: '100%', padding: '0.25rem 0.5rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', fontSize: '0.875rem', outline: 'none'}}
+                  >
+                    <option value="PEN">PEN</option>
+                    <option value="USD">USD</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{display: 'block', fontSize: '0.75rem', fontWeight: '500', color: '#374151', marginBottom: '0.25rem'}}>Período Fiscal</label>
+                  <select
+                    value={formData.periodoFiscal || ''}
+                    onChange={(e) => handleInputChange('periodoFiscal', e.target.value)}
+                    style={{width: '100%', padding: '0.25rem 0.5rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', fontSize: '0.875rem', outline: 'none'}}
+                  >
+                    <option value="">Seleccionar</option>
+                    <option value="ENERO_DICIEMBRE">Ene - Dic</option>
+                    <option value="JULIO_JUNIO">Jul - Jun</option>
+                  </select>
+                </div>
+              </div>
+              <div style={{display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.75rem'}}>
+                <input
+                  type="checkbox"
+                  id="librosElectronicos"
+                  checked={formData.librosElectronicos || false}
+                  onChange={(e) => handleInputChange('librosElectronicos', e.target.checked)}
+                  style={{width: '0.75rem', height: '0.75rem'}}
+                />
+                <label htmlFor="librosElectronicos" style={{fontSize: '0.75rem', fontWeight: '500', color: '#374151'}}>
+                  Libros Electrónicos Habilitados
+                </label>
+              </div>
+            </div>
+
+            {/* Configuración Tributaria */}
+            <div>
+              <h3 style={{fontSize: '0.875rem', fontWeight: '600', color: '#1f2937', marginBottom: '0.75rem', paddingBottom: '0.5rem', borderBottom: '2px dotted #d1d5db'}}>Configuración Tributaria</h3>
+              <div style={{display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem'}}>
+                <div>
+                  <label style={{display: 'block', fontSize: '0.75rem', fontWeight: '500', color: '#374151', marginBottom: '0.25rem'}}>% Gastos Personal</label>
                   <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Plan Contable</label>
-                    <select
-                      value={formData.planContable || ''}
-                      onChange={(e) => handleInputChange('planContable', e.target.value)}
-                      className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-blue-500"
-                    >
-                      <option value="">Seleccionar plan</option>
-                      <option value="PCGE">PCGE</option>
-                      <option value="PERSONALIZADO">Personalizado</option>
-                    </select>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">Moneda Funcional</label>
-                      <select
-                        value={formData.monedaFuncional || 'PEN'}
-                        onChange={(e) => handleInputChange('monedaFuncional', e.target.value)}
-                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-blue-500"
-                      >
-                        <option value="PEN">PEN</option>
-                        <option value="USD">USD</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">Período Fiscal</label>
-                      <select
-                        value={formData.periodoFiscal || ''}
-                        onChange={(e) => handleInputChange('periodoFiscal', e.target.value)}
-                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-blue-500"
-                      >
-                        <option value="">Seleccionar</option>
-                        <option value="ENERO_DICIEMBRE">Ene - Dic</option>
-                        <option value="JULIO_JUNIO">Jul - Jun</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2">
                     <input
-                      type="checkbox"
-                      id="librosElectronicos"
-                      checked={formData.librosElectronicos || false}
-                      onChange={(e) => handleInputChange('librosElectronicos', e.target.checked)}
-                      className="w-3 h-3 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                      type="number"
+                      value={formData.porcentajeGastosPersonal || ''}
+                      onChange={(e) => handleInputChange('porcentajeGastosPersonal', e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '0.25rem 0.5rem',
+                        border: `1px solid ${
+                          validationErrors.porcentajeGastosPersonal ? '#ef4444' : '#d1d5db'
+                        }`,
+                        borderRadius: '0.25rem',
+                        fontSize: '0.875rem',
+                        outline: 'none'
+                      }}
+                      placeholder="40"
+                      min="0"
+                      max="100"
                     />
-                    <label htmlFor="librosElectronicos" className="text-xs font-medium text-gray-700">
-                      Libros Electrónicos Habilitados
-                    </label>
+                    {validationErrors.porcentajeGastosPersonal && (
+                      <p style={{fontSize: '0.75rem', color: '#dc2626', marginTop: '0.25rem'}}>{validationErrors.porcentajeGastosPersonal}</p>
+                    )}
                   </div>
                 </div>
-              </div>
-
-              {/* Nueva Sección: Configuración Tributaria */}
-              <div className="bg-blue-50 border border-orange-200 rounded-lg p-3">
-                <h3 className="text-sm font-medium text-orange-900 mb-2 flex items-center">
-                  Configuración Tributaria
-                </h3>
-                <div className="space-y-2">
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">% Gastos Personal</label>
-                      <div>
-                        <input
-                          type="number"
-                          value={formData.porcentajeGastosPersonal || ''}
-                          onChange={(e) => handleInputChange('porcentajeGastosPersonal', e.target.value)}
-                          className={`w-full px-2 py-1 border rounded text-sm focus:ring-1 ${
-                            validationErrors.porcentajeGastosPersonal ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-orange-500'
-                          }`}
-                          placeholder="40"
-                          min="0"
-                          max="100"
-                        />
-                        {validationErrors.porcentajeGastosPersonal && (
-                          <p className="text-xs text-red-600 mt-1">{validationErrors.porcentajeGastosPersonal}</p>
-                        )}
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">% Gastos Operativos</label>
-                      <div>
-                        <input
-                          type="number"
-                          value={formData.porcentajeGastosOperativos || ''}
-                          onChange={(e) => handleInputChange('porcentajeGastosOperativos', e.target.value)}
-                          className={`w-full px-2 py-1 border rounded text-sm focus:ring-1 ${
-                            validationErrors.porcentajeGastosOperativos ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-orange-500'
-                          }`}
-                          placeholder="35"
-                          min="0"
-                          max="100"
-                        />
-                        {validationErrors.porcentajeGastosOperativos && (
-                          <p className="text-xs text-red-600 mt-1">{validationErrors.porcentajeGastosOperativos}</p>
-                        )}
-                      </div>
-                    </div>
+                <div>
+                  <label style={{display: 'block', fontSize: '0.75rem', fontWeight: '500', color: '#374151', marginBottom: '0.25rem'}}>% Gastos Operativos</label>
+                  <div>
+                    <input
+                      type="number"
+                      value={formData.porcentajeGastosOperativos || ''}
+                      onChange={(e) => handleInputChange('porcentajeGastosOperativos', e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '0.25rem 0.5rem',
+                        border: `1px solid ${
+                          validationErrors.porcentajeGastosOperativos ? '#ef4444' : '#d1d5db'
+                        }`,
+                        borderRadius: '0.25rem',
+                        fontSize: '0.875rem',
+                        outline: 'none'
+                      }}
+                      placeholder="35"
+                      min="0"
+                      max="100"
+                    />
+                    {validationErrors.porcentajeGastosOperativos && (
+                      <p style={{fontSize: '0.75rem', color: '#dc2626', marginTop: '0.25rem'}}>{validationErrors.porcentajeGastosOperativos}</p>
+                    )}
                   </div>
-
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">% Renta Anual Estimado</label>
-                      <input
-                        type="number"
-                        value={formData.porcentajeRentaAnual || ''}
-                        onChange={(e) => handleInputChange('porcentajeRentaAnual', e.target.value)}
-                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-orange-500"
-                        placeholder="29.5"
-                        step="0.1"
-                        min="0"
-                        max="50"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">Frecuencia Pagos</label>
-                      <select
-                        value={formData.frecuenciaPagosRenta || ''}
-                        onChange={(e) => handleInputChange('frecuenciaPagosRenta', e.target.value)}
-                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-orange-500"
-                      >
-                        <option value="">Seleccionar</option>
-                        <option value="MENSUAL">Mensual</option>
-                        <option value="ANUAL">Anual</option>
-                      </select>
-                    </div>
-                  </div>
+                </div>
+                <div>
+                  <label style={{display: 'block', fontSize: '0.75rem', fontWeight: '500', color: '#374151', marginBottom: '0.25rem'}}>% Renta Anual Estimado</label>
+                  <input
+                    type="number"
+                    value={formData.porcentajeRentaAnual || ''}
+                    onChange={(e) => handleInputChange('porcentajeRentaAnual', e.target.value)}
+                    style={{width: '100%', padding: '0.25rem 0.5rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', fontSize: '0.875rem', outline: 'none'}}
+                    placeholder="29.5"
+                    step="0.1"
+                    min="0"
+                    max="50"
+                  />
+                </div>
+                <div>
+                  <label style={{display: 'block', fontSize: '0.75rem', fontWeight: '500', color: '#374151', marginBottom: '0.25rem'}}>Frecuencia Pagos</label>
+                  <select
+                    value={formData.frecuenciaPagosRenta || ''}
+                    onChange={(e) => handleInputChange('frecuenciaPagosRenta', e.target.value)}
+                    style={{width: '100%', padding: '0.25rem 0.5rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', fontSize: '0.875rem', outline: 'none'}}
+                  >
+                    <option value="">Seleccionar</option>
+                    <option value="MENSUAL">Mensual</option>
+                    <option value="ANUAL">Anual</option>
+                  </select>
                 </div>
               </div>
             </div>
             
             {/* Mensaje de éxito */}
             {successMessage.show && successMessage.tab === 'comercial' && (
-              <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-                <div className="flex items-center">
-                  <CheckCircle className="w-4 h-4 text-green-600 mr-2" />
-                  <span className="text-sm text-green-800">{successMessage.message}</span>
+              <div style={{marginTop: '1rem', padding: '0.75rem', backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '0.5rem'}}>
+                <div style={{display: 'flex', alignItems: 'center'}}>
+                  <CheckCircle style={{width: '1rem', height: '1rem', color: '#059669', marginRight: '0.5rem'}} />
+                  <span style={{fontSize: '0.875rem', color: '#065f46'}}>{successMessage.message}</span>
                 </div>
               </div>
             )}
@@ -1726,7 +1739,7 @@ const validateCredentialsRealTime = async (usuario: string, clave: string) => {
       case 'credenciales':
         return (
           <div className="grid grid-cols-1 gap-4 h-full ">
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+            <div className="bg-white border border-green-200 rounded-lg p-4">
               <h3 className="text-lg font-medium text-green-900 mb-4">Gestión de Credenciales SUNAT</h3>
               <div className="grid grid-cols-2 gap-4 mb-4">
                 <div>
