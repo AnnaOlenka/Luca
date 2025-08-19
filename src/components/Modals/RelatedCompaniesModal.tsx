@@ -103,7 +103,7 @@ const RelatedCompaniesModal: React.FC<RelatedCompaniesModalProps> = ({
                 <Search style={{ width: '1.5rem', height: '1.5rem' }} />
               </div>
               <div>
-                <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold', margin: 0 }}>Empresas Relacionadas Detectadas</h2>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold', margin: 0 ,color: '#ffffffff'}}>Empresas Relacionadas Detectadas</h2>
                 <p style={{ color: '#bfdbfe', fontSize: '0.875rem', margin: 0 }}>
                   Vinculadas a <span style={{ fontWeight: 600 }}>{personName}</span>
                 </p>
