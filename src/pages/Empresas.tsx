@@ -220,7 +220,6 @@ const PersonaPopover: React.FC<{
     };
 
     if (isOpen) {
-      // Bloquear scroll del body de manera más robusta
       const scrollBarWidth = window.innerWidth - document.documentElement.clientWidth;
       document.body.style.overflow = 'hidden';
       document.body.style.paddingRight = `${scrollBarWidth}px`;
@@ -228,7 +227,6 @@ const PersonaPopover: React.FC<{
       document.addEventListener('mousedown', handleClickOutside);
       document.addEventListener('keydown', handleKeyDown);
       
-      // Prevenir scroll con rueda del mouse
       const preventScroll = (e: WheelEvent) => e.preventDefault();
       document.addEventListener('wheel', preventScroll, { passive: false });
       
@@ -238,13 +236,11 @@ const PersonaPopover: React.FC<{
         document.removeEventListener('wheel', preventScroll);
       };
     } else {
-      // Restaurar scroll del body
       document.body.style.overflow = '';
       document.body.style.paddingRight = '';
     }
 
     return () => {
-      // Cleanup al desmontar
       document.body.style.overflow = '';
       document.body.style.paddingRight = '';
     };
@@ -264,107 +260,106 @@ const PersonaPopover: React.FC<{
   return (
     <div
       ref={popoverRef}
-      className="empresas-popover empresas-popover-sm"
+      className="empresas-popover" /* CAMBIO: Removido empresas-popover-sm */
       style={{ top: position.top, left: position.left }}
     >
-{/* Header compacto con avatar e info al lado */}
-<div className="px-4 py-4 border-b border-gray-200">
-  <div className="flex items-start justify-between">
-    {/* Contenido principal */}
-    <div className="flex items-center space-x-3 flex-1">
-      {/* Avatar */}
-      <div className={`w-12 h-12 rounded-full border-2 ${getEstadoColor(persona.estado)} flex items-center justify-center flex-shrink-0`}>
-        {persona.avatar ? (
-          <img src={persona.avatar} alt={persona.nombre} className="w-full h-full rounded-full object-cover" />
-        ) : (
-          <span className="text-sm font-bold">
-            {persona.iniciales}
-          </span>
-        )}
-      </div>
-      
-      {/* Info al lado */}
-      <div className="flex-1 min-w-0">
-        <h3 className="text-sm font-semibold text-gray-900 truncate">
-          {persona.nombre}
-        </h3>
-        
-        {/* Cargo y estado en la misma línea */}
-        <div className="flex items-center justify-between mt-1 gap-4">
-          <p className="text-xs text-gray-600 truncate">
-            {persona.cargo}
-          </p>
-          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-            persona.estado === 'activo' ? 'bg-green-100 text-green-800' :
-            persona.estado === 'pendiente' ? 'bg-yellow-100 text-yellow-800' :
-            'bg-gray-100 text-gray-800'
-          }`}>
-            {persona.estado.charAt(0).toUpperCase() + persona.estado.slice(1)}
-          </span>
-        </div>
-        
-        {/* Email abajo */}
-        {persona.email && (
-          <div className="flex items-center space-x-1 text-xs text-gray-500 mt-2">
-            <Mail className="w-3 h-3" />
-            <span className="truncate">{persona.email}</span>
+      {/* Header compacto con avatar e info al lado */}
+      <div className="px-4 py-4 border-b border-gray-200">
+        <div className="flex items-start justify-between">
+          {/* Contenido principal */}
+          <div className="flex items-center space-x-3 flex-1 min-w-0"> {/* AGREGADO: min-w-0 */}
+            {/* Avatar */}
+            <div className={`w-12 h-12 rounded-full border-2 ${getEstadoColor(persona.estado)} flex items-center justify-center flex-shrink-0`}>
+              {persona.avatar ? (
+                <img src={persona.avatar} alt={persona.nombre} className="w-full h-full rounded-full object-cover" />
+              ) : (
+                <span className="text-sm font-bold">
+                  {persona.iniciales}
+                </span>
+              )}
+            </div>
+            
+            {/* Info al lado */}
+            <div className="flex-1 min-w-0"> {/* AGREGADO: min-w-0 */}
+              <h3 className="text-sm font-semibold text-gray-900 popover-text-truncate"> {/* CAMBIO: truncate -> popover-text-truncate */}
+                {persona.nombre}
+              </h3>
+              
+              {/* Cargo y estado en la misma línea */}
+              <div className="flex items-center justify-between mt-1 gap-2"> {/* CAMBIO: gap-4 -> gap-2 */}
+                <p className="text-xs text-gray-600 popover-text-truncate flex-1"> {/* AGREGADO: flex-1 y popover-text-truncate */}
+                  {persona.cargo}
+                </p>
+                <span className={`px-2 py-1 rounded-full text-xs font-medium flex-shrink-0 ${
+                  persona.estado === 'activo' ? 'bg-green-100 text-green-800' :
+                  persona.estado === 'pendiente' ? 'bg-yellow-100 text-yellow-800' :
+                  'bg-gray-100 text-gray-800'
+                }`}>
+                  {persona.estado.charAt(0).toUpperCase() + persona.estado.slice(1)}
+                </span>
+              </div>
+              
+              {/* Email abajo */}
+              {persona.email && (
+                <div className="flex items-center space-x-1 text-xs text-gray-500 mt-2 min-w-0"> {/* AGREGADO: min-w-0 */}
+                  <Mail className="w-3 h-3 flex-shrink-0" />
+                  <span className="popover-text-truncate">{persona.email}</span> {/* CAMBIO: truncate -> popover-text-truncate */}
+                </div>
+              )}
+            </div>
           </div>
-        )}
+          
+          {/* Botón cerrar más pequeño */}
+          <button
+            onClick={onClose}
+            className="close-button flex-shrink-0" /* AGREGADO: flex-shrink-0 */
+          >
+            <X className="w-4 h-4 " />
+          </button>
+        </div>
       </div>
-    </div>
-    
-    {/* Botón cerrar más pequeño */}
-    <button
-      onClick={onClose}
-      className="close-button"
-    >
-      <X className="w-4 h-4 " />
-    </button>
-  </div>
-</div>
 
       {/* Acciones - Solo las 3 principales */}
-      {/* Acciones */}
-<div className="p-2">
-  <div className="space-y-1">
-   <button
-        onClick={() => {
-          console.log(`Ver perfil completo de ${persona?.nombre}`);
-          onClose();
-        }}
-        className="styled-button"
-      >
-        <UserIcon className="styled-icon-gray w-4 h-4" />
-        <span>Ver perfil completo</span>
-      </button>
-      
-      <button
-        onClick={() => {
-          if (empresaId && persona && onConfigurarPermisos) {
-            onConfigurarPermisos(empresaId, persona);
-          }
-          onClose();
-        }}
-        className="styled-button"
-      >
-        <Settings className="styled-icon-gray w-4 h-4" />
-        <span>Configurar permisos</span>
-      </button>
-      
-      <button
-        onClick={() => {
-          if (empresaId && persona?.id && onQuitarPersona) {
-            onQuitarPersona(empresaId, persona.id);
-          }
-          onClose();
-        }}
-        className="styled-button styled-button-red"
-      >
-        <UserMinus className="w-4 h-4" />
-        <span>Quitar asignado</span>
-      </button>
-  </div>
-</div>
+      <div className="p-2">
+        <div className="space-y-1">
+         <button
+              onClick={() => {
+                console.log(`Ver perfil completo de ${persona?.nombre}`);
+                onClose();
+              }}
+              className="styled-button"
+            >
+              <UserIcon className="styled-icon-gray w-4 h-4 flex-shrink-0" /> {/* AGREGADO: flex-shrink-0 */}
+              <span className="popover-text-truncate">Ver perfil completo</span> {/* AGREGADO: popover-text-truncate */}
+            </button>
+            
+            <button
+              onClick={() => {
+                if (empresaId && persona && onConfigurarPermisos) {
+                  onConfigurarPermisos(empresaId, persona);
+                }
+                onClose();
+              }}
+              className="styled-button"
+            >
+              <Settings className="styled-icon-gray w-4 h-4 flex-shrink-0" /> {/* AGREGADO: flex-shrink-0 */}
+              <span className="popover-text-truncate">Configurar permisos</span> {/* AGREGADO: popover-text-truncate */}
+            </button>
+            
+            <button
+              onClick={() => {
+                if (empresaId && persona?.id && onQuitarPersona) {
+                  onQuitarPersona(empresaId, persona.id);
+                }
+                onClose();
+              }}
+              className="styled-button styled-button-red"
+            >
+              <UserMinus className="w-4 h-4 flex-shrink-0" /> {/* AGREGADO: flex-shrink-0 */}
+              <span className="popover-text-truncate">Quitar asignado</span> {/* AGREGADO: popover-text-truncate */}
+            </button>
+        </div>
+      </div>
     </div>
   );
 };
@@ -395,7 +390,6 @@ const ListaPersonasPopover: React.FC<{
     };
 
     if (isOpen) {
-      // Bloquear scroll del body de manera más robusta
       const scrollBarWidth = window.innerWidth - document.documentElement.clientWidth;
       document.body.style.overflow = 'hidden';
       document.body.style.paddingRight = `${scrollBarWidth}px`;
@@ -403,7 +397,6 @@ const ListaPersonasPopover: React.FC<{
       document.addEventListener('mousedown', handleClickOutside);
       document.addEventListener('keydown', handleKeyDown);
       
-      // Prevenir scroll con rueda del mouse
       const preventScroll = (e: WheelEvent) => e.preventDefault();
       document.addEventListener('wheel', preventScroll, { passive: false });
       
@@ -413,13 +406,11 @@ const ListaPersonasPopover: React.FC<{
         document.removeEventListener('wheel', preventScroll);
       };
     } else {
-      // Restaurar scroll del body
       document.body.style.overflow = '';
       document.body.style.paddingRight = '';
     }
 
     return () => {
-      // Cleanup al desmontar
       document.body.style.overflow = '';
       document.body.style.paddingRight = '';
     };
@@ -445,63 +436,64 @@ const ListaPersonasPopover: React.FC<{
   return (
     <div
       ref={popoverRef}
-      className="empresas-popover empresas-popover-md"
-      style={{ top: position.top, left: position.left }}
-    >{/* Header compacto */}
-<div className="px-4 py-3 border-b border-gray-200 bg-gray-50 rounded-t-lg">
-  <div className="flex items-center justify-between">
-    {/* Contenido principal */}
-    <div className="flex-1">
-      <h3 className="text-sm font-semibold text-gray-900">
-        Usuarios asignados
-      </h3>
-      <p className="text-xs text-gray-500 mt-0.5">
-        {personas.length} asignados total
-      </p>
-    </div>
-    
-    {/* Botón cerrar con su propio espacio */}
-    <button
-      onClick={onClose}
-      className="close-button"
+      className="empresas-popover" /* CAMBIO: Removido empresas-popover-md, agregado max-height inline */
+      style={{ top: position.top, left: position.left, maxHeight: '18.75rem' }}
     >
-      <X className="w-4 h-4" />
-    </button>
-  </div>
-</div>
+      {/* Header compacto */}
+      <div className="px-4 py-3 border-b border-gray-200 bg-gray-50 rounded-t-lg">
+        <div className="flex items-center justify-between">
+          {/* Contenido principal */}
+          <div className="flex-1 min-w-0"> {/* AGREGADO: min-w-0 */}
+            <h3 className="text-sm font-semibold text-gray-900 popover-text-truncate"> {/* AGREGADO: popover-text-truncate */}
+              Usuarios asignados
+            </h3>
+            <p className="text-xs text-gray-500 mt-0.5 popover-text-truncate"> {/* AGREGADO: popover-text-truncate */}
+              {personas.length} asignados total
+            </p>
+          </div>
+          
+          {/* Botón cerrar con su propio espacio */}
+          <button
+            onClick={onClose}
+            className="close-button flex-shrink-0" /* AGREGADO: flex-shrink-0 */
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
 
-{/* Búsqueda compacta */}
-<div className="px-4 py-1 border-b border-gray-200">
-  <div className="relative">
-    <Search className="text-gray-400 w-4 h-4 empresas-icon-search" />
-    <input
-      type="text"
-      placeholder="Buscar miembros"
-      value={searchTerm}
-      onChange={(e) => setSearchTerm(e.target.value)}
-      className="w-full h-4 pr-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent empresas-input-icon"
-    />
-  </div>
-</div>
+      {/* Búsqueda compacta */}
+      <div className="px-4 py-1 border-b border-gray-200">
+        <div className="relative">
+          <Search className="text-gray-400 w-4 h-4 empresas-icon-search" />
+          <input
+            type="text"
+            placeholder="Buscar miembros"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full h-4 pr-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent empresas-input-icon"
+          />
+        </div>
+      </div>
 
       {/* Lista compacta de personas */}
-      <div className="px-3 py-2 max-h-48 overflow-y-auto">
+      <div className="px-3 py-2 popover-scrollable" style={{ maxHeight: '12rem' }}> {/* AGREGADO: popover-scrollable y maxHeight */}
         <div className="mb-2">
-          <h4 className="text-xs font-medium text-gray-700 mb-2">
+          <h4 className="text-xs font-medium text-gray-700 mb-2 popover-text-truncate"> {/* AGREGADO: popover-text-truncate */}
             Asignados de la empresa
           </h4>
           
           {filteredPersonas.length === 0 ? (
             <div className="text-center py-3">
-              <p className="text-gray-500 text-xs">
+              <p className="text-gray-500 text-xs popover-text-wrap"> {/* AGREGADO: popover-text-wrap */}
                 {searchTerm ? 'No se encontraron miembros' : 'No hay miembros asignados'}
               </p>
             </div>
           ) : (
             <div className="space-y-1.5">
               {filteredPersonas.map((persona) => (
-                <div key={persona.id} className="flex items-center justify-between py-1">
-                  <div className="flex items-center space-x-2 flex-1 min-w-0">
+                <div key={persona.id} className="flex items-center justify-between py-1 min-w-0"> {/* AGREGADO: min-w-0 */}
+                  <div className="flex items-center space-x-2 flex-1 min-w-0"> {/* AGREGADO: min-w-0 */}
                     {/* Avatar más pequeño */}
                     <div className={`w-10 h-10 rounded-full border-2 ${getEstadoColor(persona.estado)} flex items-center justify-center flex-shrink-0`}>
                       {persona.avatar ? (
@@ -515,10 +507,10 @@ const ListaPersonasPopover: React.FC<{
 
                     {/* Información compacta */}
                     <div className="min-w-0 flex-1">
-                      <p className="text-xs font-medium text-gray-900 truncate">
+                      <p className="text-xs font-medium text-gray-900 popover-text-truncate"> {/* CAMBIO: truncate -> popover-text-truncate */}
                         {persona.nombre}
                       </p>
-                      <p className="text-xs text-gray-500 truncate">
+                      <p className="text-xs text-gray-500 popover-text-truncate"> {/* CAMBIO: truncate -> popover-text-truncate */}
                         {persona.cargo}
                       </p>
                     </div>
@@ -531,7 +523,7 @@ const ListaPersonasPopover: React.FC<{
                         onQuitarPersona(empresaId, persona.id);
                       }
                     }}
-                    className="p-0.5 text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors ml-2"
+                    className="p-0.5 text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors ml-2 flex-shrink-0" /* AGREGADO: flex-shrink-0 */
                     title="Quitar asignado"
                   >
                     <UserMinus className="w-3 h-3" />
@@ -545,7 +537,7 @@ const ListaPersonasPopover: React.FC<{
 
       {/* Footer compacto */}
       <div className="px-3 py-1.5 border-t border-gray-200 bg-gray-50 rounded-b-lg">
-        <p className="text-xs text-gray-500 text-center">
+        <p className="text-xs text-gray-500 text-center popover-text-truncate"> {/* AGREGADO: popover-text-truncate */}
           {personas.length} miembros
         </p>
       </div>
@@ -1026,32 +1018,35 @@ const ProximaObligacionPopover: React.FC<{
   return (
     <div
       ref={popoverRef}
-      className="fixed z-50 bg-white rounded-lg shadow-xl border border-gray-200 w-80"
+      className="fixed z-50 bg-white rounded-lg shadow-xl border border-gray-200"
       style={{
         top: position.top,
         left: position.left,
+        width: '20rem', // w-64 - más pequeño que w-80
+        maxWidth: '20rem',
+        overflow: 'hidden'
       }}
     >
       {/* Header */}
-      <div className={`px-4 py-4 border-b border-gray-200 ${styles.bg} rounded-t-lg`}>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className={`w-10 h-10 rounded-full ${styles.iconBg} flex items-center justify-center`}>
+      <div className={`px-3 py-3 border-b border-gray-200 ${styles.bg} rounded-t-lg`}>
+        <div className="flex items-center justify-between min-w-0">
+          <div className="flex items-center space-x-2 min-w-0 flex-1">
+            <div className={`w-8 h-8 rounded-full ${styles.iconBg} flex items-center justify-center flex-shrink-0`}>
               {vencido ? (
-                <AlertTriangle className={`w-5 h-5 ${styles.icon}`} />
+                <AlertTriangle className={`w-4 h-4 ${styles.icon}`} />
               ) : (
-                <Calendar className={`w-5 h-5 ${styles.icon}`} />
+                <Calendar className={`w-4 h-4 ${styles.icon}`} />
               )}
             </div>
-            <div>
-              <h3 className={`text-sm font-semibold ${styles.text}`}>
+            <div className="min-w-0 flex-1">
+              <h3 className={`text-sm font-semibold ${styles.text} truncate`}>
                 {tipo} - {mes} 2024
               </h3>
-              <div className="flex items-center space-x-2 mt-1">
-                <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${prioridad.bg} ${prioridad.color}`}>
+              <div className="flex items-center space-x-2 mt-1 min-w-0">
+                <span className={`px-2 py-0.5 rounded-full text-xs font-medium flex-shrink-0 ${prioridad.bg} ${prioridad.color}`}>
                   {prioridad.texto}
                 </span>
-                <span className={`text-xs ${styles.text}`}>
+                <span className={`text-xs ${styles.text} truncate flex-1 min-w-0`}>
                   {getTexto()}
                 </span>
               </div>
@@ -1060,28 +1055,28 @@ const ProximaObligacionPopover: React.FC<{
           
           <button
             onClick={onClose}
-            className="close-button"
+            className="close-button flex-shrink-0"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
       </div>
 
       {/* Detalles */}
-      <div className="p-4">
+      <div className="p-3">
         <div className="space-y-3">
           {/* Fecha exacta con campanita */}
-          <div className="flex items-start justify-between">
-            <div className="flex items-start space-x-3">
-              <Clock className="w-4 h-4 text-gray-400 mt-0.5" />
-              <div>
+          <div className="flex items-start justify-between min-w-0">
+            <div className="flex items-start space-x-2 min-w-0 flex-1">
+              <Clock className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+              <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-gray-900">Fecha de vencimiento</p>
-                <p className="text-xs text-gray-600 capitalize">{getFechaVencimiento()}</p>
+                <p className="text-xs text-gray-600 break-words">{getFechaVencimiento()}</p>
               </div>
             </div>
             
             {/* Campanita de recordatorio */}
-            <div className="flex-shrink-0" title={diasRestantes <= 7 && !vencido ? 'Recordatorio activo' : 'Recordatorio inactivo'}>
+            <div className="flex-shrink-0 ml-2" title={diasRestantes <= 7 && !vencido ? 'Recordatorio activo' : 'Recordatorio inactivo'}>
               {diasRestantes <= 7 && !vencido ? (
                 <Bell className="w-4 h-4 text-blue-600 fill-current" />
               ) : (
@@ -1091,11 +1086,11 @@ const ProximaObligacionPopover: React.FC<{
           </div>
 
           {/* Descripción */}
-          <div className="flex items-start space-x-3">
-            <Calendar className="w-4 h-4 text-gray-400 mt-0.5" />
-            <div>
+          <div className="flex items-start space-x-2 min-w-0">
+            <Calendar className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+            <div className="min-w-0 flex-1">
               <p className="text-sm font-medium text-gray-900">Descripción</p>
-              <p className="text-xs text-gray-600">
+              <p className="text-xs text-gray-600 break-words">
                 Declaración y pago de {tipo.toLowerCase()} correspondiente al período {mes.toLowerCase()}
               </p>
             </div>
@@ -1104,18 +1099,18 @@ const ProximaObligacionPopover: React.FC<{
       </div>
 
       {/* Acciones en una fila */}
-      <div className="px-4 py-3 border-t border-gray-200 bg-gray-50 rounded-b-lg">
-        <div className="flex space-x-2">
+      <div className="px-3 py-2 border-t border-gray-200 bg-gray-50 rounded-b-lg">
+        <div className="flex space-x-1">
           <button
             onClick={() => {
               alert(`Abrir calendario para ${tipo} ${mes}`);
               onClose();
             }}
-            className="button-base button-calendar"
+            className="button-base button-calendar text-xs"
           >
-            <Calendar className="w-4 h-4" />
-            <span>Calendario</span>
-            <ExternalLink className="w-3 h-3" />
+            <Calendar className="w-3 h-3" />
+            <span className="truncate">Calendario</span>
+            <ExternalLink className="w-2.5 h-2.5" />
           </button>
           
           {!vencido && (
@@ -1124,10 +1119,10 @@ const ProximaObligacionPopover: React.FC<{
                 alert(`Marcar como completado: ${tipo} ${mes}`);
                 onClose();
               }}
-              className="button-base button-complete"
+              className="button-base button-complete text-xs"
             >
-              <CheckCircle className="w-4 h-4" />
-              <span>Completar</span>
+              <CheckCircle className="w-3 h-3" />
+              <span className="truncate">Completar</span>
             </button>
           )}
         </div>
@@ -1510,6 +1505,47 @@ const Empresas: React.FC<EmpresasProps> = ({ onNavigate }) => {
           border-bottom-left-radius: 0.5rem;
           border-bottom-right-radius: 0.5rem;
         }
+
+        .popover-content-wrapper {
+  width: 100%;
+  overflow: hidden;
+}
+
+.popover-text-truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.popover-text-wrap {
+  word-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
+}
+
+.popover-scrollable {
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f1f5f9;
+}
+
+.popover-scrollable::-webkit-scrollbar {
+  width: 4px;
+}
+
+.popover-scrollable::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 2px;
+}
+
+.popover-scrollable::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 2px;
+}
+
+.popover-scrollable::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
     
     @media (max-width: 768px) {
       .empresas-table-empresa { width: 14rem; min-width: 14rem; max-width: 14rem; }
