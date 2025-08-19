@@ -1332,9 +1332,9 @@ const ProximaObligacion: React.FC<{
 const Empresas: React.FC<EmpresasProps> = ({ onNavigate }) => {
   // Estilos CSS responsivos
   const styles = `
-    .empresas-popover { position: fixed; z-index: 50; background: white; border-radius: 0.5rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); border: 1px solid rgb(229, 231, 235); }
-    .empresas-popover-sm { width: 16rem; }
-    .empresas-popover-md { width: 18rem; max-height: 18.75rem; }
+    .empresas-popover { position: fixed; z-index: 50; background: white; border-radius: 0.5rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); border: 1px solid rgb(229, 231, 235);width: 18rem;max-width: 18rem;overflow: hidden; }
+    .empresas-popover-sm {  }
+    .empresas-popover-md { max-height: 18.75rem;  }
     .empresas-input-icon { padding-left: 2.5rem; }
     .empresas-icon-search { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); }
     .empresas-table-empresa { width: 16.875rem; min-width: 16.875rem; max-width: 16.875rem; }
