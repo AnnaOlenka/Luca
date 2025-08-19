@@ -292,8 +292,8 @@ const CompanyPermissionsModal: React.FC<CompanyPermissionsModalProps> = ({
   // Estilos CSS responsivos
   const styles = `
     .permissions-modal-backdrop { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center; z-index: 50; padding: 1rem; overflow-y: auto; }
-    .permissions-modal-container { background-color: white; border-radius: 0.75rem ; width: 100%; max-width: 56rem; max-height: 90vh; height: 37.5rem; min-height: 37.5rem; display: flex; flex-direction: column; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); position: relative;  }
-    .permissions-modal-header { background-color: white; color: #1f2937; padding: 2rem 1.5rem 1.5rem; border-bottom: 1px solid #e5e7eb; }
+    .permissions-modal-container { background-color: white; border-radius: 0.75rem; width: 100%; max-width: 56rem; max-height: 90vh; height: 37.5rem; min-height: 37.5rem; display: flex; flex-direction: column; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); position: relative; overflow: hidden; }
+    .permissions-modal-header { background-color: white; color: #1f2937; padding: 2rem 1.5rem 1.5rem; border-bottom: 1px solid #e5e7eb; border-top-left-radius: 0.75rem; border-top-right-radius: 0.75rem; }
     .permissions-modal-title { font-size: 1.25rem; font-weight: 600; color: #111827; }
     .permissions-modal-subtitle { font-size: 0.875rem; color: #6b7280; margin-top: 0.25rem; }
     .permissions-modal-close-btn { color: #9ca3af; padding: 0.5rem; border-radius: 0.5rem; transition: all 0.2s; border: none; background: none; cursor: pointer; position: absolute; top: 1.5rem; right: 1.5rem; }
@@ -319,7 +319,7 @@ const CompanyPermissionsModal: React.FC<CompanyPermissionsModalProps> = ({
     .permissions-modal-edit-btn:hover { background-color: #2563eb; }
     .permissions-modal-delete-btn { background-color: #ef4444; color: white; padding: 0.5rem; border-radius: 0.375rem; transition: background-color 0.2s; border: none; cursor: pointer; }
     .permissions-modal-delete-btn:hover { background-color: #dc2626; }
-    .permissions-modal-footer { background-color: #f9fafb; padding: 1.5rem; border-top: 1px solid #e5e7eb; }
+    .permissions-modal-footer { background-color: #f9fafb; padding: 1.5rem; border-top: 1px solid #e5e7eb; border-bottom-left-radius: 0.75rem; border-bottom-right-radius: 0.75rem; }
     .permissions-modal-cancel-btn:hover { background-color: #e5e7eb; }
     @media (max-width: 48rem) {
       .permissions-modal-backdrop { padding: 0.5rem; }

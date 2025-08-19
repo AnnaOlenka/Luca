@@ -21,7 +21,7 @@ const PerfilEmpresarialModal: React.FC<PerfilEmpresarialModalProps> = ({ isOpen,
   // Estilos CSS responsivos
   const styles = `
     .perfil-modal-backdrop { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
-    .perfil-modal-container { background-color: white; border-radius: 0.75rem; width: 100%; max-width: 56rem; max-height: 90vh; height: 37.5rem; min-height: 37.5rem; display: flex; flex-direction: column; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); overflow-y: auto; }
+    .perfil-modal-container { background-color: white; border-radius: 0.75rem; width: 100%; max-width: 56rem; max-height: 90vh; height: 37.5rem; min-height: 37.5rem; display: flex; flex-direction: column; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); overflow: hidden; }
     .perfil-modal-header { background: linear-gradient(to right, #2563eb, #1d4ed8); color: white; padding: 1rem; border-top-left-radius: 0.75rem; border-top-right-radius: 0.75rem; display: flex; justify-content: space-between; align-items: center; }
     .perfil-modal-title { font-size: 1.25rem; font-weight: 700; }
     .perfil-modal-close-btn { color: black; padding: 0.5rem; border-radius: 0.5rem; transition: all 0.2s; border: none; background: none; cursor: pointer; }
@@ -34,7 +34,8 @@ const PerfilEmpresarialModal: React.FC<PerfilEmpresarialModalProps> = ({ isOpen,
     .perfil-modal-tab:not(.active):hover { color: #374151; border-color: #ffffffff; background-color: #ffffffff; }
     .perfil-modal-tab-icon { width: 1.25rem; height: 1.25rem; margin-bottom: 0.125rem; }
     .perfil-modal-tab-text { font-size: 0.8125rem; font-weight: 500; text-align: left; line-height: 1.2; flex: 1; }
-    .perfil-modal-content { flex: 1; overflow-y: auto; padding: 1.5rem; }
+    .perfil-modal-content { flex: 1; overflow-y: auto; padding: 1.5rem; padding-bottom: 5rem; }
+    .perfil-modal-footer { position: absolute; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid #e5e7eb; padding: 1rem; display: flex; gap: 1rem; justify-content: flex-end; border-bottom-left-radius: 0.75rem; border-bottom-right-radius: 0.75rem; }
     .perfil-modal-btn-primary { background-color: #2563eb; color: white; padding: 0.5rem 1.5rem; border-radius: 0.5rem; font-weight: 500; transition: background-color 0.2s; border: none; cursor: pointer; }
     .perfil-modal-btn-primary:hover { background-color: #1d4ed8; }
     .perfil-modal-btn-secondary { background-color: #e5e7eb; color: #374151; padding: 0.5rem 1.5rem; border-radius: 0.5rem; font-weight: 500; transition: background-color 0.2s; border: none; cursor: pointer; }
@@ -49,12 +50,14 @@ const PerfilEmpresarialModal: React.FC<PerfilEmpresarialModalProps> = ({ isOpen,
       .perfil-modal-header { padding: 0.75rem; }
       .perfil-modal-title { font-size: 1.125rem; }
       .perfil-modal-tab { padding: 0.5rem 1rem; font-size: 0.8125rem; }
-      .perfil-modal-content { padding: 1rem; }
+      .perfil-modal-content { padding: 1rem; padding-bottom: 5rem; }
+      .perfil-modal-footer { padding: 0.75rem; }
     }
     @media (max-width: 30rem) {
       .perfil-modal-container { max-width: 95vw; }
       .perfil-modal-tab { padding: 0.5rem 0.75rem; font-size: 0.75rem; }
-      .perfil-modal-content { padding: 0.75rem; }
+      .perfil-modal-content { padding: 0.75rem; padding-bottom: 5rem; }
+      .perfil-modal-footer { padding: 0.75rem; }
     }
   `;
 
@@ -317,14 +320,21 @@ const PerfilEmpresarialModal: React.FC<PerfilEmpresarialModalProps> = ({ isOpen,
     setFormDataLaboral(newData);
   };
 
+  const [successMessage, setSuccessMessage] = useState('');
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+
   const handleSubmit = () => {
     if (activeTab === 'tributario') {
       console.log('Datos tributarios:', formDataTributario);
       console.log('Régimen determinado automáticamente:', regimenDeterminado);
-      alert(`Datos tributarios guardados!\nRégimen seleccionado: ${regimenes[formDataTributario.regimenSeleccionado as keyof typeof regimenes]}`);
+      setSuccessMessage(`Datos tributarios guardados correctamente!\nRégimen seleccionado: ${regimenes[formDataTributario.regimenSeleccionado as keyof typeof regimenes]}`);
+      setShowSuccessMessage(true);
+      setTimeout(() => setShowSuccessMessage(false), 5000);
     } else if (activeTab === 'laboral') {
       console.log('Datos laborales:', formDataLaboral);
-      alert('Datos laborales guardados!');
+      setSuccessMessage('Datos laborales guardados correctamente!');
+      setShowSuccessMessage(true);
+      setTimeout(() => setShowSuccessMessage(false), 5000);
     }
   };
 
@@ -364,7 +374,7 @@ const PerfilEmpresarialModal: React.FC<PerfilEmpresarialModalProps> = ({ isOpen,
     <>
       <style>{styles}</style>
       <div className="perfil-modal-backdrop">
-        <div className="perfil-modal-container">
+        <div className="perfil-modal-container" style={{position: 'relative'}}>
           {/* Header */}
           <div className="perfil-modal-header">
             <h2 className="perfil-modal-title">Perfil Empresarial Tributario-Laboral</h2>
@@ -409,7 +419,7 @@ const PerfilEmpresarialModal: React.FC<PerfilEmpresarialModalProps> = ({ isOpen,
               {/* Información Básica */}
               <div className="bg-blue-50 border border-gray-200 rounded-lg p-3">
                 <h3 className="text-sm font-medium text-gray-900 mb-3">Información Básica</h3>
-                <div className="space-y-2">
+                <div className="mt-2 space-y-2">
                   <div className="grid grid-cols-2 gap-2">
                     <div>
                       <label className="block text-xs font-medium text-gray-700 mb-1">
@@ -451,10 +461,9 @@ const PerfilEmpresarialModal: React.FC<PerfilEmpresarialModalProps> = ({ isOpen,
               {/* Datos Económicos */}
               <div className="bg-blue-50 border border-emerald-200 rounded-lg p-3">
                 <h3 className="text-sm font-medium text-emerald-900 mb-3 flex items-center">
-                  <Calculator className="w-4 h-4 mr-1 text-emerald-600" />
                   Datos Económicos
                 </h3>
-                <div className="space-y-2">
+                <div className="mt-2 space-y-2">
                   <div className="grid grid-cols-3 gap-2">
                     <div>
                       <label className="block text-xs font-medium text-gray-700 mb-1">
@@ -503,10 +512,9 @@ const PerfilEmpresarialModal: React.FC<PerfilEmpresarialModalProps> = ({ isOpen,
               {/* Operaciones */}
               <div className="bg-blue-50 border border-purple-200 rounded-lg p-3">
                 <h3 className="text-sm font-medium text-purple-900 mb-3 flex items-center">
-                  <Users className="w-4 h-4 mr-1 text-purple-600" />
                   Operaciones
                 </h3>
-                <div className="space-y-2">
+                <div className="mt-2 space-y-2">
                   <div className="grid grid-cols-2 gap-2">
                     <div>
                       <label className="block text-xs font-medium text-gray-700 mb-1">
@@ -597,6 +605,16 @@ const PerfilEmpresarialModal: React.FC<PerfilEmpresarialModalProps> = ({ isOpen,
                   </ul>
                 </div>
               )}
+              
+              {/* Success Message at bottom for Régimen Tributario */}
+              {showSuccessMessage && activeTab === 'tributario' && (
+                <div className="mt-4 bg-green-50 border border-green-200 rounded-lg p-4">
+                  <div className="flex items-center gap-2 text-green-700">
+                    <CheckCircle size={20} />
+                    <div className="whitespace-pre-line text-sm">{successMessage}</div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -605,75 +623,76 @@ const PerfilEmpresarialModal: React.FC<PerfilEmpresarialModalProps> = ({ isOpen,
               {/* Información Laboral */}
               <div className="bg-blue-50 border border-gray-200 rounded-lg p-4">
                 <h3 className="text-sm font-medium text-gray-900 mb-4 flex items-center">
-                  <Building className="w-4 h-4 mr-1 text-blue-600" />
                   Régimen Laboral
                 </h3>
                 
                 <div className="space-y-4">
-                  {/* Selector de sector - fijo en privado */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Sector
-                    </label>
-                    <input
-                      type="text"
-                      value="Privado"
-                      readOnly
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-600"
-                    />
+                  {/* Primera fila: Sector y Clasificación */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Sector
+                      </label>
+                      <input
+                        type="text"
+                        value="Privado"
+                        readOnly
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-600"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Clasificación
+                      </label>
+                      <select
+                        value={formDataLaboral.clasificacion}
+                        onChange={(e) => handleInputChangeLaboral('clasificacion', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                      >
+                        <option value="">Seleccionar clasificación...</option>
+                        <option value="actividad">Según actividad o tamaño de la empresa</option>
+                        <option value="trabajo">Según naturaleza del trabajo</option>
+                        <option value="especiales">Según condiciones especiales del trabajador</option>
+                      </select>
+                    </div>
                   </div>
 
-                  {/* Clasificación - siempre visible para privado */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Clasificación
-                    </label>
-                    <select
-                      value={formDataLaboral.clasificacion}
-                      onChange={(e) => handleInputChangeLaboral('clasificacion', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                    >
-                      <option value="">Seleccionar clasificación...</option>
-                      <option value="actividad">Según actividad o tamaño de la empresa</option>
-                      <option value="trabajo">Según naturaleza del trabajo</option>
-                      <option value="especiales">Según condiciones especiales del trabajador</option>
-                    </select>
-                  </div>
-
-                  {/* Régimen laboral - siempre visible */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Régimen Laboral
-                    </label>
-                    <select
-                      value={formDataLaboral.regimenLaboral}
-                      onChange={(e) => handleInputChangeLaboral('regimenLaboral', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                      disabled={!formDataLaboral.clasificacion}
-                    >
-                      <option value="">
-                        {!formDataLaboral.clasificacion ? 'Selecciona una clasificación primero' : 'Seleccionar régimen laboral...'}
-                      </option>
-                      {formDataLaboral.clasificacion && regimenesLaborales.privado.clasificaciones[formDataLaboral.clasificacion as keyof typeof regimenesLaborales.privado.clasificaciones]?.opciones.map((opcion, index) => (
-                        <option key={index} value={opcion.regimen}>
-                          {opcion.regimen}
+                  {/* Segunda fila: Régimen Laboral y Base Legal */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Régimen Laboral
+                      </label>
+                      <select
+                        value={formDataLaboral.regimenLaboral}
+                        onChange={(e) => handleInputChangeLaboral('regimenLaboral', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                        disabled={!formDataLaboral.clasificacion}
+                      >
+                        <option value="">
+                          {!formDataLaboral.clasificacion ? 'Selecciona una clasificación primero' : 'Seleccionar régimen laboral...'}
                         </option>
-                      ))}
-                    </select>
-                  </div>
+                        {formDataLaboral.clasificacion && regimenesLaborales.privado.clasificaciones[formDataLaboral.clasificacion as keyof typeof regimenesLaborales.privado.clasificaciones]?.opciones.map((opcion, index) => (
+                          <option key={index} value={opcion.regimen}>
+                            {opcion.regimen}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
 
-                  {/* Base legal - siempre visible */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Base Legal
-                    </label>
-                    <input
-                      type="text"
-                      value={formDataLaboral.baseLegal || (!formDataLaboral.regimenLaboral ? 'Selecciona un régimen laboral primero' : 'Sin base legal especificada')}
-                      readOnly
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-600"
-                      placeholder={!formDataLaboral.regimenLaboral ? 'Selecciona un régimen laboral primero' : 'Sin base legal especificada'}
-                    />
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Base Legal
+                      </label>
+                      <input
+                        type="text"
+                        value={formDataLaboral.baseLegal || (!formDataLaboral.regimenLaboral ? 'Selecciona un régimen laboral primero' : 'Sin base legal especificada')}
+                        readOnly
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-600"
+                        placeholder={!formDataLaboral.regimenLaboral ? 'Selecciona un régimen laboral primero' : 'Sin base legal especificada'}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -685,7 +704,7 @@ const PerfilEmpresarialModal: React.FC<PerfilEmpresarialModalProps> = ({ isOpen,
                     <CheckCircle size={20} />
                     Régimen Laboral Seleccionado
                   </div>
-                  <div className="space-y-2 text-sm">
+                  <div className="mt-2 space-y-2 text-sm">
                     <div><strong>Sector:</strong> {formDataLaboral.sector === 'publico' ? 'Público' : 'Privado'}</div>
                     <div><strong>Clasificación:</strong> {formDataLaboral.clasificacion === 'actividad' ? 'Según actividad o tamaño de la empresa' : 
                       formDataLaboral.clasificacion === 'trabajo' ? 'Según naturaleza del trabajo' : 
@@ -693,6 +712,16 @@ const PerfilEmpresarialModal: React.FC<PerfilEmpresarialModalProps> = ({ isOpen,
                       formDataLaboral.clasificacion}</div>
                     <div><strong>Régimen:</strong> {formDataLaboral.regimenLaboral}</div>
                     <div><strong>Base Legal:</strong> {formDataLaboral.baseLegal}</div>
+                  </div>
+                </div>
+              )}
+              
+              {/* Success Message at bottom for Régimen Laboral */}
+              {showSuccessMessage && activeTab === 'laboral' && (
+                <div className="mt-4 bg-green-50 border border-green-200 rounded-lg p-4">
+                  <div className="flex items-center gap-2 text-green-700">
+                    <CheckCircle size={20} />
+                    <div className="text-sm">{successMessage}</div>
                   </div>
                 </div>
               )}
@@ -1017,9 +1046,11 @@ const PerfilEmpresarialModal: React.FC<PerfilEmpresarialModalProps> = ({ isOpen,
             </div>
           )}
 
-          {/* Botones */}
+          </div>
+
+          {/* Footer con botones fijos */}
           {activeTab !== 'score' && (
-            <div className="flex gap-4 justify-end pt-4 border-t mt-6">
+            <div className="perfil-modal-footer">
               <button
                 type="button"
                 onClick={resetForm}
@@ -1036,7 +1067,6 @@ const PerfilEmpresarialModal: React.FC<PerfilEmpresarialModalProps> = ({ isOpen,
               </button>
             </div>
           )}
-          </div>
         </div>
       </div>
     </>
