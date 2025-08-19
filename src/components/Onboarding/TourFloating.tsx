@@ -200,30 +200,6 @@ const TourFloating: React.FC<TourFloatingProps> = ({
     spacer: { width: '2rem' }
   };
 
-  // Función para calcular el progreso de la barra
-  const getProgressPercentage = () => {
-    if (step <= 5) {
-      return (step / 5) * 75;
-    } else {
-      return 100;
-    }
-  };
-
-  // Función para obtener la etapa actual
-  const getCurrentStage = () => {
-    if (step <= 5) {
-      return {
-        name: 'Onboarding',
-        description: 'Configurando tu primera empresa'
-      };
-    } else {
-      return {
-        name: 'Ir a la Bandeja',
-        description: 'Completando configuración'
-      };
-    }
-  };
-
   // Función para detectar si la empresa está validada
   const checkValidationStatus = () => {
     const validationSpan = Array.from(document.querySelectorAll('span, div, p')).find(
@@ -263,98 +239,6 @@ const TourFloating: React.FC<TourFloatingProps> = ({
     });
     
     return validationSpan || hasValidationWithCheck || successElements.length > 0 || companyElements.length > 0 || bandejaButton;
-  };
-
-  // Función para bloquear interacciones durante pasos 1-3
-  const blockInteractions = () => {
-    // Solo bloquear si estamos en los pasos 1-3 Y el tour está visible
-    if (step >= 1 && step <= 3 && isVisible) {
-      // Bloquear accordion header (div con clases específicas que contiene el chevron y contenido)
-      const accordionContainers = document.querySelectorAll('.border.border-gray-200.rounded-lg.overflow-hidden');
-      accordionContainers.forEach(container => {
-        const accordionHeader = container.querySelector('.p-4.cursor-pointer') as HTMLElement;
-        if (accordionHeader) {
-          // Bloquear el header completo del accordion
-          accordionHeader.style.pointerEvents = 'none';
-          accordionHeader.style.opacity = '0.8';
-          accordionHeader.style.cursor = 'not-allowed';
-          
-          // Agregar una clase para identificar que está bloqueado
-          accordionHeader.setAttribute('data-tour-blocked', 'true');
-        }
-      });
-
-      // Bloquear específicamente el botón de eliminar (trash icon) dentro del accordion
-      const trashButtons = document.querySelectorAll('button .lucide-trash2, button .lucide-trash-2');
-      trashButtons.forEach(trashIcon => {
-        const button = trashIcon.closest('button') as HTMLElement;
-        if (button && button.closest('.border.border-gray-200.rounded-lg')) {
-          button.style.pointerEvents = 'none';
-          button.style.opacity = '0.7';
-          button.style.cursor = 'not-allowed';
-          button.setAttribute('data-tour-blocked', 'true');
-        }
-      });
-
-      // Bloquear botón "Agregar Nueva Empresa" con más especificidad
-      const addButtons = document.querySelectorAll('button');
-      addButtons.forEach(button => {
-        const buttonText = button.textContent?.trim();
-        if (buttonText?.includes('Agregar Nueva Empresa') || 
-            (button.querySelector('.lucide-plus') && buttonText?.includes('Agregar'))) {
-          button.style.pointerEvents = 'none';
-          button.style.opacity = '0.8';
-          button.style.cursor = 'not-allowed';
-          button.setAttribute('data-tour-blocked', 'true');
-        }
-      });
-
-      // Prevenir eventos de click en elementos bloqueados
-      const blockedElements = document.querySelectorAll('[data-tour-blocked="true"]');
-      blockedElements.forEach(element => {
-        const preventClick = (e: Event) => {
-          e.preventDefault();
-          e.stopPropagation();
-          e.stopImmediatePropagation();
-        };
-        
-        element.addEventListener('click', preventClick, { capture: true });
-        element.addEventListener('mousedown', preventClick, { capture: true });
-        element.addEventListener('mouseup', preventClick, { capture: true });
-        
-        // Guardar el handler para poder removerlo después
-        (element as any)._tourPreventClick = preventClick;
-      });
-    }
-  };
-
-  // Función para bloquear solo el accordion (paso 5)
-  const blockAccordionOnly = () => {
-    if (step === 5 && isVisible) {
-      // Bloquear solo el accordion header
-      const accordionContainers = document.querySelectorAll('.border.border-gray-200.rounded-lg.overflow-hidden');
-      accordionContainers.forEach(container => {
-        const accordionHeader = container.querySelector('.p-4.cursor-pointer') as HTMLElement;
-        if (accordionHeader) {
-          accordionHeader.style.pointerEvents = 'none';
-          accordionHeader.style.opacity = '0.8';
-          accordionHeader.style.cursor = 'not-allowed';
-          accordionHeader.setAttribute('data-tour-blocked', 'true');
-          
-          // Prevenir eventos de click
-          const preventClick = (e: Event) => {
-            e.preventDefault();
-            e.stopPropagation();
-            e.stopImmediatePropagation();
-          };
-          
-          accordionHeader.addEventListener('click', preventClick, { capture: true });
-          accordionHeader.addEventListener('mousedown', preventClick, { capture: true });
-          accordionHeader.addEventListener('mouseup', preventClick, { capture: true });
-          (accordionHeader as any)._tourPreventClick = preventClick;
-        }
-      });
-    }
   };
 
   // Función para desbloquear interacciones (más agresiva)
@@ -456,32 +340,175 @@ const TourFloating: React.FC<TourFloatingProps> = ({
     console.log('🔧 Aggressive unblock completed');
   };
 
-  // Effect para bloquear/desbloquear interacciones
-  useEffect(() => {
-    console.log('🔒 Tour interaction effect triggered:', { step, isVisible, hasDetectedValidation });
-    
-    if (!isVisible) {
-      console.log('🔓 Tour not visible, unblocking all interactions');
-      unblockInteractions();
-      return;
-    }
+  // Función para bloquear interacciones SOLO durante pasos 1-3 (sin importar validación)
+  const blockInteractions = () => {
+    // Solo bloquear si estamos en los pasos 1-3 y el tour está visible
+    if (step >= 1 && step <= 3 && isVisible) {
+      console.log('🔒 Blocking interactions for step:', step, '(blocking regardless of validation status)');
+      
+      // Bloquear accordion header (div con clases específicas que contiene el chevron y contenido)
+      const accordionContainers = document.querySelectorAll('.border.border-gray-200.rounded-lg.overflow-hidden');
+      accordionContainers.forEach(container => {
+        const accordionHeader = container.querySelector('.p-4.cursor-pointer') as HTMLElement;
+        if (accordionHeader && !accordionHeader.hasAttribute('data-tour-blocked')) {
+          // Bloquear el header completo del accordion
+          accordionHeader.style.pointerEvents = 'none';
+          accordionHeader.style.opacity = '0.8';
+          accordionHeader.style.cursor = 'not-allowed';
+          
+          // Agregar una clase para identificar que está bloqueado
+          accordionHeader.setAttribute('data-tour-blocked', 'true');
+        }
+      });
 
-    // Si ya se detectó validación automática, no aplicar más bloqueos
-    if (hasDetectedValidation && step >= 4) {
-      console.log('🔓 Auto-validation already detected, keeping everything unblocked');
+      // Bloquear específicamente el botón de eliminar (trash icon) dentro del accordion
+      const trashButtons = document.querySelectorAll('button .lucide-trash2, button .lucide-trash-2');
+      trashButtons.forEach(trashIcon => {
+        const button = trashIcon.closest('button') as HTMLElement;
+        if (button && button.closest('.border.border-gray-200.rounded-lg') && !button.hasAttribute('data-tour-blocked')) {
+          button.style.pointerEvents = 'none';
+          button.style.opacity = '0.7';
+          button.style.cursor = 'not-allowed';
+          button.setAttribute('data-tour-blocked', 'true');
+        }
+      });
+
+      // Bloquear botón "Agregar Nueva Empresa" con más especificidad
+      const addButtons = document.querySelectorAll('button');
+      addButtons.forEach(button => {
+        const buttonText = button.textContent?.trim();
+        if ((buttonText?.includes('Agregar Nueva Empresa') || 
+            (button.querySelector('.lucide-plus') && buttonText?.includes('Agregar'))) &&
+            !button.hasAttribute('data-tour-blocked')) {
+          button.style.pointerEvents = 'none';
+          button.style.opacity = '0.8';
+          button.style.cursor = 'not-allowed';
+          button.setAttribute('data-tour-blocked', 'true');
+        }
+      });
+
+      // Prevenir eventos de click en elementos bloqueados
+      const blockedElements = document.querySelectorAll('[data-tour-blocked="true"]');
+      blockedElements.forEach(element => {
+        // Solo agregar event listener si no existe ya
+        if (!(element as any)._tourPreventClick) {
+          const preventClick = (e: Event) => {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+          };
+          
+          element.addEventListener('click', preventClick, { capture: true });
+          element.addEventListener('mousedown', preventClick, { capture: true });
+          element.addEventListener('mouseup', preventClick, { capture: true });
+          
+          // Guardar el handler para poder removerlo después
+          (element as any)._tourPreventClick = preventClick;
+        }
+      });
+    } else {
+      console.log('🔓 Conditions not met for blocking - step:', step, 'isVisible:', isVisible);
+    }
+  };
+
+  // Función para bloquear solo accordion y botón eliminar (paso 5)
+  const blockAccordionAndDeleteOnly = () => {
+    if (step === 5 && isVisible) {
+      console.log('🔒 Blocking only accordion and delete button for step 5');
+      
+      // Bloquear accordion header
+      const accordionContainers = document.querySelectorAll('.border.border-gray-200.rounded-lg.overflow-hidden');
+      accordionContainers.forEach(container => {
+        const accordionHeader = container.querySelector('.p-4.cursor-pointer') as HTMLElement;
+        if (accordionHeader && !accordionHeader.hasAttribute('data-tour-blocked')) {
+          accordionHeader.style.pointerEvents = 'none';
+          accordionHeader.style.opacity = '0.8';
+          accordionHeader.style.cursor = 'not-allowed';
+          accordionHeader.setAttribute('data-tour-blocked', 'true');
+        }
+      });
+
+      // Bloquear específicamente el botón de eliminar (trash icon)
+      const trashButtons = document.querySelectorAll('button .lucide-trash2, button .lucide-trash-2');
+      trashButtons.forEach(trashIcon => {
+        const button = trashIcon.closest('button') as HTMLElement;
+        if (button && button.closest('.border.border-gray-200.rounded-lg') && !button.hasAttribute('data-tour-blocked')) {
+          button.style.pointerEvents = 'none';
+          button.style.opacity = '0.7';
+          button.style.cursor = 'not-allowed';
+          button.setAttribute('data-tour-blocked', 'true');
+        }
+      });
+
+      // ASEGURAR que el botón "Agregar Nueva Empresa" esté LIBRE
+      const addButtons = document.querySelectorAll('button');
+      addButtons.forEach(button => {
+        const buttonText = button.textContent?.trim();
+        if (buttonText?.includes('Agregar Nueva Empresa') || buttonText?.includes('Agregar Nueva') ||
+            (button.querySelector('.lucide-plus') && (buttonText?.includes('Agregar') || buttonText?.includes('Nueva')))) {
+          const htmlElement = button as HTMLElement;
+          // Forzar que esté completamente libre
+          htmlElement.style.pointerEvents = 'auto';
+          htmlElement.style.opacity = '1';
+          htmlElement.style.cursor = 'pointer';
+          htmlElement.removeAttribute('data-tour-blocked');
+          
+          // Limpiar cualquier event listener bloqueante
+          const preventClick = (htmlElement as any)._tourPreventClick;
+          if (preventClick) {
+            htmlElement.removeEventListener('click', preventClick, { capture: true });
+            htmlElement.removeEventListener('mousedown', preventClick, { capture: true });
+            htmlElement.removeEventListener('mouseup', preventClick, { capture: true });
+            delete (htmlElement as any)._tourPreventClick;
+          }
+          
+          console.log('✅ Add company button explicitly kept FREE in step 5:', buttonText);
+        }
+      });
+
+      // Prevenir eventos de click SOLO en elementos que queremos bloquear (accordion y delete)
+      const elementsToBlock = document.querySelectorAll('[data-tour-blocked="true"]');
+      elementsToBlock.forEach(element => {
+        // Solo agregar event listener si no existe ya
+        if (!(element as any)._tourPreventClick) {
+          const preventClick = (e: Event) => {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+          };
+          
+          element.addEventListener('click', preventClick, { capture: true });
+          element.addEventListener('mousedown', preventClick, { capture: true });
+          element.addEventListener('mouseup', preventClick, { capture: true });
+          
+          // Guardar el handler para poder removerlo después
+          (element as any)._tourPreventClick = preventClick;
+        }
+      });
+    }
+  };
+
+  // EFFECT PRINCIPAL DE BLOQUEO/DESBLOQUEO SIMPLIFICADO
+  useEffect(() => {
+    console.log('🎯 MAIN BLOCKING EFFECT - step:', step, 'isVisible:', isVisible, 'hasDetectedValidation:', hasDetectedValidation);
+    
+    // Si el tour no está visible, desbloquear todo inmediatamente
+    if (!isVisible) {
+      console.log('🔓 Tour not visible - unblocking everything');
       unblockInteractions();
       return;
     }
     
+    // SIEMPRE bloquear en pasos 1-3, sin importar si hay validación automática o no
     if (step >= 1 && step <= 3) {
-      console.log('🔒 Blocking interactions for step:', step);
+      console.log('🔒 Applying blocks for steps 1-3 (ALWAYS blocked regardless of validation)');
       blockInteractions();
       
-      // Re-aplicar bloqueo después de cambios en el DOM solo para pasos 1-3
+      // Observer para re-aplicar bloqueo cuando cambie el DOM
       const observer = new MutationObserver(() => {
-        // Solo re-aplicar bloqueo si todavía estamos en pasos 1-3
+        // Solo re-aplicar si seguimos en pasos 1-3 y el tour está visible
         if (step >= 1 && step <= 3 && isVisible) {
-          setTimeout(blockInteractions, 100);
+          setTimeout(() => blockInteractions(), 100);
         }
       });
       
@@ -491,100 +518,34 @@ const TourFloating: React.FC<TourFloatingProps> = ({
       });
       
       return () => {
-        console.log('🔓 Cleaning up observer and unblocking for step:', step);
         observer.disconnect();
-        // Asegurar desbloqueo al limpiar el observer
-        unblockInteractions();
       };
-    } else if (step === 5) {
-      // En el paso 5, solo bloquear el accordion SI NO hay auto-validación
-      if (hasDetectedValidation) {
-        console.log('🔓 Step 5 but auto-validation detected, keeping everything unblocked');
-        unblockInteractions();
-        return;
-      }
+    } 
+    // Bloqueo especial para paso 5: solo accordion y botón eliminar, NO el botón agregar
+    else if (step === 5) {
+      console.log('🔒 Applying partial blocks for step 5 (accordion + delete button only)');
+      blockAccordionAndDeleteOnly();
       
-      console.log('🔒 Blocking only accordion for step 5, keeping add button free');
+      // Observer para re-aplicar bloqueo cuando cambie el DOM
+      const observer = new MutationObserver(() => {
+        if (step === 5 && isVisible) {
+          setTimeout(() => blockAccordionAndDeleteOnly(), 100);
+        }
+      });
       
-      // Primero desbloquear todo completamente
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true
+      });
+      
+      return () => {
+        observer.disconnect();
+      };
+    } 
+    else {
+      // Para cualquier otro paso (4, 6, etc.), desbloquear todo
+      console.log('🔓 Not in blocking steps - unblocking everything');
       unblockInteractions();
-      
-      // Luego aplicar solo bloqueo del accordion una vez
-      setTimeout(() => {
-        const accordionContainers = document.querySelectorAll('.border.border-gray-200.rounded-lg.overflow-hidden');
-        accordionContainers.forEach(container => {
-          const accordionHeader = container.querySelector('.p-4.cursor-pointer') as HTMLElement;
-          if (accordionHeader && !accordionHeader.hasAttribute('data-tour-blocked')) {
-            accordionHeader.style.pointerEvents = 'none';
-            accordionHeader.style.opacity = '0.8';
-            accordionHeader.style.cursor = 'not-allowed';
-            accordionHeader.setAttribute('data-tour-blocked', 'true');
-            
-            const preventClick = (e: Event) => {
-              e.preventDefault();
-              e.stopPropagation();
-              e.stopImmediatePropagation();
-            };
-            
-            accordionHeader.addEventListener('click', preventClick, { capture: true });
-            accordionHeader.addEventListener('mousedown', preventClick, { capture: true });
-            accordionHeader.addEventListener('mouseup', preventClick, { capture: true });
-            (accordionHeader as any)._tourPreventClick = preventClick;
-          }
-        });
-        
-        // Asegurar explícitamente que el botón "Agregar Nueva Empresa" esté libre
-        const addButtons = document.querySelectorAll('button');
-        addButtons.forEach(button => {
-          const buttonText = button.textContent?.trim();
-          if (buttonText?.includes('Agregar Nueva Empresa') || buttonText?.includes('Agregar Nueva') ||
-              (button.querySelector('.lucide-plus') && (buttonText?.includes('Agregar') || buttonText?.includes('Nueva')))) {
-            const htmlElement = button as HTMLElement;
-            htmlElement.style.pointerEvents = 'auto';
-            htmlElement.style.opacity = '1';
-            htmlElement.style.cursor = 'pointer';
-            htmlElement.removeAttribute('data-tour-blocked');
-            
-            // Limpiar cualquier event listener bloqueante
-            const preventClick = (htmlElement as any)._tourPreventClick;
-            if (preventClick) {
-              htmlElement.removeEventListener('click', preventClick, { capture: true });
-              htmlElement.removeEventListener('mousedown', preventClick, { capture: true });
-              htmlElement.removeEventListener('mouseup', preventClick, { capture: true });
-              delete (htmlElement as any)._tourPreventClick;
-            }
-            
-            console.log('✅ Add company button explicitly unblocked:', buttonText);
-          }
-        });
-      }, 150);
-    } else {
-      // Para cualquier paso que NO sea 1-3 o 5, desbloquear inmediatamente
-      console.log('🔓 Unblocking interactions for step:', step);
-      unblockInteractions();
-    }
-  }, [step, isVisible, hasDetectedValidation]);
-
-  // Effect separado para asegurar desbloqueo inmediato cuando cambie el paso
-  useEffect(() => {
-    if (step > 5 && isVisible) {
-      // Forzar desbloqueo inmediato cuando salgamos de pasos 1-5
-      console.log('🎯 Step > 5 detected - forcing complete unblock');
-      setTimeout(() => {
-        unblockInteractions();
-      }, 50);
-    }
-    
-    // Si el tour ha terminado completamente (paso 6 o más), desbloquear todo
-    if (step >= 6) {
-      console.log('🎯 Tour completed (step >= 6) - ensuring complete unblock');
-      unblockInteractions();
-      
-      // Desbloqueo adicional con delay más largo para asegurar
-      setTimeout(() => {
-        console.log('🎯 Final unblock after tour completion');
-        unblockInteractions();
-      }, 200);
     }
   }, [step, isVisible]);
 
@@ -600,10 +561,6 @@ const TourFloating: React.FC<TourFloatingProps> = ({
         if (isValidated) {
           console.log('🎉 Validación detectada automáticamente, saltando al paso 4');
           setHasDetectedValidation(true);
-          
-          // Desbloquear inmediatamente cuando se detecta validación
-          console.log('🔓 Forcing unblock due to automatic validation');
-          unblockInteractions();
           
           if (onAutoSkipToValidation) {
             setTimeout(() => {
@@ -643,11 +600,6 @@ const TourFloating: React.FC<TourFloatingProps> = ({
         if (shouldCheck) {
           setTimeout(() => {
             checkAndSkip();
-            // También forzar desbloqueo cuando el observer detecta cambios de validación
-            if (checkValidationStatus()) {
-              console.log('🔓 Observer forcing unblock due to validation detection');
-              unblockInteractions();
-            }
           }, 300);
         }
       });
@@ -678,66 +630,13 @@ const TourFloating: React.FC<TourFloatingProps> = ({
     }
   }, [step]);
 
-  // Forzar desbloqueo cuando se detecta validación automática
-  useEffect(() => {
-    if (hasDetectedValidation && step >= 4) {
-      console.log('🔓 Auto-validation detected, forcing unblock of all interactions');
-      unblockInteractions();
-      
-      // Desbloqueo adicional para asegurar que la validación automática libere todo
-      setTimeout(() => {
-        console.log('🔓 Secondary unblock after auto-validation');
-        unblockInteractions();
-      }, 150);
-    }
-  }, [hasDetectedValidation, step]);
-
-  // Effect adicional para desbloqueo completo cuando el tour termine definitivamente
-  useEffect(() => {
-    // Si el tour no está visible O si está en el último paso, desbloquear completamente
-    if (!isVisible || step >= 6 || (hasDetectedValidation && step >= 4)) {
-      console.log('🎯 TOUR ENDED - Complete unblock of all modal interactions', { 
-        isVisible, 
-        step, 
-        hasDetectedValidation 
-      });
-      
-      // Desbloqueo inmediato
-      unblockInteractions();
-      
-      // Desbloqueo con delays escalonados para asegurar
-      setTimeout(() => {
-        console.log('🎯 First delayed unblock after tour end');
-        unblockInteractions();
-      }, 100);
-      
-      setTimeout(() => {
-        console.log('🎯 Final delayed unblock after tour end');
-        unblockInteractions();
-      }, 300);
-    }
-  }, [isVisible, step, hasDetectedValidation]);
-
   // Cleanup effect para desbloquear al desmontar el componente
   useEffect(() => {
     return () => {
+      console.log('🧹 Component unmounting - cleaning up all blocks');
       unblockInteractions();
     };
   }, []);
-
-  // Effect adicional para asegurar desbloqueo cuando el tour termine
-  useEffect(() => {
-    if (!isVisible) {
-      console.log('🎯 Tour is no longer visible - FORCE UNBLOCKING ALL INTERACTIONS');
-      unblockInteractions();
-      
-      // Desbloqueo adicional después de un pequeño delay para asegurar que se aplique
-      setTimeout(() => {
-        console.log('🎯 Secondary unblock after tour ended');
-        unblockInteractions();
-      }, 100);
-    }
-  }, [isVisible]);
 
   // Calculate element position dynamically
   useEffect(() => {
