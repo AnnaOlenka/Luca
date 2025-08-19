@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Users, AlertCircle, Save, UserPlus, Search, Trash2, UserCheck, Crown, Calculator, Plus, ChevronDown, Settings, FileText, User as UserIcon, Edit, CheckCircle, Shield } from 'lucide-react';
 import RelatedCompaniesModal from './RelatedCompaniesModal';
 
@@ -291,7 +292,7 @@ const CompanyPermissionsModal: React.FC<CompanyPermissionsModalProps> = ({
 }) => {
   // Estilos CSS responsivos
   const styles = `
-    .permissions-modal-backdrop { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center; z-index: 50; padding: 1rem; overflow-y: auto; }
+    .permissions-modal-backdrop { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center; z-index: 9998; padding: 1rem; overflow-y: auto; }
     .permissions-modal-container { background-color: white; border-radius: 0.75rem; width: 100%; max-width: 56rem; max-height: 90vh; height: 37.5rem; min-height: 37.5rem; display: flex; flex-direction: column; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); position: relative; overflow: hidden; }
     .permissions-modal-header { background-color: white; color: #1f2937; padding: 2rem 1.5rem 1.5rem; border-bottom: 1px solid #e5e7eb; border-top-left-radius: 0.75rem; border-top-right-radius: 0.75rem; }
     .permissions-modal-title { font-size: 1.25rem; font-weight: 600; color: #111827; }
@@ -1063,7 +1064,7 @@ const AddUserPopover: React.FC<AddUserPopoverProps> = ({
 }) => {
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [position, setPosition] = useState<'bottom' | 'top'>('bottom');
+  const [position, setPosition] = useState<{ top: number; left: number; placement: 'bottom' | 'top' }>({ top: 0, left: 0, placement: 'bottom' });
   const popoverRef = useRef<HTMLDivElement>(null);
 
   const filteredUsers = availableUsers.filter(user =>
@@ -1107,17 +1108,37 @@ const AddUserPopover: React.FC<AddUserPopoverProps> = ({
 
         const buttonRect = button.getBoundingClientRect();
         const viewportHeight = window.innerHeight;
+        const viewportWidth = window.innerWidth;
         const popoverHeight = 600; // Estimated max height
+        const popoverWidth = 320; // 20rem = 320px
         
         const spaceBelow = viewportHeight - buttonRect.bottom;
         const spaceAbove = buttonRect.top;
         
-        // If there's not enough space below and more space above, position above
-        if (spaceBelow < popoverHeight && spaceAbove > spaceBelow) {
-          setPosition('top');
-        } else {
-          setPosition('bottom');
+        // Calculate horizontal position (right-aligned to button)
+        let left = buttonRect.right - popoverWidth;
+        if (left < 10) { // Minimum margin from left edge
+          left = buttonRect.left;
+          if (left + popoverWidth > viewportWidth - 10) {
+            left = viewportWidth - popoverWidth - 10;
+          }
         }
+        
+        // Calculate vertical position
+        let top: number;
+        let placement: 'bottom' | 'top';
+        
+        if (spaceBelow < popoverHeight && spaceAbove > spaceBelow) {
+          // Position above
+          top = buttonRect.top - popoverHeight - 8;
+          placement = 'top';
+        } else {
+          // Position below
+          top = buttonRect.bottom + 8;
+          placement = 'bottom';
+        }
+        
+        setPosition({ top, left, placement });
       };
 
       // Calculate position initially and on scroll/resize
@@ -1158,22 +1179,16 @@ const AddUserPopover: React.FC<AddUserPopoverProps> = ({
 
   if (!isOpen) return null;
 
-  const getPositionClasses = () => {
-    const baseClasses = "absolute right-0 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-[70]";
-    
-    if (position === 'top') {
-      return `${baseClasses} bottom-full mb-2`;
-    } else {
-      return `${baseClasses} top-full mt-2`;
-    }
-  };
-
-
-  return (
+  const popoverContent = (
     <div 
       ref={popoverRef}
-      className={getPositionClasses()}
-      style={{ maxHeight: '600px' }}
+      className="fixed w-80 bg-white rounded-lg shadow-xl border border-gray-200"
+      style={{ 
+        top: position.top,
+        left: position.left,
+        maxHeight: '600px', 
+        zIndex: 999999 
+      }}
     >
       <div className="flex flex-col h-full max-h-[600px]">
         {/* Header */}
@@ -1272,6 +1287,8 @@ const AddUserPopover: React.FC<AddUserPopoverProps> = ({
       </div>
     </div>
   );
+
+  return createPortal(popoverContent, document.body);
 };
 
 

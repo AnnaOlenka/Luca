@@ -283,6 +283,74 @@ const ImportCsvModal: React.FC<ImportCsvModalProps> = ({ isOpen, onClose, onImpo
   claveSol: ''
 });
 
+  // Estilos CSS responsivos
+  const styles = `
+    .import-modal-backdrop { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center; z-index: 9999; padding: 1rem; }
+    .import-modal-container { background-color: white; border-radius: 0.75rem; width: 100%; max-width: 56rem; max-height: 90vh; height: 37.5rem; min-height: 37.5rem; display: flex; flex-direction: column; box-shadow: 0 1.25rem 1.5625rem -0.3125rem rgba(0, 0, 0, 0.1), 0 0.625rem 0.625rem -0.3125rem rgba(0, 0, 0, 0.04); overflow: hidden; z-index: 10000; position: relative; }
+    .import-modal-header { background-color: #2563eb; color: white; padding: 1.5rem; border-top-left-radius: 0.75rem; border-top-right-radius: 0.75rem; position: sticky; top: 0; z-index: 10; }
+    .import-modal-title { font-size: 1.25rem; font-weight: 700; text-align: left; }
+    .import-modal-subtitle { color: #bfdbfe; font-size: 0.875rem; margin-top: 0.25rem; }
+    .import-modal-close-btn { color: white; padding: 0.5rem; border-radius: 0.5rem; transition: background-color 0.2s; border: none; background: none; cursor: pointer; }
+    .import-modal-close-btn:hover { background-color: #1d4ed8; }
+    .import-modal-close-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .import-modal-content { flex: 1; overflow-y: auto; padding: 1.5rem; }
+    .import-modal-footer { border-top: 1px solid #e5e7eb; padding: 1rem; background-color: #f9fafb; border-bottom-left-radius: 0.75rem; border-bottom-right-radius: 0.75rem; }
+    .import-modal-btn-primary { background-color: #2563eb; color: white; padding: 0.5rem 1.5rem; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 500; display: flex; align-items: center; gap: 0.5rem; transition: background-color 0.2s; border: none; cursor: pointer; }
+    .import-modal-btn-primary:hover { background-color: #1d4ed8; }
+    .import-modal-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .import-modal-btn-secondary { background-color: #6b7280; color: white; padding: 0.5rem 1.5rem; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 500; display: flex; align-items: center; gap: 0.5rem; transition: background-color 0.2s; border: none; cursor: pointer; }
+    .import-modal-btn-secondary:hover { background-color: #4b5563; }
+    .import-modal-btn-green { background-color: #16a34a; color: white; padding: 0.5rem 1.5rem; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 500; display: flex; align-items: center; gap: 0.5rem; transition: background-color 0.2s; border: none; cursor: pointer; }
+    .import-modal-btn-green:hover { background-color: #15803d; }
+    .import-modal-btn-yellow { background-color: #eab308; color: white; padding: 0.5rem 1.5rem; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 500; display: flex; align-items: center; gap: 0.5rem; transition: background-color 0.2s; border: none; cursor: pointer; }
+    .import-modal-btn-yellow:hover { background-color: #ca8a04; }
+    .import-modal-btn-simple { color: #2563eb; border: none; background: none; cursor: pointer; transition: color 0.2s; }
+    .import-modal-btn-simple:hover { color: #1d4ed8; }
+    .import-modal-btn-simple-red { color: #dc2626; border: none; background: none; cursor: pointer; transition: color 0.2s; }
+    .import-modal-btn-simple-red:hover { color: #b91c1c; }
+    .import-modal-section { margin-bottom: 1.5rem; padding: 1rem; background-color: #f9fafb; border-radius: 0.5rem; }
+    .import-modal-drag-area { border: 2px dashed #d1d5db; border-radius: 0.5rem; padding: 2rem; text-align: center; transition: all 0.2s; }
+    .import-modal-drag-area.active { border-color: #2563eb; background-color: #eff6ff; }
+    .import-modal-drag-area:hover { border-color: #9ca3af; }
+    .import-modal-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    .import-modal-table th, .import-modal-table td { padding: 0.75rem; text-align: center; border-bottom: 1px solid #e5e7eb; }
+    .import-modal-table th { background-color: #f9fafb; font-weight: 500; color: #374151; position: sticky; top: 0; }
+    .import-modal-table-container { max-height: 16rem; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 0.5rem; margin-bottom: 1rem; }
+    .import-modal-progress-bar { width: 100%; background-color: #e5e7eb; border-radius: 9999px; height: 0.75rem; }
+    .import-modal-progress-fill { height: 0.75rem; border-radius: 9999px; transition: all 0.3s; background-color: #2563eb; }
+    .import-modal-summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3rem; margin-bottom: 1.5rem; }
+    .import-modal-summary-card { border-radius: 0.5rem; padding: 0.75rem; display: flex; align-items: center; justify-content: center; }
+    .import-modal-summary-card.green { background-color: #f0fdf4; border: 1px solid #bbf7d0; }
+    .import-modal-summary-card.red { background-color: #fef2f2; border: 1px solid #fecaca; }
+    .import-modal-summary-card.blue { background-color: #eff6ff; border: 1px solid #bfdbfe; }
+    .import-modal-form-group { margin-bottom: 0.75rem; }
+    .import-modal-form-label { display: block; font-size: 0.875rem; font-weight: 500; color: #374151; margin-bottom: 0.25rem; }
+    .import-modal-form-input { width: 100%; border-radius: 0.375rem; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); font-size: 0.875rem; padding: 0.5rem 0.75rem; border: 1px solid #d1d5db; }
+    .import-modal-form-input:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2); }
+    .import-modal-form-input.error { border-color: #dc2626; }
+    .import-modal-form-input.error:focus { border-color: #dc2626; box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.2); }
+    .import-modal-error-text { margin-top: 0.25rem; font-size: 0.875rem; color: #dc2626; }
+    .import-modal-edit-form { padding: 1rem; border: 1px solid #e5e7eb; border-radius: 0.5rem; background-color: white; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); }
+    .import-modal-alert { padding: 1rem; border-radius: 0.5rem; border: 1px solid #fbbf24; background-color: #fffbeb; display: flex; align-items: flex-start; }
+    .import-modal-verification-item { display: flex; align-items: center; gap: 0.75rem; padding: 1rem; border: 1px solid #e5e7eb; border-radius: 0.5rem; margin-bottom: 0.5rem; }
+    .import-modal-spinner { width: 1.25rem; height: 1.25rem; border: 2px solid #2563eb; border-top: 2px solid transparent; border-radius: 50%; animation: spin 1s linear infinite; }
+    .import-modal-hidden { display: none; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @media (max-width: 48rem) {
+      .import-modal-backdrop { padding: 0.5rem; }
+      .import-modal-container { height: 90vh; min-height: 90vh; }
+      .import-modal-header { padding: 1rem; }
+      .import-modal-title { font-size: 1.125rem; }
+      .import-modal-content { padding: 1rem; }
+      .import-modal-footer { padding: 0.75rem; }
+      .import-modal-summary-grid { grid-template-columns: 1fr; gap: 1rem; }
+    }
+    @media (max-width: 30rem) {
+      .import-modal-container { max-width: 95vw; }
+      .import-modal-drag-area { padding: 1.5rem; }
+      .import-modal-table th, .import-modal-table td { padding: 0.5rem; font-size: 0.75rem; }
+    }
+  `;
 
   if (!isOpen) return null;
 
@@ -659,8 +727,6 @@ const ImportCsvModal: React.FC<ImportCsvModalProps> = ({ isOpen, onClose, onImpo
   return error === '';
 };
 
-
-
   const handleDelete = (companyId: string) => {
     const updatedResults = verificationResults.filter(company => company.id !== companyId);
     setVerificationResults(updatedResults);
@@ -671,73 +737,68 @@ const ImportCsvModal: React.FC<ImportCsvModalProps> = ({ isOpen, onClose, onImpo
   const totalCount = verificationResults.length;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="fixed inset-0 bg-black bg-opacity-50" onClick={!isProcessing ? handleClose : undefined} />
-
-      <div className="flex min-h-screen items-center justify-center p-4">
-        <div className="relative bg-white rounded-lg shadow-xl w-full max-w-4xl h-[600px] flex flex-col">
+    <>
+      <style>{styles}</style>
+      <div className="import-modal-backdrop" onClick={!isProcessing ? handleClose : undefined}>
+        <div className="import-modal-container" onClick={(e) => e.stopPropagation()}>
           {/* Header */}
-          <div className="bg-blue-600 text-white p-6 rounded-t-lg sticky top-0 z-10">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <Upload className="w-6 h-6" />
+          <div className="import-modal-header">
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <Upload style={{ width: '1.5rem', height: '1.5rem' }} />
                 <div>
-                  <h2 className="text-xl font-bold text-left">Importar Empresas por CSV</h2>
-                  <p className="text-blue-100">Carga masiva de empresas con sus credenciales</p>
+                  <h2 className="import-modal-title">Importar Empresas por CSV</h2>
+                  <p className="import-modal-subtitle">Carga masiva de empresas con sus credenciales</p>
                 </div>
               </div>
               <button
                 onClick={handleClose}
                 disabled={isProcessing}
-                className="text-white hover:bg-blue-700 rounded-lg p-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="import-modal-close-btn"
               >
-                <X className="w-5 h-5" />
+                <X style={{ width: '1.25rem', height: '1.25rem' }} />
               </button>
             </div>
           </div>
 
           {/* Content - Scrolleable */}
-          <div className="p-6 flex-1 overflow-y-auto" style={{maxHeight: 'calc(600px - 140px)'}}>
+          <div className="import-modal-content">
             {step === 'upload' && (
               <>
-                <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-                  <h3 className="text-lg font-semibold mb-2 flex items-center">
+                <div className="import-modal-section">
+                  <h3 style={{ fontSize: '1.125rem', fontWeight: 600, marginBottom: '0.5rem', display: 'flex', alignItems: 'center' }}>
                      1. Descarga la plantilla CSV
                   </h3>
-                  <p className="text-sm text-gray-600 mb-4 text-left ">
+                  <p style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '1rem', textAlign: 'left' }}>
                     El archivo debe contener las columnas: <strong>RUC, Usuario, Clave SOL</strong>
                   </p>
                   <button
                     onClick={downloadTemplate}
-                    className="flex items-center space-x-2 px-4 py-2 bg-green-500 text-white font-medium rounded-lg hover:bg-green-600 transition-colors"
+                    className="import-modal-btn-green"
                   >
-                    <Download className="w-4 h-4" />
+                    <Download style={{ width: '1rem', height: '1rem' }} />
                     <span>Descargar Plantilla</span>
                   </button>
                 </div>
-                <div className='mb-6 p-4 bg-gray-50 rounded-lg'>
-                  <h3 className="text-lg font-semibold mb-2 flex items-center">
+                <div className="import-modal-section">
+                  <h3 style={{ fontSize: '1.125rem', fontWeight: 600, marginBottom: '0.5rem', display: 'flex', alignItems: 'center' }}>
                     2. Sube tu archivo CSV
                   </h3>
                   <div
-                    className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors  ${
-                      dragActive
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-gray-300 hover:border-gray-400'
-                    }`}
+                    className={`import-modal-drag-area ${dragActive ? 'active' : ''}`}
                     onDragEnter={handleDrag}
                     onDragLeave={handleDrag}
                     onDragOver={handleDrag}
                     onDrop={handleDrop}
                   >
-                    <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                    <h4 className="text-lg font-medium text-gray-900 mb-2">
+                    <Upload style={{ width: '3rem', height: '3rem', color: '#9ca3af', margin: '0 auto 1rem' }} />
+                    <h4 style={{ fontSize: '1.125rem', fontWeight: 500, color: '#111827', marginBottom: '0.5rem' }}>
                       Arrastra tu archivo CSV aquí o haz clic para seleccionar
                     </h4>
-                    <p className="text-sm text-gray-500 mb-4">Solo archivos .csv</p>
+                    <p style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '1rem' }}>Solo archivos .csv</p>
                     <button
                       onClick={() => fileInputRef.current?.click()}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                      className="import-modal-btn-primary"
                     >
                       Seleccionar Archivo
                     </button>
@@ -746,11 +807,11 @@ const ImportCsvModal: React.FC<ImportCsvModalProps> = ({ isOpen, onClose, onImpo
                       type="file"
                       accept=".csv"
                       onChange={handleFileInput}
-                      className="hidden"
+                      className="import-modal-hidden"
                     />
                   </div>
                   {file && (
-                    <p className="mt-2 text-sm text-gray-600">
+                    <p style={{ marginTop: '0.5rem', fontSize: '0.875rem', color: '#6b7280' }}>
                       Archivo seleccionado: <strong>{file.name}</strong>
                     </p>
                   )}
@@ -760,47 +821,45 @@ const ImportCsvModal: React.FC<ImportCsvModalProps> = ({ isOpen, onClose, onImpo
 
             {step === 'preview' && (
               <div>
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold flex items-center">
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                  <h3 style={{ fontSize: '1.125rem', fontWeight: 600, display: 'flex', alignItems: 'center' }}>
                     3. Empresas a importar ({importedCompanies.length})
                   </h3>
-                  <div className="text-sm text-gray-500">
+                  <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>
                     Se verificarán las credenciales con SUNAT antes de importar
                   </div>
                 </div>
 
-                <div className="max-h-32 overflow-y-auto border rounded-lg mb-4">
-                  <table className="w-full text-sm">
-                    <thead className="bg-gray-50 sticky top-0">
+                <div className="import-modal-table-container">
+                  <table className="import-modal-table">
+                    <thead>
                       <tr>
-                        <th className="p-3 text-center">RUC</th>
-                        <th className="p-3 text-center">Usuario SOL</th>
-                        <th className="p-3 text-center">Clave SOL</th>
+                        <th>RUC</th>
+                        <th>Usuario SOL</th>
+                        <th>Clave SOL</th>
                       </tr>
                     </thead>
                     <tbody>
                       {importedCompanies.map((company) => (
-                        <tr key={company.id} className="border-t">
-                          <td className="p-3 font-mono">{company.ruc}</td>
-                          <td className="p-3">{company.usuario}</td>
-                          <td className="p-3">{'*'.repeat(company.claveSol.length)}</td>
+                        <tr key={company.id}>
+                          <td style={{ fontFamily: 'monospace' }}>{company.ruc}</td>
+                          <td>{company.usuario}</td>
+                          <td>{'*'.repeat(company.claveSol.length)}</td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
 
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                  <div className="flex items-start">
-                    <AlertTriangle className="w-5 h-5 text-yellow-600 mr-2 mt-0.5" />
-                    <div className="text-sm">
-                      <p className="font-medium text-yellow-800 mb-1">Antes de continuar:</p>
-                      <ul className="text-yellow-700 space-y-1 list-disc list-inside">
-                        <li>Se verificarán las credenciales de cada empresa con SUNAT</li>
-                        <li>Solo las empresas con credenciales válidas serán importadas</li>
-                        <li>Las empresas inválidas aparecerán en un reporte de errores</li>
-                      </ul>
-                    </div>
+                <div className="import-modal-alert">
+                  <AlertTriangle style={{ width: '1.25rem', height: '1.25rem', color: '#d97706', marginRight: '0.5rem', marginTop: '0.125rem' }} />
+                  <div style={{ fontSize: '0.875rem' }}>
+                    <p style={{ fontWeight: 500, color: '#92400e', marginBottom: '0.25rem' }}>Antes de continuar:</p>
+                    <ul style={{ color: '#a16207', lineHeight: 1.5, listStyleType: 'disc', paddingLeft: '1.25rem' }}>
+                      <li>Se verificarán las credenciales de cada empresa con SUNAT</li>
+                      <li>Solo las empresas con credenciales válidas serán importadas</li>
+                      <li>Las empresas inválidas aparecerán en un reporte de errores</li>
+                    </ul>
                   </div>
                 </div>
               </div>
@@ -808,11 +867,11 @@ const ImportCsvModal: React.FC<ImportCsvModalProps> = ({ isOpen, onClose, onImpo
 
             {step === 'connecting' && (
               <div>
-                <h3 className="text-lg font-semibold mb-4 flex items-center">
+                <h3 style={{ fontSize: '1.125rem', fontWeight: 600, marginBottom: '1rem', display: 'flex', alignItems: 'center' }}>
                   Verificando credenciales con SUNAT...
                 </h3>
 
-                <div className="max-h-[50vh] overflow-y-auto space-y-2 pr-2">
+                <div style={{ maxHeight: '50vh', overflowY: 'auto', paddingRight: '0.5rem' }}>
                   {importedCompanies.map((company, index) => {
                     const result = verificationResults.find(r => r.id === company.id);
                     const isCurrentlyVerifying = currentVerifyingIndex === index;
@@ -820,62 +879,62 @@ const ImportCsvModal: React.FC<ImportCsvModalProps> = ({ isOpen, onClose, onImpo
                     const isUpcoming = index > currentVerifyingIndex;
 
                     return (
-                      <div key={company.id} className="flex items-center space-x-3 p-4 border rounded-lg">
-                        <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center">
+                      <div key={company.id} className="import-modal-verification-item">
+                        <div style={{ flexShrink: 0, width: '2rem', height: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           {isCurrentlyVerifying ? (
-                            <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                            <div className="import-modal-spinner"></div>
                           ) : isCompleted ? (
                             result.verified ? (
-                              <CheckCircle className="w-5 h-5 text-green-600" />
+                              <CheckCircle style={{ width: '1.25rem', height: '1.25rem', color: '#16a34a' }} />
                             ) : (
-                              <AlertCircle className="w-5 h-5 text-red-600" />
+                              <AlertCircle style={{ width: '1.25rem', height: '1.25rem', color: '#dc2626' }} />
                             )
                           ) : isUpcoming ? (
-                            <div className="w-5 h-5 rounded-full bg-gray-200"></div>
+                            <div style={{ width: '1.25rem', height: '1.25rem', borderRadius: '50%', backgroundColor: '#e5e7eb' }}></div>
                           ) : null}
                         </div>
 
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center space-x-3">
-                            <span className="font-mono text-sm font-medium">{company.ruc}</span>
-                            <span className="text-sm text-gray-600">{company.usuario}</span>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                            <span style={{ fontFamily: 'monospace', fontSize: '0.875rem', fontWeight: 500 }}>{company.ruc}</span>
+                            <span style={{ fontSize: '0.875rem', color: '#6b7280' }}>{company.usuario}</span>
                           </div>
 
                           {isCurrentlyVerifying && (
-                            <div className="text-sm text-blue-600 mt-1">
+                            <div style={{ fontSize: '0.875rem', color: '#2563eb', marginTop: '0.25rem' }}>
                               Verificando credenciales...
                             </div>
                           )}
 
                           {result && (
-                            <div className="mt-1">
+                            <div style={{ marginTop: '0.25rem' }}>
                               {result.verified ? (
-                                <div className="text-sm text-green-700">
-                                  <div className="font-medium">{result.companyData?.razonSocial}</div>
-                                  <div className="text-xs">{result.companyData?.estado} - {result.companyData?.condicion}</div>
+                                <div style={{ fontSize: '0.875rem', color: '#15803d' }}>
+                                  <div style={{ fontWeight: 500 }}>{result.companyData?.razonSocial}</div>
+                                  <div style={{ fontSize: '0.75rem' }}>{result.companyData?.estado} - {result.companyData?.condicion}</div>
                                 </div>
                               ) : (
-                                <div className="text-sm text-red-700">
-                                  <div className="font-medium">Error de verificación</div>
-                                  <div className="text-xs">{getDetailedErrorMessage(result)}</div>
+                                <div style={{ fontSize: '0.875rem', color: '#dc2626' }}>
+                                  <div style={{ fontWeight: 500 }}>Error de verificación</div>
+                                  <div style={{ fontSize: '0.75rem' }}>{getDetailedErrorMessage(result)}</div>
                                 </div>
                               )}
                             </div>
                           )}
                         </div>
 
-                        <div className="flex-shrink-0 text-right">
+                        <div style={{ flexShrink: 0, textAlign: 'right' }}>
                           {isCurrentlyVerifying && (
-                            <span className="text-xs text-blue-600">Verificando...</span>
+                            <span style={{ fontSize: '0.75rem', color: '#2563eb' }}>Verificando...</span>
                           )}
                           {result?.verified && (
-                            <span className="text-xs text-green-600 font-medium">✓ Válida</span>
+                            <span style={{ fontSize: '0.75rem', color: '#16a34a', fontWeight: 500 }}>✓ Válida</span>
                           )}
                           {result && !result.verified && (
-                            <span className="text-xs text-red-600 font-medium">✗ Error</span>
+                            <span style={{ fontSize: '0.75rem', color: '#dc2626', fontWeight: 500 }}>✗ Error</span>
                           )}
                           {isUpcoming && (
-                            <span className="text-xs text-gray-400">Pendiente</span>
+                            <span style={{ fontSize: '0.75rem', color: '#9ca3af' }}>Pendiente</span>
                           )}
                         </div>
                       </div>
@@ -884,39 +943,39 @@ const ImportCsvModal: React.FC<ImportCsvModalProps> = ({ isOpen, onClose, onImpo
                 </div>
 
                 {verificationResults.length > 0 && (
-                  <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+                  <div style={{ marginTop: '1.5rem', padding: '1rem', backgroundColor: '#f9fafb', borderRadius: '0.5rem' }}>
                     {/* Progress Bar */}
-                    <div className="mb-4">
-                      <div className="flex items-center justify-between text-sm mb-2">
-                        <span className="font-medium text-gray-700">Progreso de verificación</span>
-                        <span className="text-gray-600">{totalCount} de {importedCompanies.length} ({Math.round((totalCount / importedCompanies.length) * 100)}%)</span>
+                    <div style={{ marginBottom: '1rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.875rem', marginBottom: '0.5rem' }}>
+                        <span style={{ fontWeight: 500, color: '#374151' }}>Progreso de verificación</span>
+                        <span style={{ color: '#6b7280' }}>{totalCount} de {importedCompanies.length} ({Math.round((totalCount / importedCompanies.length) * 100)}%)</span>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-3">
+                      <div className="import-modal-progress-bar">
                         <div
-                          className="h-3 rounded-full transition-all bg-blue-600"
+                          className="import-modal-progress-fill"
                           style={{width: `${(totalCount / importedCompanies.length) * 100}%`}}
                         ></div>
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between text-sm">
-                      <div className="flex items-center space-x-6">
-                        <div className="flex items-center space-x-2">
-                          <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                          <span>Verificadas: <strong className="text-green-700">{validCompanies.length}</strong></span>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.875rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <div style={{ width: '0.75rem', height: '0.75rem', backgroundColor: '#10b981', borderRadius: '50%' }}></div>
+                          <span>Verificadas: <strong style={{ color: '#15803d' }}>{validCompanies.length}</strong></span>
                         </div>
-                        <div className="flex items-center space-x-2">
-                          <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                          <span>Con errores: <strong className="text-red-700">{errorCompanies.length}</strong></span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <div style={{ width: '0.75rem', height: '0.75rem', backgroundColor: '#ef4444', borderRadius: '50%' }}></div>
+                          <span>Con errores: <strong style={{ color: '#dc2626' }}>{errorCompanies.length}</strong></span>
                         </div>
-                        <div className="flex items-center space-x-2">
-                          <div className="w-3 h-3 bg-gray-300 rounded-full"></div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <div style={{ width: '0.75rem', height: '0.75rem', backgroundColor: '#d1d5db', borderRadius: '50%' }}></div>
                           <span>Procesadas: <strong>{totalCount} de {importedCompanies.length}</strong></span>
                         </div>
                       </div>
 
                       {!isProcessing && totalCount === importedCompanies.length && (
-                        <div className="text-blue-600 font-medium">
+                        <div style={{ color: '#2563eb', fontWeight: 500 }}>
                           Verificación completada
                         </div>
                       )}
@@ -928,65 +987,59 @@ const ImportCsvModal: React.FC<ImportCsvModalProps> = ({ isOpen, onClose, onImpo
 
             {step === 'results' && (
               <div>
-                <h3 className="text-lg font-semibold mb-6 flex items-center">
+                <h3 style={{ fontSize: '1.125rem', fontWeight: 600, marginBottom: '1.5rem', display: 'flex', alignItems: 'center' }}>
                   Resultados de la Verificación
                 </h3>
 
                 {/* Resumen en 3 columnas - siempre horizontal para ahorrar espacio */}
-                <div className="grid grid-cols-3 mb-6 gap-x-12">
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                    <div className="flex items-center justify-center">
-                      <CheckCircle className="w-6 h-6 text-green-600 mr-2" />
-                      <div className="text-center">
-                        <div className="text-xl font-bold text-green-800">{validCompanies.length}</div>
-                        <div className="text-xs text-green-700">Válidas</div>
-                      </div>
+                <div className="import-modal-summary-grid">
+                  <div className="import-modal-summary-card green">
+                    <CheckCircle style={{ width: '1.5rem', height: '1.5rem', color: '#16a34a', marginRight: '0.5rem' }} />
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#166534' }}>{validCompanies.length}</div>
+                      <div style={{ fontSize: '0.75rem', color: '#16a34a' }}>Válidas</div>
                     </div>
                   </div>
 
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                    <div className="flex items-center justify-center">
-                      <AlertCircle className="w-6 h-6 text-red-600 mr-2" />
-                      <div className="text-center">
-                        <div className="text-xl font-bold text-red-800">{errorCompanies.length}</div>
-                        <div className="text-xs text-red-700">Con Errores</div>
-                      </div>
+                  <div className="import-modal-summary-card red">
+                    <AlertCircle style={{ width: '1.5rem', height: '1.5rem', color: '#dc2626', marginRight: '0.5rem' }} />
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#991b1b' }}>{errorCompanies.length}</div>
+                      <div style={{ fontSize: '0.75rem', color: '#dc2626' }}>Con Errores</div>
                     </div>
                   </div>
 
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                    <div className="flex items-center justify-center">
-                      <FileCheck className="w-6 h-6 text-blue-600 mr-2" />
-                      <div className="text-center">
-                        <div className="text-xl font-bold text-blue-800">{totalCount}</div>
-                        <div className="text-xs text-blue-700">Total</div>
-                      </div>
+                  <div className="import-modal-summary-card blue">
+                    <FileCheck style={{ width: '1.5rem', height: '1.5rem', color: '#2563eb', marginRight: '0.5rem' }} />
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#1e40af' }}>{totalCount}</div>
+                      <div style={{ fontSize: '0.75rem', color: '#2563eb' }}>Total</div>
                     </div>
                   </div>
                 </div>
 
                 {validCompanies.length > 0 && (
                   <>
-                    <h4 className="text-lg font-semibold mb-2 flex items-center space-x-2 text-left">
-                      <CheckCircle className="w-5 h-5 text-green-600" />
+                    <h4 style={{ fontSize: '1.125rem', fontWeight: 600, marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', textAlign: 'left' }}>
+                      <CheckCircle style={{ width: '1.25rem', height: '1.25rem', color: '#16a34a' }} />
                       <span>Empresas Válidas ({validCompanies.length})</span>
                     </h4>
-                    <div className="max-h-60 overflow-y-auto border rounded-lg mb-6">
-                      <table className="w-full text-sm">
-                        <thead className="bg-gray-50 sticky top-0">
+                    <div className="import-modal-table-container">
+                      <table className="import-modal-table">
+                        <thead>
                           <tr>
-                            <th className="p-3 text-center">RUC</th>
-                            <th className="p-3 text-center">Razón Social</th>
-                            <th className="p-3 text-center">Estado</th>
+                            <th>RUC</th>
+                            <th>Razón Social</th>
+                            <th>Estado</th>
                           </tr>
                         </thead>
                         <tbody>
                           {validCompanies.map((company) => (
-                            <tr key={company.id} className="border-t">
-                              <td className="p-3 font-mono">{company.ruc}</td>
-                              <td className="p-3">{company.companyData?.razonSocial}</td>
-                              <td className="p-3">
-                                <span className="bg-green-100 text-green-800 text-xs font-medium px-2 py-0.5 rounded-full">
+                            <tr key={company.id}>
+                              <td style={{ fontFamily: 'monospace' }}>{company.ruc}</td>
+                              <td>{company.companyData?.razonSocial}</td>
+                              <td>
+                                <span style={{ backgroundColor: '#f0fdf4', color: '#166534', fontSize: '0.75rem', fontWeight: 500, padding: '0.125rem 0.5rem', borderRadius: '9999px' }}>
                                   {company.companyData?.estado}
                                 </span>
                               </td>
@@ -1000,126 +1053,117 @@ const ImportCsvModal: React.FC<ImportCsvModalProps> = ({ isOpen, onClose, onImpo
 
                 {errorCompanies.length > 0 && (
                   <>
-                    <h4 className="text-lg font-semibold mb-2 flex items-center space-x-2 text-left">
-                      <AlertCircle className="w-5 h-5 text-red-600" />
+                    <h4 style={{ fontSize: '1.125rem', fontWeight: 600, marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', textAlign: 'left' }}>
+                      <AlertCircle style={{ width: '1.25rem', height: '1.25rem', color: '#dc2626' }} />
                       <span>Empresas con Errores ({errorCompanies.length})</span>
                     </h4>
-                    <div className="max-h-60 overflow-y-auto border rounded-lg mb-6">
-                      <table className="w-full text-sm">
-                        <thead className="bg-gray-50 sticky top-0">
+                    <div className="import-modal-table-container">
+                      <table className="import-modal-table">
+                        <thead>
                           <tr>
-                            <th className="p-3 text-center">RUC</th>
-                            <th className="p-3 text-center">Usuario</th>
-                            <th className="p-3 text-center">Error de Validación</th>
-                            <th className="p-3 text-center">Acciones</th>
+                            <th>RUC</th>
+                            <th>Usuario</th>
+                            <th>Error de Validación</th>
+                            <th>Acciones</th>
                           </tr>
                         </thead>
                         <tbody>
                           {errorCompanies.map((company) => (
                             <React.Fragment key={company.id}>
-                              <tr className="border-t">
-                                <td className="p-3 font-mono">{company.ruc}</td>
-                                <td className="p-3">{company.usuario}</td>
-                                <td className="p-3 text-red-700">{getDetailedErrorMessage(company)}</td>
-                                <td className="p-3">
-                                  <div className="flex items-center justify-center space-x-2">
+                              <tr>
+                                <td style={{ fontFamily: 'monospace' }}>{company.ruc}</td>
+                                <td>{company.usuario}</td>
+                                <td style={{ color: '#dc2626' }}>{getDetailedErrorMessage(company)}</td>
+                                <td>
+                                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
                                     <button
                                       onClick={() => handleEdit(company)}
-                                      className="text-blue-600 hover:text-blue-800"
+                                      className="import-modal-btn-simple"
                                       aria-label="Editar"
                                     >
-                                      <Edit className="w-4 h-4" />
+                                      <Edit style={{ width: '1rem', height: '1rem' }} />
                                     </button>
                                     <button
                                       onClick={() => handleDelete(company.id)}
-                                      className="text-red-600 hover:text-red-800"
+                                      className="import-modal-btn-simple-red"
                                       aria-label="Eliminar"
                                     >
-                                      <Trash2 className="w-4 h-4" />
+                                      <Trash2 style={{ width: '1rem', height: '1rem' }} />
                                     </button>
                                   </div>
                                 </td>
                               </tr>
                               {editingCompanyId === company.id && (
-                                <tr className="bg-gray-100 border-b-2 border-blue-400">
-                                  <td colSpan={4} className="p-4">
-                                    <div className="p-4 border rounded-lg bg-white shadow-inner">
-                                      <h5 className="text-md font-semibold mb-3">Editar credenciales para {company.ruc}</h5>
-                                      <div className="flex flex-col space-y-3">
-                                        <div>
-                                          <label className="block text-sm font-medium text-gray-700 mb-1">RUC *</label>
-                                          <input
-                                            type="text"
-                                            value={editingForm.ruc}
-                                            onChange={(e) => {
-                                              const value = e.target.value.replace(/\D/g, '');
-                                              if (value.length <= 11) {
-                                                setEditingForm({...editingForm, ruc: value});
-                                                validateEditingField('ruc', value);
-                                              }
-                                            }}
-                                            onBlur={(e) => validateEditingField('ruc', e.target.value)}
-                                            className={`w-full rounded-md shadow-sm text-sm ${
-                                              editingErrors.ruc 
-                                                ? 'border-red-300 focus:border-red-500 focus:ring-red-500' 
-                                                : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
-                                            }`}
-                                            placeholder="11 dígitos numéricos"
-                                            maxLength={11}
-                                          />
-                                          {editingErrors.ruc && (
-                                            <p className="mt-1 text-sm text-red-600">{editingErrors.ruc}</p>
-                                          )}
-                                        </div>
-                                        
-                                        <div>
-                                          <label className="block text-sm font-medium text-gray-700 mb-1">Usuario SOL *</label>
-                                          <input
-                                            type="text"
-                                            value={editingForm.usuario}
-                                            onChange={(e) => {
-                                              setEditingForm({...editingForm, usuario: e.target.value});
-                                              validateEditingField('usuario', e.target.value);
-                                            }}
-                                            onBlur={(e) => validateEditingField('usuario', e.target.value)}
-                                            className={`w-full rounded-md shadow-sm text-sm ${
-                                              editingErrors.usuario 
-                                                ? 'border-red-300 focus:border-red-500 focus:ring-red-500' 
-                                                : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
-                                            }`}
-                                            placeholder="Usuario SOL"
-                                          />
-                                          {editingErrors.usuario && (
-                                            <p className="mt-1 text-sm text-red-600">{editingErrors.usuario}</p>
-                                          )}
-                                        </div>
-                                        
-                                        <div>
-                                          <label className="block text-sm font-medium text-gray-700 mb-1">Clave SOL *</label>
-                                          <input
-                                            type="password"
-                                            value={editingForm.claveSol}
-                                            onChange={(e) => {
-                                              setEditingForm({...editingForm, claveSol: e.target.value});
-                                              validateEditingField('claveSol', e.target.value);
-                                            }}
-                                            onBlur={(e) => validateEditingField('claveSol', e.target.value)}
-                                            className={`w-full rounded-md shadow-sm text-sm ${
-                                              editingErrors.claveSol 
-                                                ? 'border-red-300 focus:border-red-500 focus:ring-red-500' 
-                                                : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
-                                            }`}
-                                            placeholder="Clave SOL"
-                                          />
-                                          {editingErrors.claveSol && (
-                                            <p className="mt-1 text-sm text-red-600">{editingErrors.claveSol}</p>
-                                          )}
+                                <tr style={{ backgroundColor: '#f3f4f6', borderBottom: '2px solid #2563eb' }}>
+                                  <td colSpan={4} style={{ padding: '1rem' }}>
+                                    <div className="import-modal-edit-form">
+                                      <h5 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.75rem' }}>Editar credenciales para {company.ruc}</h5>
+                                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                                        {/* Fila con los 3 inputs */}
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.75rem' }}>
+                                          <div className="import-modal-form-group">
+                                            <label className="import-modal-form-label">RUC *</label>
+                                            <input
+                                              type="text"
+                                              value={editingForm.ruc}
+                                              onChange={(e) => {
+                                                const value = e.target.value.replace(/\D/g, '');
+                                                if (value.length <= 11) {
+                                                  setEditingForm({...editingForm, ruc: value});
+                                                  validateEditingField('ruc', value);
+                                                }
+                                              }}
+                                              onBlur={(e) => validateEditingField('ruc', e.target.value)}
+                                              className={`import-modal-form-input ${editingErrors.ruc ? 'error' : ''}`}
+                                              placeholder="11 dígitos numéricos"
+                                              maxLength={11}
+                                            />
+                                            {editingErrors.ruc && (
+                                              <p className="import-modal-error-text">{editingErrors.ruc}</p>
+                                            )}
+                                          </div>
+                                          
+                                          <div className="import-modal-form-group">
+                                            <label className="import-modal-form-label">Usuario SOL *</label>
+                                            <input
+                                              type="text"
+                                              value={editingForm.usuario}
+                                              onChange={(e) => {
+                                                setEditingForm({...editingForm, usuario: e.target.value});
+                                                validateEditingField('usuario', e.target.value);
+                                              }}
+                                              onBlur={(e) => validateEditingField('usuario', e.target.value)}
+                                              className={`import-modal-form-input ${editingErrors.usuario ? 'error' : ''}`}
+                                              placeholder="Usuario SOL"
+                                            />
+                                            {editingErrors.usuario && (
+                                              <p className="import-modal-error-text">{editingErrors.usuario}</p>
+                                            )}
+                                          </div>
+                                          
+                                          <div className="import-modal-form-group">
+                                            <label className="import-modal-form-label">Clave SOL *</label>
+                                            <input
+                                              type="password"
+                                              value={editingForm.claveSol}
+                                              onChange={(e) => {
+                                                setEditingForm({...editingForm, claveSol: e.target.value});
+                                                validateEditingField('claveSol', e.target.value);
+                                              }}
+                                              onBlur={(e) => validateEditingField('claveSol', e.target.value)}
+                                              className={`import-modal-form-input ${editingErrors.claveSol ? 'error' : ''}`}
+                                              placeholder="Clave SOL"
+                                            />
+                                            {editingErrors.claveSol && (
+                                              <p className="import-modal-error-text">{editingErrors.claveSol}</p>
+                                            )}
+                                          </div>
                                         </div>
 
-                                        <div className="flex justify-end space-x-2 mt-4">
+                                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '1rem' }}>
                                           <button
                                             onClick={handleCancelEdit}
-                                            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                                            className="import-modal-btn-secondary"
                                           >
                                             Cancelar
                                           </button>
@@ -1134,9 +1178,18 @@ const ImportCsvModal: React.FC<ImportCsvModalProps> = ({ isOpen, onClose, onImpo
                                                 !!editingErrors.usuario || 
                                                 !!editingErrors.claveSol
                                               }
-                                              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                                              className="import-modal-btn-primary"
+                                              style={{ opacity: (
+                                                !editingForm.ruc.trim() || 
+                                                !editingForm.usuario.trim() || 
+                                                !editingForm.claveSol.trim() || 
+                                                editingForm.ruc.length !== 11 ||
+                                                !!editingErrors.ruc || 
+                                                !!editingErrors.usuario || 
+                                                !!editingErrors.claveSol
+                                              ) ? 0.5 : 1 }}
                                             >
-                                              <Save className="w-4 h-4" />
+                                              <Save style={{ width: '1rem', height: '1rem' }} />
                                               <span>Guardar</span>
                                             </button>
                                         </div>
@@ -1158,13 +1211,13 @@ const ImportCsvModal: React.FC<ImportCsvModalProps> = ({ isOpen, onClose, onImpo
 
           {/* Footer - Fixed at bottom */}
           {step === 'preview' && (
-            <div className="border-t border-gray-200 p-4 bg-gray-50 rounded-b-lg">
-              <div className="flex justify-end">
+            <div className="import-modal-footer">
+              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                 <button
                   onClick={() => handleConnectCompanies(importedCompanies)}
-                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
+                  className="import-modal-btn-primary"
                 >
-                  <Shield className="w-4 h-4" />
+                  <Shield style={{ width: '1rem', height: '1rem' }} />
                   <span>Verificar y Conectar Empresas</span>
                 </button>
               </div>
@@ -1172,15 +1225,16 @@ const ImportCsvModal: React.FC<ImportCsvModalProps> = ({ isOpen, onClose, onImpo
           )}
 
           {step === 'results' && (
-            <div className="border-t border-gray-200 p-4 bg-gray-50 rounded-b-lg">
-              <div className="flex justify-end space-x-3">
+            <div className="import-modal-footer">
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
                 {errorCompanies.length > 0 && (
                   <button
                     onClick={retryFailedVerifications}
-                    className="px-6 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="import-modal-btn-yellow"
                     disabled={isProcessing}
+                    style={{ opacity: isProcessing ? 0.5 : 1 }}
                   >
-                    <RefreshCw className={`w-4 h-4 ${isProcessing ? 'animate-spin' : ''}`} />
+                    <RefreshCw style={{ width: '1rem', height: '1rem', animation: isProcessing ? 'spin 1s linear infinite' : 'none' }} />
                     <span>{isProcessing ? 'Reintentando...' : `Reintentar Errores (${errorCompanies.length})`}</span>
                   </button>
                 )}
@@ -1188,9 +1242,10 @@ const ImportCsvModal: React.FC<ImportCsvModalProps> = ({ isOpen, onClose, onImpo
                 <button
                   onClick={handleImportValidCompanies}
                   disabled={validCompanies.length === 0}
-                  className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="import-modal-btn-green"
+                  style={{ opacity: validCompanies.length === 0 ? 0.5 : 1 }}
                 >
-                  <FileCheck className="w-4 h-4" />
+                  <FileCheck style={{ width: '1rem', height: '1rem' }} />
                   <span>Importar Empresas Válidas ({validCompanies.length})</span>
                 </button>
               </div>
@@ -1198,7 +1253,7 @@ const ImportCsvModal: React.FC<ImportCsvModalProps> = ({ isOpen, onClose, onImpo
           )}
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
