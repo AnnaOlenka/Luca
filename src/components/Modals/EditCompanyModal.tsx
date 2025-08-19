@@ -68,6 +68,8 @@ const EditCompanyModal: React.FC<EditCompanyModalProps> = ({ empresa, isOpen, on
     .edit-modal-edit-btn:hover { background-color: #2563eb;}
     .edit-modal-delete-btn { background-color: #ef4444; color: white; padding: 0.5rem; border-radius: 0.375rem; transition: background-color 0.2s; border: none; cursor: pointer; }
     .edit-modal-delete-btn:hover { background-color: #dc2626; }
+    .edit-modal-save-persona-btn { background-color: transparent; color: #2563eb; padding: 0.5rem 1rem; border-radius: 0.375rem; font-size: 0.875rem; font-weight: 500; display: flex; align-items: center; gap: 0.25rem; transition: background-color 0.2s; border: none; cursor: pointer; }
+    .edit-modal-save-persona-btn:hover { background-color: #eff6ff; }
     @media (max-width: 48rem) {
       .edit-modal-backdrop { padding: 0.5rem; }
       .edit-modal-container { height: 90vh; min-height: 90vh; }
@@ -1281,26 +1283,17 @@ const validateCredentialsRealTime = async (usuario: string, clave: string) => {
                                       )}
                                     </div>
                                   </div>
-                                  <div>
-                                    <label className="block text-xs font-medium text-gray-700 mb-1">Rol</label>
-                                    <input
-                                      type="text"
-                                      value={persona.rol}
-                                      className="w-full px-2 py-1 border border-gray-300 rounded text-sm bg-gray-50"
-                                      readOnly
-                                    />
-                                  </div>
                                 </div>
                                 <div className="flex justify-end space-x-2 mt-4">
                                   <button
                                     onClick={() => setExpandedPersona(null)}
-                                    className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded text-sm"
+                                    className="edit-modal-cancel-btn"
                                   >
                                     Cancelar
                                   </button>
                                   <button
                                     onClick={() => handlePersonaSave(persona.id)}
-                                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm flex items-center space-x-1"
+                                    className="edit-modal-save-persona-btn"
                                   >
                                     <Save className="w-3 h-3" />
                                     <span>Guardar Cambios</span>
